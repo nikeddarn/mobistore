@@ -1,0 +1,381 @@
+// Variables
+@import "variables";
+@import "my_variables";
+
+/*********************** Global Styles **********************************/
+
+html,
+body {
+  height: 100%;
+}
+
+.scrollable-menu {
+  height: auto;
+  max-height: 200px;
+  overflow-x: hidden;
+}
+
+/************************ Navbar heights *********************************/
+
+/* Small Navbar */
+
+.navbar-small {
+  .navbar {
+    min-height: $navbar-small-height;
+  }
+  .navbar-header {
+    padding: 0 15px;
+    height: $navbar-small-height;
+    line-height: $navbar-small-height;
+  }
+  .navbar-toggle {
+    height: $navbar-small-height;
+    margin: 0 15px;
+    padding: 9px 10px !important;
+  }
+  @media (min-width: 768px) {
+    .navbar-nav > li > a {
+      padding-top: 6px;
+      padding-bottom: 6px;
+      line-height: 20px;
+    }
+  }
+}
+
+/* Middle navbar*/
+
+.navbar-middle {
+  .navbar {
+    min-height: $navbar-middle-height;
+  }
+  .navbar-header {
+    padding: 0 15px;
+    height: $navbar-middle-height;
+    line-height: $navbar-middle-height;
+  }
+  .navbar-toggle {
+    height: $navbar-middle-height;
+    margin: 0 15px;
+    padding: 9px 10px !important;
+  }
+  @media (min-width: 768px) {
+    .navbar-nav > li > a {
+      padding-top: 10px;
+      padding-bottom: 10px;
+      line-height: 20px;
+    }
+  }
+}
+
+#top-navbar {
+  @media (min-width: 992px) {
+    #top-navbar-collapse ul:first-child {
+      margin-left: 8.33333333%;
+    }
+  }
+}
+
+/************************ Navbar colors *********************************/
+
+/* Top Navbar */
+
+#top-navbar {
+
+  .navbar-default {
+    border: none;
+    border-radius: 0;
+  }
+
+  @media (max-width: 767px) {
+
+    .navbar-default .navbar-collapse {
+
+      background-color: $store-navbar-bg-color;
+
+      ul > li > a {
+        color: $store-navbar-color;
+      }
+      ul > li > a:hover, ul > li > a:focus {
+        color: $store-navbar-highlight-color;
+        background-color: $store-navbar-highlight-bg-color;
+      }
+
+      .active > a,
+      .active > a:hover,
+      .active > a:focus {
+        color: $store-navbar-highlight-color;
+        background-color: $store-navbar-highlight-bg-color;
+      }
+      .open > a,
+      .open > a:hover,
+      .open > a:focus {
+        color: $store-navbar-highlight-color;
+        background-color: $store-navbar-highlight-bg-color;
+      }
+    }
+  }
+}
+
+/* Store Navbar*/
+
+#store-navbar {
+
+  .navbar-collapse {
+    border: none;
+  }
+
+  .navbar-default {
+    background-color: $store-navbar-bg-color;
+    border: none;
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+
+    ul > li > a {
+      color: $store-navbar-color;
+    }
+
+    ul > li > a:hover,
+    ul > li > a:focus {
+      color: $store-navbar-highlight-color;
+      background-color: $store-navbar-highlight-bg-color;
+    }
+
+    ul > .active > a,
+    ul > .active > a:hover,
+    ul > .active > a:focus {
+      color: $store-navbar-highlight-color;
+      background-color: $store-navbar-highlight-bg-color;
+    }
+
+    ul > .open > a,
+    ul > .open > a:hover,
+    ul > .open > a:focus {
+      color: $store-navbar-highlight-color;
+      background-color: $store-navbar-highlight-bg-color;
+    }
+
+    ul > .open .dropdown-menu > li > a {
+      color: $store-navbar-color;
+    }
+
+    ul > .open .dropdown-menu > li > a:hover, ul > .open .dropdown-menu > li > a:active {
+      color: $store-navbar-highlight-color;
+    }
+
+    .navbar-toggle {
+      border-color: $store-navbar-toggle-border-color;
+    }
+
+    .navbar-toggle:hover, .navbar-toggle:focus {
+      background-color: $store-navbar-bg-color;
+    }
+
+    .navbar-toggle .icon-bar {
+      background-color: $store-navbar-color;
+    }
+  }
+
+  ul.navbar-feature > li > a:hover {
+    background-color: $store-navbar-bg-color;
+    color: $store-navbar-color;
+  }
+
+  .btn-cart-xs {
+    background-color: $store-navbar-bg-color;
+    height: 34px;
+    padding: 8px 25px;
+    margin-top: 3px;
+  }
+}
+
+/************************ Other header styles *********************************/
+
+/*Small Language Picker */
+
+.navbar-small {
+
+  #header-top-menu-language {
+
+    .navbar-nav {
+      margin: 0;
+    }
+
+    .navbar-nav > li > a {
+      padding-top: 6px;
+      padding-bottom: 6px;
+      line-height: 20px;
+    }
+
+    .icon-small {
+      height: 11px;
+      margin: 0 5px 0 0;
+      padding: 0;
+      width: 16px;
+    }
+  }
+}
+
+/* Middle Header*/
+
+#header-middle {
+  .row {
+    padding: 15px 0;
+  }
+
+  .header-middle-item {
+    margin-top: 15px;
+  }
+
+  .header-middle-item-height {
+    height: 34px;
+  }
+
+  .header-middle-input {
+    padding: 6px 12px;
+    outline: none;
+    box-shadow: none;
+    border-color: $input-border;
+  }
+
+  .bootstrap-select {
+    .btn {
+      height: 34px;
+      border-left: none;
+      border-color: $input-border;
+      outline: none;
+    }
+
+    ul li a:hover, ul li a[aria-selected="true"], .input-group-btn > .btn {
+      background-color: $brand-primary;
+      color: white;
+      border: none;
+      outline: none;
+    }
+  }
+
+  input:focus {
+    border-color: $brand-primary;
+  }
+
+  .search-button {
+    background-color: $brand-primary;
+    color: white;
+    border: none;
+    outline: none;
+  }
+
+  #dropdown-cart {
+    background-color: $store-navbar-bg-color;
+  }
+
+  #dropdown-cart:hover {
+    border: 1px solid $brand-primary;
+  }
+}
+
+/*******************************************************/
+
+/* Other*/
+
+.img-portfolio {
+  margin-bottom: 30px;
+}
+
+.img-hover:hover {
+  opacity: 0.8;
+}
+
+/* Home Page Carousel */
+
+header.carousel {
+  height: 50%;
+}
+
+header.carousel .item,
+header.carousel .item.active,
+header.carousel .carousel-inner {
+  height: 100%;
+}
+
+header.carousel .fill {
+  width: 100%;
+  height: 100%;
+  background-position: center;
+  background-size: cover;
+}
+
+/* 404 Page Styles */
+
+.error-404 {
+  font-size: 100px;
+}
+
+/* Pricing Page Styles */
+
+.price {
+  display: block;
+  font-size: 50px;
+  line-height: 50px;
+}
+
+.price sup {
+  top: -20px;
+  left: 2px;
+  font-size: 20px;
+}
+
+.period {
+  display: block;
+  font-style: italic;
+}
+
+/* Footer Styles */
+
+#footer {
+  margin: 50px 0;
+}
+
+/* Responsive Styles */
+
+@media (max-width: 991px) {
+  .customer-img,
+  .img-related {
+    margin-bottom: 30px;
+  }
+}
+
+@media (max-width: 767px) {
+  .img-portfolio {
+    margin-bottom: 15px;
+  }
+
+  header.carousel .carousel {
+    height: 70%;
+  }
+}
+
+.icon-small {
+  height: 18px;
+  margin: 0;
+  padding: 0;
+}
+
+.icon-medium {
+  height: 22px;
+  margin: 0;
+  padding: 0;
+}
+
+/*text indent*/
+.text-indent {
+  text-indent: 30px;
+}
+
+/*vertical margin*/
+.top-buffer {
+  margin-top: 20px;
+}
+
+/* full width*/
+.full-width {
+  width: 100%;
+}

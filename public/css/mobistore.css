@@ -1,0 +1,372 @@
+/*********************** Global Styles **********************************/
+
+html,
+body {
+  height: 100%;
+}
+
+.scrollable-menu {
+  height: auto;
+  max-height: 200px;
+  overflow-x: hidden;
+}
+
+/************************ Navbar heights *********************************/
+
+/* Small Navbar */
+
+.navbar-small .navbar {
+  min-height: 32px;
+}
+
+.navbar-small .navbar-header {
+  padding: 0 15px;
+  height: 32px;
+  line-height: 32px;
+}
+
+.navbar-small .navbar-toggle {
+  height: 32px;
+  margin: 0 15px;
+  padding: 9px 10px !important;
+}
+
+@media (min-width: 768px) {
+  .navbar-small .navbar-nav > li > a {
+    padding-top: 6px;
+    padding-bottom: 6px;
+    line-height: 20px;
+  }
+}
+
+/* Middle navbar*/
+
+.navbar-middle .navbar {
+  min-height: 40px;
+}
+
+.navbar-middle .navbar-header {
+  padding: 0 15px;
+  height: 40px;
+  line-height: 40px;
+}
+
+.navbar-middle .navbar-toggle {
+  height: 40px;
+  margin: 0 15px;
+  padding: 9px 10px !important;
+}
+
+@media (min-width: 768px) {
+  .navbar-middle .navbar-nav > li > a {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    line-height: 20px;
+  }
+}
+
+@media (min-width: 992px) {
+  #top-navbar #top-navbar-collapse ul:first-child {
+    margin-left: 8.33333333%;
+  }
+}
+
+/************************ Navbar colors *********************************/
+
+/* Top Navbar */
+
+#top-navbar .navbar-default {
+  border: none;
+  border-radius: 0;
+}
+
+@media (max-width: 767px) {
+  #top-navbar .navbar-default .navbar-collapse {
+    background-color: #f3f3f3;
+  }
+
+  #top-navbar .navbar-default .navbar-collapse ul > li > a {
+    color: #777777;
+  }
+
+  #top-navbar .navbar-default .navbar-collapse ul > li > a:hover,
+  #top-navbar .navbar-default .navbar-collapse ul > li > a:focus {
+    color: #ffffff;
+    background-color: #30A193;
+  }
+
+  #top-navbar .navbar-default .navbar-collapse .active > a,
+  #top-navbar .navbar-default .navbar-collapse .active > a:hover,
+  #top-navbar .navbar-default .navbar-collapse .active > a:focus {
+    color: #ffffff;
+    background-color: #30A193;
+  }
+
+  #top-navbar .navbar-default .navbar-collapse .open > a,
+  #top-navbar .navbar-default .navbar-collapse .open > a:hover,
+  #top-navbar .navbar-default .navbar-collapse .open > a:focus {
+    color: #ffffff;
+    background-color: #30A193;
+  }
+}
+
+/* Store Navbar*/
+
+#store-navbar .navbar-collapse {
+  border: none;
+}
+
+#store-navbar .navbar-default {
+  background-color: #f3f3f3;
+  border: none;
+  -webkit-box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+          box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+}
+
+#store-navbar .navbar-default ul > li > a {
+  color: #777777;
+}
+
+#store-navbar .navbar-default ul > li > a:hover,
+#store-navbar .navbar-default ul > li > a:focus {
+  color: #ffffff;
+  background-color: #30A193;
+}
+
+#store-navbar .navbar-default ul > .active > a,
+#store-navbar .navbar-default ul > .active > a:hover,
+#store-navbar .navbar-default ul > .active > a:focus {
+  color: #ffffff;
+  background-color: #30A193;
+}
+
+#store-navbar .navbar-default ul > .open > a,
+#store-navbar .navbar-default ul > .open > a:hover,
+#store-navbar .navbar-default ul > .open > a:focus {
+  color: #ffffff;
+  background-color: #30A193;
+}
+
+#store-navbar .navbar-default ul > .open .dropdown-menu > li > a {
+  color: #777777;
+}
+
+#store-navbar .navbar-default ul > .open .dropdown-menu > li > a:hover,
+#store-navbar .navbar-default ul > .open .dropdown-menu > li > a:active {
+  color: #ffffff;
+}
+
+#store-navbar .navbar-default .navbar-toggle {
+  border-color: #dddddd;
+}
+
+#store-navbar .navbar-default .navbar-toggle:hover,
+#store-navbar .navbar-default .navbar-toggle:focus {
+  background-color: #f3f3f3;
+}
+
+#store-navbar .navbar-default .navbar-toggle .icon-bar {
+  background-color: #777777;
+}
+
+#store-navbar ul.navbar-feature > li > a:hover {
+  background-color: #f3f3f3;
+  color: #777777;
+}
+
+#store-navbar .btn-cart-xs {
+  background-color: #f3f3f3;
+  height: 34px;
+  padding: 8px 25px;
+  margin-top: 3px;
+}
+
+/************************ Other header styles *********************************/
+
+/*Small Language Picker */
+
+.navbar-small #header-top-menu-language .navbar-nav {
+  margin: 0;
+}
+
+.navbar-small #header-top-menu-language .navbar-nav > li > a {
+  padding-top: 6px;
+  padding-bottom: 6px;
+  line-height: 20px;
+}
+
+.navbar-small #header-top-menu-language .icon-small {
+  height: 11px;
+  margin: 0 5px 0 0;
+  padding: 0;
+  width: 16px;
+}
+
+/* Middle Header*/
+
+#header-middle .row {
+  padding: 15px 0;
+}
+
+#header-middle .header-middle-item {
+  margin-top: 15px;
+}
+
+#header-middle .header-middle-item-height {
+  height: 34px;
+}
+
+#header-middle .header-middle-input {
+  padding: 6px 12px;
+  outline: none;
+  -webkit-box-shadow: none;
+          box-shadow: none;
+  border-color: #ccc;
+}
+
+#header-middle .bootstrap-select .btn {
+  height: 34px;
+  border-left: none;
+  border-color: #ccc;
+  outline: none;
+}
+
+#header-middle .bootstrap-select ul li a:hover,
+#header-middle .bootstrap-select ul li a[aria-selected="true"],
+#header-middle .bootstrap-select .input-group-btn > .btn {
+  background-color: #30A193;
+  color: white;
+  border: none;
+  outline: none;
+}
+
+#header-middle input:focus {
+  border-color: #30A193;
+}
+
+#header-middle .search-button {
+  background-color: #30A193;
+  color: white;
+  border: none;
+  outline: none;
+}
+
+#header-middle #dropdown-cart {
+  background-color: #f3f3f3;
+}
+
+#header-middle #dropdown-cart:hover {
+  border: 1px solid #30A193;
+}
+
+/*******************************************************/
+
+/* Other*/
+
+.img-portfolio {
+  margin-bottom: 30px;
+}
+
+.img-hover:hover {
+  opacity: 0.8;
+}
+
+/* Home Page Carousel */
+
+header.carousel {
+  height: 50%;
+}
+
+header.carousel .item,
+header.carousel .item.active,
+header.carousel .carousel-inner {
+  height: 100%;
+}
+
+header.carousel .fill {
+  width: 100%;
+  height: 100%;
+  background-position: center;
+  background-size: cover;
+}
+
+/* 404 Page Styles */
+
+.error-404 {
+  font-size: 100px;
+}
+
+/* Pricing Page Styles */
+
+.price {
+  display: block;
+  font-size: 50px;
+  line-height: 50px;
+}
+
+.price sup {
+  top: -20px;
+  left: 2px;
+  font-size: 20px;
+}
+
+.period {
+  display: block;
+  font-style: italic;
+}
+
+/* Footer Styles */
+
+#footer {
+  margin: 50px 0;
+}
+
+/* Responsive Styles */
+
+@media (max-width: 991px) {
+  .customer-img,
+  .img-related {
+    margin-bottom: 30px;
+  }
+}
+
+@media (max-width: 767px) {
+  .img-portfolio {
+    margin-bottom: 15px;
+  }
+
+  header.carousel .carousel {
+    height: 70%;
+  }
+}
+
+.icon-small {
+  height: 18px;
+  margin: 0;
+  padding: 0;
+}
+
+.icon-medium {
+  height: 22px;
+  margin: 0;
+  padding: 0;
+}
+
+/*text indent*/
+
+.text-indent {
+  text-indent: 30px;
+}
+
+/*vertical margin*/
+
+.top-buffer {
+  margin-top: 20px;
+}
+
+/* full width*/
+
+.full-width {
+  width: 100%;
+}
+

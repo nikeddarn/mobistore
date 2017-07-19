@@ -81,6 +81,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Application Available Locales
+    |--------------------------------------------------------------------------
+    |
+    | Array of available locales.
+    | For this locales must present its views
+    |
+    */
+
+    'available_locales' => ['en', 'ru', 'ua'],
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Fallback Locale
     |--------------------------------------------------------------------------
     |
@@ -176,6 +188,11 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
+
+        /*
+         * Custom Service Providers...
+         */
+        App\Providers\LocalizationServiceProvider::class,
 
     ],
 
