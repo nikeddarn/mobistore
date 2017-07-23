@@ -17,6 +17,8 @@ mix.sass('resources/assets/sass/app.scss', 'public/css');
 mix.js('resources/assets/js/bootstrap-select.js', 'public/js');
 mix.sass('resources/assets/sass/bootstrap-select.scss', 'public/css');
 
+mix.js('resources/assets/js/mobistore.js', 'public/js');
+
 mix.sass('resources/assets/sass/mobistore.scss', 'public/css');
 
 mix.copyDirectory('resources/assets/font-awesome', 'public/font-awesome');

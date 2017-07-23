@@ -11,6 +11,10 @@ body {
   overflow-x: hidden;
 }
 
+.text-gray {
+  color: #666666 !important;
+}
+
 /************************ Navbar heights *********************************/
 
 /* Small Navbar */
@@ -65,10 +69,23 @@ body {
   }
 }
 
+/********************** Other header styles ******************************/
+
 @media (min-width: 992px) {
   #top-navbar #top-navbar-collapse ul:first-child {
     margin-left: 8.33333333%;
   }
+}
+
+.fixed-header-middle {
+  position: fixed;
+  top: -64px;
+  left: 0;
+  right: 0;
+  padding: 0 !important;
+  -webkit-box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+          box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
 }
 
 /************************ Navbar colors *********************************/
@@ -78,6 +95,7 @@ body {
 #top-navbar .navbar-default {
   border: none;
   border-radius: 0;
+  margin: 0;
 }
 
 @media (max-width: 767px) {
@@ -121,6 +139,7 @@ body {
   border: none;
   -webkit-box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
           box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+  margin: 0;
 }
 
 #store-navbar .navbar-default ul > li > a {
@@ -204,12 +223,17 @@ body {
 
 /* Middle Header*/
 
-#header-middle .row {
+#header-middle-wrapper {
   padding: 15px 0;
+  background-color: #f9f9f9;
+}
+
+#header-middle {
+  background-color: #f9f9f9;
 }
 
 #header-middle .header-middle-item {
-  margin-top: 15px;
+  padding: 15px 0;
 }
 
 #header-middle .header-middle-item-height {
@@ -251,15 +275,46 @@ body {
   outline: none;
 }
 
-#header-middle #dropdown-cart {
+#header-middle #dropdown-cart button {
   background-color: #f3f3f3;
 }
 
-#header-middle #dropdown-cart:hover {
+#header-middle #dropdown-cart button:hover {
   border: 1px solid #30A193;
 }
 
+#header-middle #dropdown-cart .dropdown-menu {
+  padding: 10px;
+}
+
 /*******************************************************/
+
+/* Breadcrumbs */
+
+.breadcrumb-wrapper {
+  background-color: #f5f5f5;
+}
+
+.breadcrumb {
+  margin: 0;
+}
+
+/* Underlined Title */
+
+.underlined-title {
+  border-bottom: 3px solid #38bbaa;
+  margin-bottom: 20px;
+}
+
+.underlined-title h1,
+.underlined-title h2,
+.underlined-title h3,
+.underlined-title h4 {
+  border-bottom: 3px solid #28877c;
+  display: inline-block;
+  margin-bottom: -3px;
+  padding-bottom: 10px;
+}
 
 /* Other*/
 

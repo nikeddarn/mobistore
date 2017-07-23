@@ -15,6 +15,10 @@ body {
   overflow-x: hidden;
 }
 
+.text-gray {
+  color: #666666 !important;
+}
+
 /************************ Navbar heights *********************************/
 
 /* Small Navbar */
@@ -67,12 +71,28 @@ body {
   }
 }
 
+/********************** Other header styles ******************************/
+
+// Separate user login reference
+
 #top-navbar {
   @media (min-width: 992px) {
     #top-navbar-collapse ul:first-child {
       margin-left: 8.33333333%;
     }
   }
+}
+
+// Fixed search bar to top on scroll
+
+.fixed-header-middle {
+  position: fixed;
+  top: -64px;
+  left: 0;
+  right: 0;
+  padding: 0 !important;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
 }
 
 /************************ Navbar colors *********************************/
@@ -84,6 +104,7 @@ body {
   .navbar-default {
     border: none;
     border-radius: 0;
+    margin: 0;
   }
 
   @media (max-width: 767px) {
@@ -119,7 +140,6 @@ body {
 /* Store Navbar*/
 
 #store-navbar {
-
   .navbar-collapse {
     border: none;
   }
@@ -128,6 +148,7 @@ body {
     background-color: $store-navbar-bg-color;
     border: none;
     box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+    margin: 0;
 
     ul > li > a {
       color: $store-navbar-color;
@@ -216,13 +237,16 @@ body {
 
 /* Middle Header*/
 
+#header-middle-wrapper {
+  padding: 15px 0;
+  background-color: #f9f9f9;
+}
+
 #header-middle {
-  .row {
-    padding: 15px 0;
-  }
+  background-color: #f9f9f9;
 
   .header-middle-item {
-    margin-top: 15px;
+    padding: 15px 0;
   }
 
   .header-middle-item-height {
@@ -264,15 +288,43 @@ body {
   }
 
   #dropdown-cart {
-    background-color: $store-navbar-bg-color;
-  }
 
-  #dropdown-cart:hover {
-    border: 1px solid $brand-primary;
+    button {
+      background-color: $store-navbar-bg-color;
+    }
+    button:hover{
+      border: 1px solid $brand-primary;
+    }
+    .dropdown-menu {
+      padding: 10px;
+    }
   }
 }
 
 /*******************************************************/
+
+/* Breadcrumbs */
+
+.breadcrumb-wrapper{
+  background-color: #f5f5f5;
+}
+
+.breadcrumb{
+  margin: 0;
+}
+
+/* Underlined Title */
+
+.underlined-title{
+  border-bottom: 3px solid lighten($brand-primary, 6.5%);
+  margin-bottom: 20px;
+  h1, h2, h3, h4{
+    border-bottom: 3px solid darken($brand-primary, 6.5%);
+    display: inline-block;
+    margin-bottom: -3px;
+    padding-bottom: 10px;
+  }
+}
 
 /* Other*/
 

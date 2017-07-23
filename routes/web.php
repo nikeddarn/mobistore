@@ -11,4 +11,11 @@
 |
 */
 
+// Change language
+Route::get('language/{language}', 'Localization\LanguageController@changeLanguage');
+
 Route::get('/', 'MainController@showMainPage');
+
+Route::get('/warranty', function (){
+    return view('content.warranty.index');
+});
