@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Proengsoft\JsValidation\Facades\JsValidatorFacade;
 
 class LoginController extends Controller
 {
@@ -25,15 +26,44 @@ class LoginController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = '/home';
+    protected $redirectTo = '/';
 
     /**
      * Create a new controller instance.
      *
-     * @return void
      */
     public function __construct()
     {
         $this->middleware('guest')->except('logout');
+    }
+
+    /**
+     * Show the application's login form.
+     *
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function showLoginForm()
+    {
+        return view('content.auth.login.index')->with($this->jsValidators());
+    }
+
+    /**
+     * Create JsValidators for login and registration forms.
+     *
+     * @return array
+     */
+    private function jsValidators()
+    {
+        return [
+            'loginFormValidator' => JsValidatorFacade::make([
+                'email' => 'required|string|email|max:255',
+                'password' => 'required|string|min:6',
+            ]),
+            'registrationFormValidator' => JsValidatorFacade::make([
+                'name' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:users',
+                'password' => 'required|string|min:6|confirmed',
+            ]),
+        ];
     }
 }

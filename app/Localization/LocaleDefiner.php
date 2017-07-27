@@ -79,40 +79,26 @@ class LocaleDefiner implements LocaleDefinerInterface
     {
         $locales = [];
 
-        $header = $this->getHeader($request);
+        if ($request->hasHeader('Accept-Language')) {
 
-        if (is_string($header) && preg_match_all('/([a-z]{2}(?:-[A-Z]{2}){0,1})(?:;q=(0.[1-9])){0,1}/', $header, $matches, PREG_PATTERN_ORDER)) {
-            $locales = array_combine($matches[1], $matches[2]);
-            array_walk($locales, function (&$rate) {
-                if (!$rate) {
-                    $rate = 1;
-                }
-            });
-            arsort($locales, SORT_NUMERIC);
-            $locales = array_keys($locales);
-            array_walk($locales, function (&$locale) {
-                $locale = strtolower(substr($locale, 0, 2));
-            });
-            $locales = array_unique($locales);
+            $header = filter_var(substr($request->header('Accept-Language'), 0, 64), FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH);
+
+            if (is_string($header) && preg_match_all('/([a-z]{2}(?:-[A-Z]{2}){0,1})(?:;q=(0.[1-9])){0,1}/', $header, $matches, PREG_PATTERN_ORDER)) {
+                $locales = array_combine($matches[1], $matches[2]);
+                array_walk($locales, function (&$rate) {
+                    if (!$rate) {
+                        $rate = 1;
+                    }
+                });
+                arsort($locales, SORT_NUMERIC);
+                $locales = array_keys($locales);
+                array_walk($locales, function (&$locale) {
+                    $locale = strtolower(substr($locale, 0, 2));
+                });
+                $locales = array_unique($locales);
+            }
+
+            return $locales;
         }
-
-        return $locales;
-    }
-
-    /**
-     *
-     * @param Request $request
-     * @return string Filtered and cutted 'Accept-Language' HTTP-header
-     */
-    private function getHeader(Request $request)
-    {
-        $acceptLanguageHeader = $request->header('Accept-Language');
-
-        if ($acceptLanguageHeader) {
-            return filter_var(substr($acceptLanguageHeader, 0, 64), FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH);
-        } else {
-            return null;
-        }
-
     }
 }

@@ -5,6 +5,10 @@ body {
   height: 100%;
 }
 
+.overflov-hidden {
+  overflow: hidden;
+}
+
 .scrollable-menu {
   height: auto;
   max-height: 200px;
@@ -13,6 +17,53 @@ body {
 
 .text-gray {
   color: #666666 !important;
+}
+
+input:not([type="radio"]):not([type="checkbox"]) {
+  outline: none !important;
+  -webkit-box-shadow: none !important;
+          box-shadow: none !important;
+  padding: 6px 12px !important;
+  height: 34px !important;
+  border-color: #ccc !important;
+  border-radius: 0 !important;
+}
+
+input:focus,
+input:active {
+  border-color: #30A193 !important;
+}
+
+.checkbox input[type="checkbox"] {
+  display: none;
+}
+
+.checkbox label {
+  cursor: pointer;
+  margin-left: -16px;
+}
+
+.checkbox input[type="checkbox"] + label:before {
+  border: 1px solid #ccc;
+  content: "\A0";
+  display: inline-block;
+  font: 16px/1em sans-serif;
+  height: 16px;
+  margin: 2px .25em 0 0;
+  padding: 0;
+  vertical-align: top;
+  width: 16px;
+}
+
+.checkbox input[type="checkbox"]:checked + label:before {
+  background: #fff;
+  color: #30A193;
+  content: "\2714";
+  text-align: center;
+}
+
+.checkbox input[type="checkbox"]:checked + label:after {
+  font-weight: bold;
 }
 
 /************************ Navbar heights *********************************/
@@ -240,14 +291,6 @@ body {
   height: 34px;
 }
 
-#header-middle .header-middle-input {
-  padding: 6px 12px;
-  outline: none;
-  -webkit-box-shadow: none;
-          box-shadow: none;
-  border-color: #ccc;
-}
-
 #header-middle .bootstrap-select .btn {
   height: 34px;
   border-left: none;
@@ -262,10 +305,6 @@ body {
   color: white;
   border: none;
   outline: none;
-}
-
-#header-middle input:focus {
-  border-color: #30A193;
 }
 
 #header-middle .search-button {

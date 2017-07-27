@@ -62,7 +62,8 @@ class LocaleDefinerTest extends TestCase
     }
 
     public function createStub($header, $session, $cookie){
-        $this->request->shouldReceive('header')->once()->andReturn($header);
+        $this->request->shouldReceive('header')->andReturn($header);
+        $this->request->shouldReceive('hasHeader')->andReturn(true);
 
         $this->session->shouldReceive('has')->with('locale')->andReturn($session);
         $this->session->shouldReceive('get')->with('locale')->andReturn($session);

@@ -2,9 +2,6 @@
 
 @section('content')
 
-    <!-- Store Navbar -->
-    @include('menu.store_navbar')
-
     <!-- Carousel -->
     @include('carousels.header_carousel')
 

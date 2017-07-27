@@ -15,7 +15,7 @@
 
                 <div class="col-sm-8 col-md-6">
                     <div class="input-group header-middle-item ">
-                        <input type="text" class="form-control header-middle-input header-middle-item-height"
+                        <input type="text" class="form-control header-middle-item-height"
                                placeholder="Найти ...">
                         <div class="input-group-btn">
                             <select class="selectpicker hidden-xs" data-width="150px" data-style="btn-default">
@@ -33,7 +33,7 @@
                 <div class="col-sm-4 col-md-3 hidden-xs">
                     <div id="dropdown-cart" class="header-middle-item">
                         <button type="button"
-                                class="btn btn-default dropdown-toggle pull-right header-middle-input header-middle-item-height" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                class="btn btn-default dropdown-toggle pull-right header-middle-item-height" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                             <i class="fa fa-shopping-cart"></i> Shopping Cart : 4 items <i class="fa fa-caret-down"></i>
                         </button>
 

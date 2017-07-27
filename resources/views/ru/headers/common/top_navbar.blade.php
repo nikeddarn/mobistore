@@ -21,8 +21,12 @@
 
                 <ul id="header-top-navbar-login" class="nav navbar-nav navbar-right">
                     <li>
-                        <a href="/login"><span class="glyphicon glyphicon-user" aria-hidden="true"></span>&nbsp;Личный
-                            кабинет</a>
+                        @if(Auth::check())
+                            <a href="/logout"><i class="fa fa-sign-out" aria-hidden="true"></i>&nbsp;Выйти</a>
+                        @else
+                            <a href="/login"><span class="glyphicon glyphicon-user" aria-hidden="true"></span>&nbsp;Личный
+                                кабинет</a>
+                        @endif
                     </li>
                 </ul>
 

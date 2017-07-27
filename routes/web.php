@@ -12,10 +12,22 @@
 */
 
 // Change language
-Route::get('language/{language}', 'Localization\LanguageController@changeLanguage');
+Route::get('/language/{language}', 'Localization\LanguageController@changeLanguage');
 
 Route::get('/', 'MainController@showMainPage');
 
 Route::get('/warranty', function (){
     return view('content.warranty.index');
 });
+
+/***************************** Auth Routes ************************/
+
+Route::get('/login', 'Auth\LoginController@showLoginForm')->name('login');
+Route::post('/login', 'Auth\LoginController@login');
+
+Route::get('/logout', 'Auth\LoginController@logout')->name('logout');
+
+Route::post('/register', 'Auth\RegisterController@register');
+
+Route::get('/forgot', 'Auth\ForgotPasswordController@showLinkRequestForm')->name('password.reset');
+Route::post('/forgot', 'Auth\ForgotPasswordController@sendResetLinkEmail');

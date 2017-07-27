@@ -193,6 +193,7 @@ return [
          * Custom Service Providers...
          */
         App\Providers\LocalizationServiceProvider::class,
+        Proengsoft\JsValidation\JsValidationServiceProvider::class,
 
     ],
 
@@ -242,6 +243,7 @@ return [
         'URL' => Illuminate\Support\Facades\URL::class,
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
+        'JsValidator' => Proengsoft\JsValidation\Facades\JsValidatorFacade::class,
 
     ],
 
