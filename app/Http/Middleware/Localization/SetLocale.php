@@ -6,7 +6,6 @@ use Closure;
 use App\Contracts\Localization\LocaleDefinerInterface as LocaleDefiner;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\View;
-use Illuminate\View\FileViewFinder;
 
 class SetLocale
 {
@@ -63,9 +62,6 @@ class SetLocale
         if (!is_dir($localViewPath)){
             $localViewPath = $viewPath . config('app.fallback_locale');
         }
-
-        $finder = new FileViewFinder(app()['files'], [$localViewPath, $viewPath]);
-
-        View::setFinder($finder);
+        View::addLocation($localViewPath);
     }
 }

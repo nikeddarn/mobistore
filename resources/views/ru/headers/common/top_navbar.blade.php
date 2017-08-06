@@ -39,13 +39,13 @@
                                     class="caret"></b></a>
                         <ul class="dropdown-menu">
                             <li>
-                                <a href="/massage/common">Система скидок</a>
+                                <a href="/wholesale">Продажа оптом</a>
                             </li>
                             <li>
-                                <a href="/massage/back">Доставка от партнеров</a>
+                                <a href="/partner">Доставка от партнеров</a>
                             </li>
                             <li>
-                                <a href="/massage/insult">Доставка под заказ</a>
+                                <a href="/manufacturer">Доставка под заказ</a>
                             </li>
                         </ul>
                     </li>

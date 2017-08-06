@@ -7,18 +7,24 @@
 
     <div class="container">
 
-        <!-- Services Section -->
-{{--    @include('content.home.guest.services')--}}
+        <div class="row">
 
-    <!-- Features Section -->
-{{--        @include('content.home.guest.features')--}}
+            <!-- User Header -->
+            <div id="user-header" class="col-sm-4 col-md-3">
 
-        {{--<hr>--}}
+                @include('headers.user.index')
 
-        <!-- Call to Action Section -->
-        {{--@include('content.home.guest.action')--}}
+            </div>
 
-        {{--<hr>--}}
+            <!-- User Navbar -->
+            <div id="user-navbar" class="col-sm-8 col-md-9">
+
+                @include('menu.user_navbar_menu')
+
+            </div>
+
+
+        </div>
 
     </div>
 

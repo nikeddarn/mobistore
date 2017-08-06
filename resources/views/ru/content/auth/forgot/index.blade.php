@@ -26,11 +26,11 @@
 @endsection
 
 @section('description')
-    <meta name="description" content="{{ trans('meta.description.login') }}">
+    <meta name="description" content="{{ trans('meta.description.forgot') }}">
 @endsection
 
 @section('title')
-    <title>{{ trans('meta.title.login') }}</title>
+    <title>{{ trans('meta.title.forgot') }}</title>
 @endsection
 
 @section('scripts')

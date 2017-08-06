@@ -18,5 +18,15 @@ return [
     'sent' => 'We have e-mailed your password reset link!',
     'token' => 'This password reset token is invalid.',
     'user' => "We can't find a user with that e-mail address.",
+    'mail' => [
+        'subject' => 'Password repair in ' . config('app.name'),
+        'header' => 'Reparation password request',
+        'lines' => [
+            'You are receiving this email because we received a password reset request for your account.',
+            'Press the button to proceed password repair.',
+            'If you did not request a password reset, no further action is required.'
+        ],
+        'actionText' => 'Repair password',
+    ]
 
 ];

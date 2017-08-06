@@ -74,7 +74,10 @@ module.exports = __webpack_require__(46);
 /***/ }),
 
 /***/ 46:
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 $(document).ready(function () {
 

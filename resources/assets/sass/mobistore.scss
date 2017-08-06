@@ -9,8 +9,16 @@ body {
   height: 100%;
 }
 
-.overflov-hidden{
+.overflov-hidden {
   overflow: hidden;
+}
+
+.m-t-3 {
+  margin-top: 4rem !important;
+}
+
+.m-b-3 {
+  margin-bottom: 4rem !important;
 }
 
 .scrollable-menu {
@@ -32,7 +40,7 @@ input:not([type="radio"]):not([type="checkbox"]) {
   border-radius: 0 !important;
 }
 
-input:focus, input:active {
+input:focus:not([type="radio"]):not([type="checkbox"]), input:active:not([type="radio"]):not([type="checkbox"]) {
   border-color: $brand-primary !important;
 }
 
@@ -64,6 +72,54 @@ input:focus, input:active {
   input[type="checkbox"]:checked + label:after {
     font-weight: bold;
   }
+}
+
+// budges
+.badge {
+  padding: 1px 9px 2px;
+  font-size: 12.025px;
+  font-weight: bold;
+  white-space: nowrap;
+  color: #ffffff;
+  background-color: #999999;
+  -webkit-border-radius: 9px;
+  -moz-border-radius: 9px;
+  border-radius: 9px;
+}
+.badge:hover {
+  color: #ffffff;
+  text-decoration: none;
+  cursor: pointer;
+}
+.badge-error {
+  background-color: #b94a48;
+}
+.badge-error:hover {
+  background-color: #953b39;
+}
+.badge-warning {
+  background-color: #f89406;
+}
+.badge-warning:hover {
+  background-color: #c67605;
+}
+.badge-success {
+  background-color: #468847;
+}
+.badge-success:hover {
+  background-color: #356635;
+}
+.badge-info {
+  background-color: #3a87ad;
+}
+.badge-info:hover {
+  background-color: #2d6987;
+}
+.badge-inverse {
+  background-color: #333333;
+}
+.badge-inverse:hover {
+  background-color: #1a1a1a;
 }
 
 /************************ Navbar heights *********************************/
@@ -116,30 +172,6 @@ input:focus, input:active {
       line-height: 20px;
     }
   }
-}
-
-/********************** Other header styles ******************************/
-
-// Separate user login reference
-
-#top-navbar {
-  @media (min-width: 992px) {
-    #top-navbar-collapse ul:first-child {
-      margin-left: 8.33333333%;
-    }
-  }
-}
-
-// Fixed search bar to top on scroll
-
-.fixed-header-middle {
-  position: fixed;
-  top: -64px;
-  left: 0;
-  right: 0;
-  padding: 0 !important;
-  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
 }
 
 /************************ Navbar colors *********************************/
@@ -257,6 +289,28 @@ input:focus, input:active {
 
 /************************ Other header styles *********************************/
 
+// Separate user login reference
+
+#top-navbar {
+  @media (min-width: 992px) {
+    #top-navbar-collapse ul:first-child {
+      margin-left: 8.33333333%;
+    }
+  }
+}
+
+// Fixed search bar to top on scroll
+
+.fixed-header-middle {
+  position: fixed;
+  top: -64px;
+  left: 0;
+  right: 0;
+  padding: 0 !important;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+}
+
 /*Small Language Picker */
 
 .navbar-small {
@@ -355,11 +409,116 @@ input:focus, input:active {
   border-bottom: 3px solid lighten($brand-primary, 6.5%);
   margin-bottom: 20px;
   h1, h2, h3, h4 {
+    margin-top: 4rem;
     border-bottom: 3px solid darken($brand-primary, 6.5%);
     display: inline-block;
     margin-bottom: -3px;
     padding-bottom: 10px;
   }
+}
+
+/********************************** User Sidebar ***************************************/
+
+#user-sidebar {
+  padding-top: 4rem;
+
+  // user link styles
+  ul li:first-child {
+
+    a {
+      padding: 0;
+
+      // user name
+      h4 {
+        padding: 10px 0;
+        margin: 0;
+        height: 40px;
+      }
+
+      // user image
+      img {
+        padding: 10px 60px;
+      }
+    }
+  }
+
+  // active user link styles
+  ul li.active:first-child a {
+    background-color: white;
+
+    h4 {
+      background-color: $brand-primary;
+      color: white !important;
+    }
+  }
+
+  // other link styles
+  ul li a {
+    color: #666666 !important;
+    border-radius: 0;
+  }
+  ul li a:hover {
+    color: darken($headings-color, 13%) !important;
+  }
+  ul li.active a {
+    color: white !important;
+  }
+}
+
+/********************************** User Navbar ***************************************/
+#user-header {
+  padding-top: 4rem;
+
+  div:first-child:hover {
+    background-color: $gray-lighter !important;
+
+    h4 {
+      background-color: $brand-primary;
+      color: white !important;
+    }
+  }
+
+  a {
+    text-decoration: none;
+  }
+
+  // user image
+  img {
+    padding: 10px 60px;
+  }
+
+  // user name
+  h4 {
+    padding: 10px 0;
+    margin: 0;
+    height: 40px;
+  }
+}
+
+#user-navbar {
+  ul li {
+    border-bottom: 1px solid $gray-lighter;
+    margin: 0;
+    padding: 10px 15px;
+  }
+  ul li:first-child {
+  //background-color: $gray-lighter !important;
+    border-top: 1px solid $gray-lighter;
+  }
+  ul li a{
+    color: #666666 !important;
+    //padding: 0;
+    span{
+      //padding: 10px 15px;
+    }
+  }
+  ul li a:hover{
+    color: darken($headings-color, 13%) !important;
+    span:first-child{
+      background-color: $brand-primary !important;
+    }
+  }
+
 }
 
 /* Other*/

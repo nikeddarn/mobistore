@@ -27,11 +27,25 @@
 @section('scripts')
     <!-- Script to Activate the Carousel -->
     <script>
-        // activate carousel
         $(document).ready(function () {
+
+            // activate carousel
             $('.carousel').carousel({
                 interval: 5000 //change the speed
             });
+
+            // set the same services block height
+            let maxHeight = 0;
+            let blocks = $('.same-height');
+            $(blocks).each(function () {
+                if ($(this).height() > maxHeight) {
+                    maxHeight = $(this).height();
+                }
+            });
+            $(blocks).each(function () {
+                $(this).height(maxHeight);
+            });
+
         });
     </script>
 @endsection
