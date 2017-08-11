@@ -2,7 +2,7 @@
 
     {{ csrf_field() }}
 
-    <div class="overflov-hidden">
+    <div class="overflow-hidden">
         <div class="col-sm-6 form-group{{ $errors->has('name') ? ' has-error' : '' }}">
             <label for="name">Ваше имя</label>
             <div>
@@ -30,7 +30,7 @@
         </div>
     </div>
 
-    <div class="overflov-hidden">
+    <div class="overflow-hidden">
         <div class="col-sm-6 form-group{{ $errors->has('password') ? ' has-error' : '' }}">
             <label for="password">Пароль</label>
             <div>

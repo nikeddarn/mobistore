@@ -5,16 +5,28 @@ body {
   height: 100%;
 }
 
-.overflov-hidden {
+.overflow-hidden {
   overflow: hidden;
 }
 
-.m-t-3 {
+.m-t-2 {
+  margin-top: 2rem !important;
+}
+
+.m-t-4 {
   margin-top: 4rem !important;
 }
 
-.m-b-3 {
+.m-t-8 {
+  margin-top: 8rem !important;
+}
+
+.m-b-4 {
   margin-bottom: 4rem !important;
+}
+
+.m-b-2 {
+  margin-bottom: 2rem !important;
 }
 
 .scrollable-menu {
@@ -128,6 +140,29 @@ input:active:not([type="radio"]):not([type="checkbox"]) {
 
 .badge-inverse:hover {
   background-color: #1a1a1a;
+}
+
+.blink_me {
+  -webkit-animation: blinker 1s linear infinite;
+          animation: blinker 1s linear infinite;
+}
+
+@-webkit-keyframes blinker {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes blinker {
+  50% {
+    opacity: 0;
+  }
+}
+
+.list-item-underlined ul li {
+  border: none;
+  border-bottom: 1px dotted #ccc;
+  background: transparent;
 }
 
 /************************ Navbar heights *********************************/
@@ -410,7 +445,8 @@ input:active:not([type="radio"]):not([type="checkbox"]) {
 .underlined-title h1,
 .underlined-title h2,
 .underlined-title h3,
-.underlined-title h4 {
+.underlined-title h4,
+.underlined-title h5 {
   margin-top: 4rem;
   border-bottom: 3px solid #28877c;
   display: inline-block;
@@ -418,97 +454,42 @@ input:active:not([type="radio"]):not([type="checkbox"]) {
   padding-bottom: 10px;
 }
 
-/********************************** User Sidebar ***************************************/
+/********************************** User Logotype ***************************************/
 
-#user-sidebar {
-  padding-top: 4rem;
-}
-
-#user-sidebar ul li:first-child a {
+#user-logotype a {
   padding: 0;
 }
 
-#user-sidebar ul li:first-child a h4 {
+#user-logotype h4 {
   padding: 10px 0;
   margin: 0;
   height: 40px;
 }
 
-#user-sidebar ul li:first-child a img {
-  padding: 10px 60px;
+#user-logotype img {
+  padding: 10px 50px;
 }
 
-#user-sidebar ul li.active:first-child a {
-  background-color: white;
+@media (max-width: 767px) {
+  #user-logotype img {
+    padding: 10px 80px;
+  }
 }
 
-#user-sidebar ul li.active:first-child a h4 {
-  background-color: #30A193;
-  color: white !important;
-}
+/********************************** User Menu ***************************************/
 
-#user-sidebar ul li a {
+.user-menu ul li a {
   color: #666666 !important;
   border-radius: 0;
 }
 
-#user-sidebar ul li a:hover {
+.user-menu ul li a:hover {
   color: #225878 !important;
 }
 
-#user-sidebar ul li.active a {
+.user-menu ul li.active a {
   color: white !important;
-}
-
-/********************************** User Navbar ***************************************/
-
-#user-header {
-  padding-top: 4rem;
-}
-
-#user-header div:first-child:hover {
-  background-color: #eeeeee !important;
-}
-
-#user-header div:first-child:hover h4 {
   background-color: #30A193;
-  color: white !important;
-}
-
-#user-header a {
-  text-decoration: none;
-}
-
-#user-header img {
-  padding: 10px 60px;
-}
-
-#user-header h4 {
-  padding: 10px 0;
-  margin: 0;
-  height: 40px;
-}
-
-#user-navbar ul li {
-  border-bottom: 1px solid #eeeeee;
-  margin: 0;
-  padding: 10px 15px;
-}
-
-#user-navbar ul li:first-child {
-  border-top: 1px solid #eeeeee;
-}
-
-#user-navbar ul li a {
-  color: #666666 !important;
-}
-
-#user-navbar ul li a:hover {
-  color: #225878 !important;
-}
-
-#user-navbar ul li a:hover span:first-child {
-  background-color: #30A193 !important;
 }
 
 /* Other*/

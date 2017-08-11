@@ -100,8 +100,11 @@ return [
     */
 
     'custom' => [
-        'attribute-name' => [
-            'rule-name' => 'custom-message',
+        'old_password' => [
+            'old_password_confirmed' => 'This password is invalid.',
+        ],
+        'image' => [
+            'image' => 'Selected file is not an image.',
         ],
     ],
 

@@ -61,6 +61,16 @@ Route::post('/reset', 'Auth\ResetPasswordController@reset');
 Route::middleware(['auth:web'])->group(function () {
 
     Route::get('/user', 'Profile\UserProfileController@showUserProfile');
+
+    Route::get('/user/profile', 'Profile\UserProfileController@showUserProfileForm');
+    Route::post('/user/profile', 'Profile\UserProfileController@saveUserProfile');
+
+    Route::get('/user/password', 'Profile\ChangePasswordController@showChangePasswordForm');
+    Route::post('/user/password', 'Profile\ChangePasswordController@changePassword');
+
+    Route::get('/user/settings', 'Profile\SettingsController@showSettingsForm');
+    Route::post('/user/settings', 'Profile\SettingsController@resetSettings');
+
     Route::get('/user/communication', 'Communication\MessageController@showMessages');
     Route::get('/user/account', 'Account\AccountController@showUserAccount');
     Route::get('/user/order', 'Order\OrderController@showOrders');
