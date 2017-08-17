@@ -2,9 +2,11 @@
 
 namespace App\Exceptions;
 
+use App\Exceptions\Auth\AdminLoginException;
 use Exception;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Support\Facades\Log;
 
 class Handler extends ExceptionHandler
 {
@@ -32,7 +34,8 @@ class Handler extends ExceptionHandler
      */
     public function report(Exception $exception)
     {
-        parent::report($exception);
+        Log::error($exception->getMessage());
+//        parent::report($exception);
     }
 
     /**

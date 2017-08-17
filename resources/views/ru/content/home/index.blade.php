@@ -8,15 +8,15 @@
     <div class="container">
 
         <!-- Services Section -->
-    @include('content.home.guest.services')
+    @include('content.home.parts.services')
 
     <!-- Features Section -->
-        @include('content.home.guest.features')
+        @include('content.home.parts.features')
 
         <hr>
 
         <!-- Call to Action Section -->
-        @include('content.home.guest.action')
+        @include('content.home.parts.action')
 
         <hr>
 

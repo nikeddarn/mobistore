@@ -47,6 +47,11 @@ class LoginController extends Controller
         return view('content.auth.login.index')->with($this->jsValidators());
     }
 
+    public function showAdminLoginForm()
+    {
+        return view('content.auth.login.admin')->with(['loginFormValidator' => $this->loginJsValidator()]);
+    }
+
     /**
      * Create JsValidators for login and registration forms.
      *
@@ -55,15 +60,25 @@ class LoginController extends Controller
     private function jsValidators()
     {
         return [
-            'loginFormValidator' => JsValidatorFacade::make([
-                'email' => 'required|string|email|max:255',
-                'password' => 'required|string|min:6',
-            ]),
-            'registrationFormValidator' => JsValidatorFacade::make([
-                'name' => 'required|string|max:255',
-                'email' => 'required|string|email|max:255|unique:users',
-                'password' => 'required|string|min:6|confirmed',
-            ]),
+            'loginFormValidator' => $this->loginJsValidator(),
+            'registrationFormValidator' => $this->registrationJsValidator(),
         ];
+    }
+
+    private function loginJsValidator()
+    {
+        return JsValidatorFacade::make([
+            'email' => 'required|string|email|max:255',
+            'password' => 'required|string|min:6',
+        ]);
+    }
+
+    private function registrationJsValidator()
+    {
+        return JsValidatorFacade::make([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
     }
 }

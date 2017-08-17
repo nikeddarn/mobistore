@@ -43,6 +43,7 @@ Route::get('/manufacturer', function () {
 /***************************** Auth Routes ************************/
 
 Route::get('/login', 'Auth\LoginController@showLoginForm')->name('login');
+Route::get('/admin/login', 'Auth\LoginController@showAdminLoginForm')->name('admin.login');
 Route::post('/login', 'Auth\LoginController@login');
 
 Route::get('/logout', 'Auth\LoginController@logout')->name('logout');
@@ -76,5 +77,14 @@ Route::middleware(['auth:web'])->group(function () {
     Route::get('/user/order', 'Order\OrderController@showOrders');
     Route::get('/user/delivery', 'Delivery\DeliveryController@showUserDeliveries');
     Route::get('/user/warranty', 'Warranty\WarrantyController@showUserWarranties');
+
+});
+
+
+/******************* Admin Pages *************************************************/
+
+Route::middleware(['admin'])->group(function () {
+
+    Route::get('/admin', 'Admin\AdminController@showAdminPage');
 
 });

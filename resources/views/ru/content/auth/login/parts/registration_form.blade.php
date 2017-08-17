@@ -46,7 +46,8 @@
         <div class="col-sm-6 form-group{{ $errors->has('password') ? ' has-error' : '' }}">
             <label for="password-confirm">Повторите пароль</label>
             <div>
-                <input id="password-confirm" type="password" class="form-control" name="password_confirmation" required>
+                <input id="password-confirm" type="password" class="form-control" name="password_confirmation"
+                       required>
                 @if ($errors->has('password'))
                     <span class="help-block">
                     <strong>{{ $errors->first('password') }}</strong>

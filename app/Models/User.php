@@ -38,6 +38,15 @@ class User extends Authenticatable
     ];
 
     /**
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function role()
+    {
+        return $this->belongsTo('App\Models\Role', 'roles_id', 'id');
+    }
+
+    /**
      * Send the password reset notification.
      *
      * @param  string  $token

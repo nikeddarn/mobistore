@@ -3,7 +3,7 @@
 @section('content')
 
     <!-- Breadcrumbs -->
-    @include('content.auth.login.breadcrumbs')
+    @include('content.auth.login.parts.breadcrumbs')
 
     <div class="container">
 
@@ -15,7 +15,7 @@
                 </div>
 
                 <!-- Login Form -->
-                @include('content.auth.login.login_form')
+                @include('content.auth.login.parts.login_form')
 
             </div>
 
@@ -25,7 +25,7 @@
                 </div>
 
                 <!-- Registration Form -->
-                @include('content.auth.login.registration_form')
+                @include('content.auth.login.parts.registration_form')
 
             </div>
 
