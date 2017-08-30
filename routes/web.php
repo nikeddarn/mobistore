@@ -85,6 +85,12 @@ Route::middleware(['auth:web'])->group(function () {
 
 Route::middleware(['admin'])->group(function () {
 
-    Route::get('/admin', 'Admin\AdminController@showAdminPage');
+    Route::get('/setup/categories', 'Admin\SetupController@categories');
+    Route::post('/setup/categories/create', 'Admin\SetupController@confirmCreateCategories');
+    Route::get('/setup/message', 'Admin\SetupController@message');
+
+    Route::get('/admin', 'Admin\AdminController@index');
+
+    Route::get('/admin/categories', 'Admin\CategoriesController@index');
 
 });

@@ -1,0 +1,12 @@
+// Variables
+@import "variables";
+@import "my_variables";
+
+#admin-header{
+  border-bottom: 1px solid $headings-color;
+  margin-bottom: 4rem;
+}
+
+#admin_control_panel div{
+  margin-bottom: 5px;
+}

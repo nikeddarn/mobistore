@@ -4,18 +4,17 @@ namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Storage;
 
-class AdminController extends Controller
+class CategoriesController extends Controller
 {
     /**
-     * Show admin panel.
+     * Show categories control panel.
      *
      * @param Request $request
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
     public function index(Request $request)
     {
-        return view('content.admin.home.index');
+        return view('content.admin.categories.index');
     }
 }

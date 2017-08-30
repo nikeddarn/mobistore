@@ -1,9 +1,11 @@
-<div class="container">
-    <div class="row">
-        <div class="col-xs-12">
-            <div class="col-sm-6 col-md-4">
-                @include('headers.user.index')
-            </div>
-        </div>
+@extends('layouts.admin')
+
+@section('content')
+
+    <div class="container">
+
+        @include('content.admin.home.parts.sections')
+
     </div>
-</div>
+
+@endsection

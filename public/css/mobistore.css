@@ -492,6 +492,66 @@ input:active:not([type="radio"]):not([type="checkbox"]) {
   background-color: #30A193;
 }
 
+/************************************* Mega Menu ************************************/
+
+.yamm .nav,
+.yamm .dropup,
+.yamm .dropdown,
+.yamm .collapse {
+  position: static;
+}
+
+.yamm .navbar-inner,
+.yamm .container {
+  position: relative;
+}
+
+.yamm .dropdown-menu {
+  left: auto;
+}
+
+.yamm .dropdown-menu > li {
+  display: block;
+}
+
+.yamm .dropdown-submenu .dropdown-menu {
+  left: 100%;
+}
+
+.yamm .nav.pull-right .dropdown-menu {
+  right: 0;
+}
+
+.yamm .yamm-content {
+  padding: 20px 30px;
+}
+
+.yamm.navbar .nav > li > .dropdown-menu:after,
+.yamm.navbar .nav > li > .dropdown-menu:before {
+  display: none;
+}
+
+.yamm .dropdown.yamm-fullwidth .dropdown-menu {
+  width: 100%;
+  left: 0;
+  right: 0;
+}
+
+@media (max-width: 767px) {
+  .yamm .dropdown.yamm-fullwidth .dropdown-menu {
+    width: auto;
+  }
+
+  .yamm .yamm-content {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .yamm .dropdown-menu > li > ul {
+    display: block;
+  }
+}
+
 /* Other*/
 
 .img-portfolio {

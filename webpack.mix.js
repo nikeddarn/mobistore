@@ -18,11 +18,11 @@ mix.js('resources/assets/js/bootstrap-select.js', 'public/js');
 mix.sass('resources/assets/sass/bootstrap-select.scss', 'public/css');
 
 mix.js('resources/assets/js/mobistore.js', 'public/js');
+mix.js('resources/assets/js/admin.js', 'public/js');
 
 mix.sass('resources/assets/sass/mobistore.scss', 'public/css');
+mix.sass('resources/assets/sass/admin.scss', 'public/css');
 
 mix.copyDirectory('resources/assets/font-awesome', 'public/font-awesome');
-
-// mix.js('resources/assets/js/mobistore.js', 'public/js/mobistore.js');
 
 mix.disableNotifications();

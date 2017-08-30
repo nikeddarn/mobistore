@@ -8,9 +8,10 @@
 
 <body>
 
+@include('headers.admin.index')
 
-<!-- Page Content -->
-@yield('content')
+    <!-- Page Content -->
+    @yield('content')
 
 
 <!-- Scripts -->
