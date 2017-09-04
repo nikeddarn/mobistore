@@ -13,7 +13,7 @@ class MainController extends Controller
      * Return main view or home user view if authenticated.
      *
      * @param Request $request
-     * @return $this|\Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @return \Illuminate\View\View
      */
     public function showMainPage(Request $request)
     {

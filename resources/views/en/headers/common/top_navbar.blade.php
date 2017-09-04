@@ -21,8 +21,12 @@
 
                 <ul id="header-top-navbar-login" class="nav navbar-nav navbar-right">
                     <li>
-                        <a href="/login"><span class="glyphicon glyphicon-user" aria-hidden="true"></span>&nbsp;Личный
-                            кабинет</a>
+                        @if(Auth::check())
+                            <a href="/logout"><i class="fa fa-sign-out" aria-hidden="true"></i>&nbsp;Выйти</a>
+                        @else
+                            <a href="/login"><span class="glyphicon glyphicon-user" aria-hidden="true"></span>&nbsp;Личный
+                                кабинет</a>
+                        @endif
                     </li>
                 </ul>
 
@@ -35,13 +39,13 @@
                                     class="caret"></b></a>
                         <ul class="dropdown-menu">
                             <li>
-                                <a href="/massage/common">Система скидок</a>
+                                <a href="/wholesale">Продажа оптом</a>
                             </li>
                             <li>
-                                <a href="/massage/back">Доставка от партнеров</a>
+                                <a href="/partner">Доставка от партнеров</a>
                             </li>
                             <li>
-                                <a href="/massage/insult">Доставка под заказ</a>
+                                <a href="/manufacturer">Доставка под заказ</a>
                             </li>
                         </ul>
                     </li>

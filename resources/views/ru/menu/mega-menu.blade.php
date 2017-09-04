@@ -1,49 +1,47 @@
-<ul class="dropdown-menu">
+<ul class="dropdown-menu light-background">
     <li>
-        <div class="mega-menu-content yamm-content">
+        <div class="yamm-content">
             <div class="row">
                 <div class="col-sm-3">
-                    <ul class="list-unstyled">
-                        <li><p><strong>Menu Title</strong></p></li>
-                        <li><a href="products.html"> Link Item </a></li>
-                        <li><a href="products.html"> Link Item </a></li>
-                        <li><a href="products.html"> Link Item </a></li>
-                        <li><a href="products.html"> Link Item </a></li>
-                        <li><a href="products.html"> Link Item </a></li>
-                        <li><a href="products.html"> Link Item </a></li>
-                        <li><a href="products.html"> Link Item </a></li>
-                        <li><a href="products.html"> Link Item </a></li>
-                    </ul>
-                </div>
-                <div class="col-sm-3">
-                    <div class="thumbnail blog-list">
-                        <a href="detail.html"><img src="images/demo/mega-menu3.jpg" alt=""></a>
-                        <div class="caption">
-                            <h4>Lorem ipsum dolor sit</h4>
-                            <p class="visible-lg">Lorem ipsum dolor sit amet, consectetur
-                                adipisicing.</p>
-                            <div class="text-right"><a href="detail.html"
-                                                       class="btn btn-theme btn-sm"><i
-                                            class="fa fa-long-arrow-right"></i> More</a></div>
+                    <nav class="user-menu list-item-underlined">
+                        <div class="underlined-title m-b-4">
+                            <h5 class="page-header text-gray m-t-0"><strong>Категории товаров</strong></h5>
                         </div>
-                    </div>
+                        {{--<p class="m-b-2"><strong>Категории товаров</strong></p>--}}
+                        <ul class="nav nav-pills nav-stacked">
+                            @foreach($categories as $category)
+                                <li><a href="products.html">{{ $category->title_ru }}</a></li>
+                            @endforeach
+                        </ul>
+                        {{--<ul class="nav nav-pills nav-stacked">--}}
+                        {{--<li><p><strong>Бренды</strong></p></li>--}}
+                        {{--@foreach($brands as $brand)--}}
+                        {{--<li><a href="products.html">{{ $brand->title }}</a></li>--}}
+                        {{--@endforeach--}}
+                        {{--</ul>--}}
+                    </nav>
                 </div>
-                <div class="col-sm-3">
+                <div class="col-sm-8 col-sm-offset-1">
                     <div class="row">
-                        <div class="col-xs-6 col-sm-12">
-                            <a href="products.html" class="thumbnail"><img
-                                        src="images/demo/mega-menu1.jpg" alt=""></a>
-                        </div>
-                        <div class="col-xs-6 col-sm-12">
-                            <a href="products.html" class="thumbnail"><img
-                                        src="images/demo/mega-menu2.jpg" alt=""></a>
-                        </div>
+                        <nav>
+                            <div class="underlined-title m-b-4">
+                                <h5 class="page-header text-gray m-t-0"><strong>Бренды</strong></h5>
+                            </div>
+                            {{--<p class="m-b-2"><strong>Бренды</strong></p>--}}
+                            <ul class="nav">
+                                @foreach($brands as $brand)
+                                    <li>
+                                        <div class="col-xs-6 col-sm-2">
+                                            <a href="#" class="thumbnail">
+                                                <img src="{{ $brand->image }}" class="img-responsive"
+                                                     style="height: 40px">
+                                            </a>
+                                        </div>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </nav>
                     </div>
-                </div>
-                <div class="col-sm-3">
-                    <a href="products.html" class="thumbnail"><img
-                                src="images/demo/mega-menu.jpg"
-                                alt=""></a>
                 </div>
             </div>
         </div>

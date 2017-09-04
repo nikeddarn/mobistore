@@ -85,9 +85,8 @@ Route::middleware(['auth:web'])->group(function () {
 
 Route::middleware(['admin'])->group(function () {
 
-    Route::get('/setup/categories', 'Admin\SetupController@categories');
-    Route::post('/setup/categories/create', 'Admin\SetupController@confirmCreateCategories');
-    Route::get('/setup/message', 'Admin\SetupController@message');
+    Route::get('/setup', 'Admin\SetupController@setup');
+    Route::post('/setup/confirm', 'Admin\SetupController@confirmSetup');
 
     Route::get('/admin', 'Admin\AdminController@index');
 

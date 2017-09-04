@@ -9,6 +9,10 @@ body {
   overflow: hidden;
 }
 
+.m-t-0 {
+  margin-top: 0 !important;
+}
+
 .m-t-2 {
   margin-top: 2rem !important;
 }
@@ -84,6 +88,10 @@ input:active:not([type="radio"]):not([type="checkbox"]) {
 
 .checkbox input[type="checkbox"]:checked + label:after {
   font-weight: bold;
+}
+
+.light-background {
+  background-color: #f9f9f9;
 }
 
 .badge {
@@ -271,14 +279,19 @@ input:active:not([type="radio"]):not([type="checkbox"]) {
   -webkit-box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
           box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
   margin: 0;
+  z-index: 200;
 }
 
 #store-navbar .navbar-default ul > li > a {
   color: #777777;
 }
 
-#store-navbar .navbar-default ul > li > a:hover,
 #store-navbar .navbar-default ul > li > a:focus {
+  color: #777777;
+  background-color: #f3f3f3;
+}
+
+#store-navbar .navbar-default ul > li > a:hover {
   color: #ffffff;
   background-color: #30A193;
 }
@@ -331,6 +344,10 @@ input:active:not([type="radio"]):not([type="checkbox"]) {
   margin-top: 3px;
 }
 
+#store-navbar .dropdown-menu {
+  margin-top: 0;
+}
+
 /************************ Other header styles *********************************/
 
 @media (min-width: 992px) {
@@ -373,11 +390,6 @@ input:active:not([type="radio"]):not([type="checkbox"]) {
 
 #header-middle-wrapper {
   padding: 15px 0;
-  background-color: #f9f9f9;
-}
-
-#header-middle {
-  background-color: #f9f9f9;
 }
 
 #header-middle .header-middle-item {
@@ -485,6 +497,7 @@ input:active:not([type="radio"]):not([type="checkbox"]) {
 
 .user-menu ul li a:hover {
   color: #225878 !important;
+  background-color: #f3f3f3 !important;
 }
 
 .user-menu ul li.active a {
@@ -540,11 +553,6 @@ input:active:not([type="radio"]):not([type="checkbox"]) {
 @media (max-width: 767px) {
   .yamm .dropdown.yamm-fullwidth .dropdown-menu {
     width: auto;
-  }
-
-  .yamm .yamm-content {
-    padding-left: 0;
-    padding-right: 0;
   }
 
   .yamm .dropdown-menu > li > ul {

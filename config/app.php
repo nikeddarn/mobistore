@@ -193,6 +193,8 @@ return [
          * Custom Service Providers...
          */
         App\Providers\LocalizationServiceProvider::class,
+        \App\Providers\ComposerServiceProvider::class,
+
         Proengsoft\JsValidation\JsValidationServiceProvider::class,
         Way\Generators\GeneratorsServiceProvider::class,
         Xethron\MigrationsGenerator\MigrationsGeneratorServiceProvider::class,

@@ -1,4 +1,4 @@
-<div id="header-middle-wrapper">
+<div id="header-middle-wrapper" class="light-background">
 
     <div id="header-middle">
 

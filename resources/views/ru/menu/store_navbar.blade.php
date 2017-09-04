@@ -20,13 +20,11 @@
                     @else
                         <li class="{{ Request::path() ==  '/' ? 'active' : ''  }}"><a href="/">Главная</a></li>
                     @endif
-                        <li class="dropdown yamm-fullwidth">
+                        <li class="dropdown yamm-fullwidth {{ substr(Request::path(), 0, 8) === "products" ? 'active' : ''  }}">
                             <a href="/products" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
                                aria-expanded="false">Каталог продукции<span class="caret"></span></a>
                             @include('menu.mega-menu')
                         </li>
-                    {{--<li class="{{ substr(Request::path(), 0, 8) === "products" ? 'active' : ''  }}"><a href="/products">Продукция</a>--}}
-                    {{--</li>--}}
                     <li class="{{ Request::path() ==  'cart' ? 'active' : ''  }}"><a href="/cart">Корзина</a></li>
                     <li class="{{ Request::path() ==  '/checkout' ? 'active' : ''  }}"><a href="/checkout">Оформление</a>
                     <li class="{{ Request::path() ==  '/delivery' ? 'active' : ''  }}"><a href="/delivery">Доставка</a>

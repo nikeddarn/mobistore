@@ -2,24 +2,26 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\Brand;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
 
 class SetupController extends Controller
 {
     /**
-     * Create new categories or show form to confirm recreation categories if exist.
+     * Create new categories or show form to confirm categories recreation if exist.
      *
      * @return \Illuminate\View\View
      */
-    public function categories()
+    public function setup()
     {
-        if (Category::all()->count()) {
-            return view('content.admin.setup.categories_setup');
+        if (Category::all()->count() || Brand::all()->count()) {
+            return view('content.admin.setup.setup_confirmation')->with('message', 'All data will be destroyed. Proceed anyway?');
         } else {
-            $this->buildCategories();
-            return redirect('/setup/message')->with($this->successMessage());
+            $this->fillDatabase();
+            return view('content.admin.setup.message')->with($this->successMessage());
         }
 
     }
@@ -28,28 +30,30 @@ class SetupController extends Controller
      * Create new categories if request is checked.
      *
      * @param Request $request
-     * @return \Illuminate\Http\RedirectResponse
+     * @return \Illuminate\View\View
      */
-    public function confirmCreateCategories(Request $request)
+    public function confirmSetup(Request $request)
     {
-        if ($request->get('create_categories')) {
-            $this->buildCategories();
-            return redirect('/setup/message')->with($this->successMessage());
+        if ($request->get('setup_confirmation')) {
+            $this->fillDatabase();
+            return view('content.admin.setup.message')->with($this->successMessage());
         } else {
-            return redirect('/setup/message')->with($this->declineMessage());
+            return view('content.admin.setup.message')->with($this->declineMessage());
         }
     }
 
     /**
-     * Show setup message.
+     * Destroy old data.
+     * Fill in database new data.
      *
-     * @return \Illuminate\View\View
+     * @return void
      */
-    public function message()
+    private function fillDatabase()
     {
-        return view('content.admin.setup.message')->with('setup_message', session('setup_message'));
+        $this->destroyOldData();
+        $this->buildCategories();
+        $this->buildBrands();
     }
-
 
     /**
      * Create success message.
@@ -59,7 +63,7 @@ class SetupController extends Controller
     private function successMessage()
     {
         return [
-            'setup_message' => 'Your request was successfully executed.'
+            'setup_message' => 'Database was successfully filled.'
         ];
     }
 
@@ -75,6 +79,13 @@ class SetupController extends Controller
         ];
     }
 
+    private function destroyOldData()
+    {
+        DB::statement("DELETE FROM `products`");
+        DB::statement("DELETE FROM `brands`");
+        DB::statement("DELETE FROM `categories`");
+    }
+
     /**
      * Create tree of categories.
      *
@@ -82,51 +93,16 @@ class SetupController extends Controller
      */
     private function buildCategories()
     {
-        return Category::create($this->baseCategoryTree());
+        return Category::create(require database_path('setup/categories.php'));
     }
 
     /**
-     * Tree of categories.
+     * Create list of brands.
      *
-     * @return array
+     * @return void
      */
-    private function baseCategoryTree()
+    private function buildBrands()
     {
-        return [
-            'title_ru' => 'продукция',
-            'title_ua' => 'продукция',
-            'title_en' => 'products',
-            'folder' => 'products',
-
-            'children' => [
-                [
-                    'title_ru' => 'экраны',
-                    'title_ua' => 'экраны',
-                    'title_en' => 'screens',
-                    'folder' => 'screens',
-                ],
-                [
-                    'title_ru' => 'тачскрины',
-                    'title_ua' => 'тачскрины',
-                    'title_en' => 'touchscreens',
-                    'folder' => 'touchscreens',
-                ],
-                [
-                    'title_ru' => 'аксессуары',
-                    'title_ua' => 'аксессуары',
-                    'title_en' => 'accessory',
-                    'folder' => 'accessory',
-
-                    'children' => [
-                        [
-                            'title_ru' => 'наушники',
-                            'title_ua' => 'наушники',
-                            'title_en' => 'headphones',
-                            'folder' => 'headphones',
-                        ],
-                    ],
-                ],
-            ],
-        ];
+        Brand::insert(require database_path('setup/brands.php'));
     }
 }
