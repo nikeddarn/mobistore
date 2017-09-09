@@ -90,6 +90,14 @@ input:focus:not([type="radio"]):not([type="checkbox"]), input:active:not([type="
   }
 }
 
+// container
+
+@media (min-width: $screen-lg) {
+  .container{
+    width: 1200px;
+  }
+}
+
 // layout
 
 .light-background{
@@ -416,6 +424,8 @@ input:focus:not([type="radio"]):not([type="checkbox"]), input:active:not([type="
 
 #header-middle {
 
+  background-color: $light-background;
+
   .header-middle-item {
     padding: 15px 0;
   }
@@ -522,7 +532,7 @@ input:focus:not([type="radio"]):not([type="checkbox"]), input:active:not([type="
   }
   ul li.active a {
     color: white !important;
-    background-color: $brand-primary;
+    background-color: $brand-primary !important;
   }
 }
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Brand;
 use App\Models\Category;
+use App\Models\DeviceModel;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
@@ -53,6 +54,7 @@ class SetupController extends Controller
         $this->destroyOldData();
         $this->buildCategories();
         $this->buildBrands();
+        $this->buildModels();
     }
 
     /**
@@ -84,6 +86,7 @@ class SetupController extends Controller
         DB::statement("DELETE FROM `products`");
         DB::statement("DELETE FROM `brands`");
         DB::statement("DELETE FROM `categories`");
+        DB::statement("DELETE FROM `models`");
     }
 
     /**
@@ -104,5 +107,24 @@ class SetupController extends Controller
     private function buildBrands()
     {
         Brand::insert(require database_path('setup/brands.php'));
+    }
+
+    /**
+     * Create list of brands.
+     *
+     * @return void
+     */
+    private function buildModels()
+    {
+        $modelsByBrands = require database_path('setup/models.php');
+
+        foreach ($modelsByBrands as $brand => $modelsBySeries){
+            $brandId = Brand::where('title', $brand)->first()->id;
+            foreach ($modelsBySeries as $series => $models) {
+                foreach ($models as $model){
+                    DeviceModel::create(['brands_id' => $brandId, 'series' => $series, 'model' => $model]);
+                }
+            }
+        }
     }
 }
