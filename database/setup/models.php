@@ -82,7 +82,6 @@ return [
            'IQ4410 QUAD PHOENIX',
            'FS452 NIMBUS 2',
            'FS451 NIMBUS 1',
-           'FS451 NIMBUS 1',
            'IQ446 MAGIC',
        ],
     ],

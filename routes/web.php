@@ -83,9 +83,18 @@ Route::middleware(['auth:web'])->group(function () {
 
 /******************* Admin Pages *************************************************/
 
+/**
+ * ****************************************************************
+* ToDo this route must be removed after setup completed !!!!!!!!!!!
+ * ****************************************************************
+ */
+Route::get('/setup', 'Admin\SetupController@setup');
+
+
 Route::middleware(['admin'])->group(function () {
 
-    Route::get('/setup', 'Admin\SetupController@setup');
+    Route::get('/categories', 'Admin\SetupController@categories');
+
     Route::post('/setup/confirm', 'Admin\SetupController@confirmSetup');
 
     Route::get('/admin', 'Admin\AdminController@index');

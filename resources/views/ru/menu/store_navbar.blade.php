@@ -23,7 +23,7 @@
                         <li class="dropdown yamm-fullwidth {{ substr(Request::path(), 0, 8) === "products" ? 'active' : ''  }}">
                             <a href="/products" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
                                aria-expanded="false">Каталог продукции<span class="caret"></span></a>
-                            @include('menu.mega-menu')
+                            @include('menu.mega_menu.index')
                         </li>
                     <li class="{{ Request::path() ==  'cart' ? 'active' : ''  }}"><a href="/cart">Корзина</a></li>
                     <li class="{{ Request::path() ==  '/checkout' ? 'active' : ''  }}"><a href="/checkout">Оформление</a>

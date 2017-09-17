@@ -27,6 +27,8 @@
 
 <script type="text/javascript" src="{{ elixir('/js/bootstrap-select.js') }}"></script>
 
+<script type="text/javascript" src="{{ elixir('/js/isotope.js') }}"></script>
+
 <script type="text/javascript" src="{{ elixir('/js/mobistore.js') }}"></script>
 
 <script>

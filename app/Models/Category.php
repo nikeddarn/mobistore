@@ -22,6 +22,6 @@ class Category extends Model
      * @var array
      */
     protected $fillable = [
-        'parent_id', '_lft', '_rgt', 'title_ru', 'title_ua', 'title_en', 'folder',
+        'parent_id', '_lft', '_rgt', 'breadcrumb', 'title_en', 'title_ru', 'title_ua', 'meta_keywords_en', 'meta_keywords_ru', 'meta_keywords_ua',
     ];
 }

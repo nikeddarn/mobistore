@@ -5,18 +5,33 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\DeviceModel;
+use App\Models\Role;
+use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 
 class SetupController extends Controller
 {
+
+    /**
+     * Fill libraries. Create root.
+     */
+    public function setup()
+    {
+        $this->fillLibraries();
+
+        if (!User::all()->count()) {
+            $this->insertRootUser();
+        }
+    }
+
     /**
      * Create new categories or show form to confirm categories recreation if exist.
      *
      * @return \Illuminate\View\View
      */
-    public function setup()
+    public function categories()
     {
         if (Category::all()->count() || Brand::all()->count()) {
             return view('content.admin.setup.setup_confirmation')->with('message', 'All data will be destroyed. Proceed anyway?');
@@ -25,6 +40,27 @@ class SetupController extends Controller
             return view('content.admin.setup.message')->with($this->successMessage());
         }
 
+    }
+
+    private function fillLibraries()
+    {
+        if (!Role::all()->count()) {
+            Role::insert(
+                [
+                    ['title' => 'root'],
+                ]
+            );
+        }
+    }
+
+    private function insertRootUser()
+    {
+        User::create([
+            'name' => 'Nikeddarn',
+            'email' => 'nikeddarn@gmail.com',
+            'password' => bcrypt('assodance'),
+            'roles_id' => Role::where('title', 'root')->first()->id,
+        ]);
     }
 
     /**
@@ -118,10 +154,10 @@ class SetupController extends Controller
     {
         $modelsByBrands = require database_path('setup/models.php');
 
-        foreach ($modelsByBrands as $brand => $modelsBySeries){
+        foreach ($modelsByBrands as $brand => $modelsBySeries) {
             $brandId = Brand::where('title', $brand)->first()->id;
             foreach ($modelsBySeries as $series => $models) {
-                foreach ($models as $model){
+                foreach ($models as $model) {
                     DeviceModel::create(['brands_id' => $brandId, 'series' => $series, 'model' => $model]);
                 }
             }

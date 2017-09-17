@@ -37,6 +37,22 @@ body {
   margin-bottom: 2rem !important;
 }
 
+.p-l-1 {
+  padding-left: 1rem;
+}
+
+.p-l-2 {
+  padding-left: 2rem;
+}
+
+.p-l-4 {
+  padding-left: 4rem;
+}
+
+.p-l-12 {
+  padding-left: 12rem;
+}
+
 .scrollable-menu {
   height: auto;
   max-height: 200px;
@@ -93,14 +109,14 @@ input:focus:not([type="radio"]):not([type="checkbox"]), input:active:not([type="
 // container
 
 @media (min-width: $screen-lg) {
-  .container{
+  .container {
     width: 1200px;
   }
 }
 
 // layout
 
-.light-background{
+.light-background {
   background-color: $light-background;
 }
 
@@ -293,12 +309,12 @@ input:focus:not([type="radio"]):not([type="checkbox"]), input:active:not([type="
       color: $store-navbar-color;
     }
 
-    ul > li > a:focus{
+    ul > li > a:focus {
       color: $store-navbar-color;
       background-color: $store-navbar-bg-color;
     }
 
-    ul > li > a:hover{
+    ul > li > a:hover {
       color: $store-navbar-highlight-color;
       background-color: $store-navbar-highlight-bg-color;
     }
@@ -351,7 +367,7 @@ input:focus:not([type="radio"]):not([type="checkbox"]), input:active:not([type="
   }
 
   // remove gap between menu and mega-menu
-  .dropdown-menu{
+  .dropdown-menu {
     //margin-top: 0;
   }
 
@@ -581,14 +597,15 @@ input:focus:not([type="radio"]):not([type="checkbox"]), input:active:not([type="
   //  Fullwidth menu
   .dropdown.yamm-fullwidth .dropdown-menu {
     width: 100%;
-    left: 0; right: 0;
+    left: 0;
+    right: 0;
   }
 
 }
 
 @media (max-width: 767px) {
 
-  .yamm  {
+  .yamm {
     // width auto to avoid overflow navbar
     .dropdown.yamm-fullwidth .dropdown-menu {
       width: auto;
@@ -602,6 +619,26 @@ input:focus:not([type="radio"]):not([type="checkbox"]), input:active:not([type="
     .dropdown-menu > li > ul {
       display: block;
     }
+  }
+}
+
+// inner mega menu styled
+.yamm-content{
+  h5{
+    color: $store-navbar-color;
+    padding: 4px 8px;
+    margin: 0;
+  }
+  a {
+    text-decoration: none;
+  }
+  a:hover h5 {
+    background-color: $store-navbar-bg-color;
+  }
+  nav:first-child{
+    border-bottom: 1px dotted $store-navbar-color;
+    padding-bottom: 2rem;
+    margin-bottom: 4rem;
   }
 }
 

@@ -16,7 +16,7 @@ class CategoriesComposer
      */
     public function compose(View $view)
     {
-        $view->with('categories', $this->getCategories())->with('brands', $this->getBrands());
+        $view->with('categories', $this->getCategoriesTree())->with('brands', $this->getBrands());
     }
 
     /**
@@ -24,9 +24,9 @@ class CategoriesComposer
      *
      * @return \Illuminate\Support\Collection
      */
-    private function getCategories()
+    private function getCategoriesTree()
     {
-        return Category::whereIsRoot()->first()->children()->get();
+        return Category::withDepth()->get()->toTree();
     }
 
     private function getBrands()

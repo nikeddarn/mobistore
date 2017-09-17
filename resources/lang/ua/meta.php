@@ -21,7 +21,7 @@ return [
 
     // Phrases in meta
     'phrases' => [
-        'bue' => ' &#8212; Buy in store ' . config('name'),
-        'features' => ' high quality, discounts, free shipping',
+        'bue' => ' &#8212; Купити в магазині ' . config('name'),
+        'features' => ' висока якість, знижки, безкоштовна доставка',
     ],
 ];

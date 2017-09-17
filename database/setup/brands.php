@@ -17,7 +17,7 @@ return [
     ['title' => 'Meizu', 'folder' => 'meizu', 'image' => '/images/brands/meizu.png', 'priority' => 2],
     ['title' => 'Motorola', 'folder' => 'motorola', 'image' => '/images/brands/motorola.png', 'priority' => 2],
     ['title' => 'Nokia', 'folder' => 'nokia', 'image' => '/images/brands/nokia.png', 'priority' => 2],
-    ['title' => 'OnePlus', 'folder' => 'oneplus', 'image' => '/images/brands/oneplus.png', 'priority' => 2],
+    ['title' => 'OnePlus', 'folder' => 'oneplus', 'image' => '/images/brands/oneplus.jpg', 'priority' => 2],
     ['title' => 'OPPO', 'folder' => 'oppo', 'image' => '/images/brands/oppo.png', 'priority' => 2],
     ['title' => 'Samsung', 'folder' => 'samsung', 'image' => '/images/brands/samsung.png', 'priority' => 2],
     ['title' => 'Sony', 'folder' => 'sony', 'image' => '/images/brands/sony.png', 'priority' => 2],
