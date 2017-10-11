@@ -19,6 +19,6 @@ class DeviceModel extends Model
      * @var array
      */
     protected $fillable = [
-        'brands_id', 'series', 'model',
+        'brands_id', 'url', 'breadcrumb', 'series', 'title', 'image,',  'meta_keywords_en', 'meta_keywords_ru', 'meta_keywords_ua',
     ];
 }

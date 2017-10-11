@@ -19,6 +19,22 @@ class Brand extends Model
      * @var array
      */
     protected $fillable = [
-        'title', 'image', 'priority',
+        'breadcrumb', 'url', 'title', 'image', 'priority', 'meta_keywords_en', 'meta_keywords_ru', 'meta_keywords_ua',
     ];
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function product()
+    {
+        return $this->hasMany('App\Models\Product', 'brands_id', 'id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function deviceModel()
+    {
+        return $this->hasMany('App\Models\DeviceModel', 'brands_id', 'id');
+    }
 }

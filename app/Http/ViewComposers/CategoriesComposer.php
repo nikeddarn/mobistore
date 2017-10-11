@@ -16,7 +16,7 @@ class CategoriesComposer
      */
     public function compose(View $view)
     {
-        $view->with('categories', $this->getCategoriesTree())->with('brands', $this->getBrands());
+        $view->with('allCategories', $this->getCategoriesTree())->with('allBrands', $this->getBrands());
     }
 
     /**
@@ -26,7 +26,9 @@ class CategoriesComposer
      */
     private function getCategoriesTree()
     {
-        return Category::withDepth()->get()->toTree();
+        $categories = Category::withDepth()->get()->toTree();
+
+        return $categories->count() ? $categories[0]->children : [];
     }
 
     private function getBrands()

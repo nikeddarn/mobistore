@@ -22,6 +22,23 @@ class Category extends Model
      * @var array
      */
     protected $fillable = [
-        'parent_id', '_lft', '_rgt', 'breadcrumb', 'title_en', 'title_ru', 'title_ua', 'meta_keywords_en', 'meta_keywords_ru', 'meta_keywords_ua',
+        'parent_id', '_lft', '_rgt', 'url', 'breadcrumb', 'image', 'title_en', 'title_ru', 'title_ua', 'meta_keywords_en', 'meta_keywords_ru', 'meta_keywords_ua',
     ];
+
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function metaData()
+    {
+        return $this->hasMany('App\Models\MetaData', 'categories_id', 'id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function product()
+    {
+        return $this->hasMany('App\Models\Product', 'categories_id', 'id');
+    }
 }

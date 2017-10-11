@@ -93,7 +93,11 @@ Route::get('/setup', 'Admin\SetupController@setup');
 
 Route::middleware(['admin'])->group(function () {
 
-    Route::get('/categories', 'Admin\SetupController@categories');
+    Route::get('/setup/categories', 'Admin\SetupController@categories');
+
+    Route::get('/setup/products', 'Admin\SetupController@products');
+
+    Route::get('/setup/watermark', 'Admin\SetupController@watermark');
 
     Route::post('/setup/confirm', 'Admin\SetupController@confirmSetup');
 
@@ -102,3 +106,7 @@ Route::middleware(['admin'])->group(function () {
     Route::get('/admin/categories', 'Admin\CategoriesController@index');
 
 });
+
+/**************************** Shop Pages *********************************************/
+
+Route::get('/category/{url?}', 'Shop\CategoryController@index')->where(['url' => '.*']);

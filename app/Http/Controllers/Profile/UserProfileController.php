@@ -79,34 +79,28 @@ class UserProfileController extends Controller
     {
         $user = $request->user();
 
-        if ($request->has('name')) {
-            $nameParts = explode(' ', $request->get('name'));
-            array_walk($nameParts, function (&$namePart) {
-                $namePart = ucfirst($namePart);
-            });
-            $user->name = implode(' ', $nameParts);
-        }
+        $nameParts = explode(' ', $request->get('name'));
+        array_walk($nameParts, function (&$namePart) {
+            $namePart = ucfirst($namePart);
+        });
+        $user->name = implode(' ', $nameParts);
 
-        if ($request->has('email')) {
-            $user->email = $request->get('email');
-        }
+        $user->email = $request->get('email');
 
-        if ($request->has('phone')) {
-            $user->phone = $request->get('phone');
-        }
+        $user->phone = $request->get('phone');
 
-        if ($request->has('city')) {
-            $user->city = $request->get('city');
-        }
+        $user->city = $request->get('city');
 
         if ($request->has('site')) {
             $site = $request->get('site');
-            if (strpos($site, '://')) {
-                $user->site = $site;
-            } else {
-                $user->site = 'http://' . $site;
+            if (!strpos($site, '://')) {
+                $site = 'http://' . $site;
             }
+            $user->site = $site;
+        } else {
+            $user->site = null;
         }
+
 
         if ($request->hasFile('image')) {
             $user->image = $request->image->store('images/users', 'public');
@@ -139,7 +133,7 @@ class UserProfileController extends Controller
         return [
             'name' => 'required|string|max:255',
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'phone' => 'regex:/[\s\+\(\)\-0-9]{10,24}/',
+            'phone' => ['nullable', 'regex:/^[\s\+\(\)\-0-9]{10,24}$/'],
             'city' => 'max:64',
             'site' => 'max:255',
             'image' => 'image|max:' . intval(ini_get('upload_max_filesize')) * 1024,
