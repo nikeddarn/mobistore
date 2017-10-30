@@ -98,6 +98,7 @@ input:active:not([type="radio"]):not([type="checkbox"]) {
   padding: 0;
   vertical-align: top;
   width: 16px;
+  font-weight: bold;
 }
 
 .checkbox input[type="checkbox"]:checked + label:before {
@@ -611,10 +612,21 @@ input:active:not([type="radio"]):not([type="checkbox"]) {
   margin-bottom: 4rem;
 }
 
-/*********************************** Categories and Brands **********************************************/
+/*********************************** Categories , Brands , Models **********************************************/
 
-#children-categories .category-thumbnail img {
-  height: 225px;
+#children-categories img {
+  height: 150px;
+  width: 100%;
+}
+
+#supported-brands img {
+  height: 50px;
+  width: 100%;
+}
+
+#models-of-brand img {
+  height: 150px;
+  width: 100%;
 }
 
 /****************************************** Products list *************************************************/
@@ -725,6 +737,45 @@ input:active:not([type="radio"]):not([type="checkbox"]) {
   #products-list .product-options {
     bottom: 0 !important;
   }
+}
+
+.filter-sidebar {
+  margin-bottom: 25px;
+}
+
+.filter-sidebar-checkbox {
+  display: block;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  color: #777777;
+}
+
+.filter-sidebar-checkbox label {
+  min-height: 20px;
+  padding-left: 20px;
+  margin-bottom: 0;
+  font-weight: normal;
+  cursor: pointer;
+}
+
+.filter-sidebar-checkbox label:before {
+  border: 1px solid #ccc;
+  content: "\A0";
+  display: inline-block;
+  font: 16px/1em sans-serif;
+  height: 16px;
+  margin: 2px .25em 0 0;
+  padding: 0;
+  vertical-align: top;
+  width: 16px;
+  font-weight: bold;
+}
+
+.filter-sidebar-checkbox label.filter-sidebar-checkbox-checked:before {
+  background: #fff;
+  color: #30A193;
+  content: "\2714";
+  text-align: center;
 }
 
 /* Other*/

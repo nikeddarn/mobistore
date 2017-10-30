@@ -99,7 +99,12 @@ Route::middleware(['admin'])->group(function () {
 
     Route::get('/setup/watermark', 'Admin\SetupController@watermark');
 
+    Route::get('/setup/meta', 'Admin\SetupController@meta');
+
     Route::post('/setup/confirm', 'Admin\SetupController@confirmSetup');
+
+
+
 
     Route::get('/admin', 'Admin\AdminController@index');
 
@@ -109,4 +114,8 @@ Route::middleware(['admin'])->group(function () {
 
 /**************************** Shop Pages *********************************************/
 
-Route::get('/category/{url?}', 'Shop\CategoryController@index')->where(['url' => '.*']);
+Route::get('/category/{url?}', 'Shop\Single\CategoryUnfilteredController@index')->where(['url' => '.*']);
+Route::get('/filter/category/{url?}', 'Shop\Multiply\CategoryFilteredController@index')->where(['url' => '.*']);
+
+Route::get('/brand/{url?}', 'Shop\Single\BrandUnfilteredController@index')->where(['url' => '.*']);
+Route::get('/filter/brand/{url?}', 'Shop\Multiply\BrandFilteredController@index')->where(['url' => '.*']);

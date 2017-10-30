@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\Traits\Translatable;
 use Illuminate\Database\Eloquent\Model;
 
 class MetaData extends Model
 {
+    use Translatable;
     /**
      * Table name.
      *
@@ -21,6 +23,13 @@ class MetaData extends Model
     protected $fillable = [
         'categories_id', 'brands_id', 'models_id', 'url', 'is_canonical', 'page_title_en', 'page_title_ru', 'page_title_ua', 'meta_title_en', 'meta_title_ru', 'meta_title_ua', 'meta_description_en', 'meta_description_ru', 'meta_description_ua', 'meta_keywords_en', 'meta_keywords_ru', 'meta_keywords_ua', 'summary_en', 'summary_ru', 'summary_ua',
     ];
+
+    /**
+     * The attributes that should be selected depends on locale from JSON type field.
+     *
+     * @var array
+     */
+    public $translatable = ['page_title', 'meta_title', 'meta_description', 'meta_keywords', 'summary'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -45,4 +54,5 @@ class MetaData extends Model
     {
         return $this->belongsTo('App\Models\DeviceModel', 'models_id', 'id');
     }
+
 }

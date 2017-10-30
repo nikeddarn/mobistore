@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Traits\Translatable;
 use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
+    use Translatable;
+
     /**
      * Table name.
      *
@@ -21,6 +24,13 @@ class Product extends Model
     protected $fillable = [
         'categories_id', 'brands_id', 'colors_id', 'quality_id', 'url', 'page_title_en', 'page_title_ru', 'page_title_ua', 'meta_title_en', 'meta_title_ru', 'meta_title_ua', 'meta_description_en', 'meta_description_ru', 'meta_description_ua', 'meta_keywords_en', 'meta_keywords_ru', 'meta_keywords_ua', 'summary_en', 'summary_ru', 'summary_ua', 'rating', 'rating_count', 'last_purchase_price', 'purchased_quantity', 'average_purchase_price', 'sold_quantity', 'average_sold_price',
     ];
+
+    /**
+     * The attributes that should be selected depends on locale from JSON type field.
+     *
+     * @var array
+     */
+    public $translatable = ['page_title', 'meta_title', 'meta_description', 'meta_keywords', 'summary'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -44,5 +54,13 @@ class Product extends Model
     public function primaryImage()
     {
         return $this->hasOne('App\Models\ProductImage', 'products_id', 'id')->where('is_primary', 1);
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function deviceModel()
+    {
+        return $this->belongsToMany('App\Models\DeviceModel', 'products_models_compatible', 'products_id', 'models_id' );
     }
 }

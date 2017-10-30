@@ -33,6 +33,19 @@ class SetupController extends Controller
         return view('content.admin.setup.message')->with($this->successMessage());
     }
 
+    public function meta()
+    {
+        $this->insertCommonMetadata();
+        return view('content.admin.setup.message')->with($this->successMessage('Meta Data was inserted.'));
+    }
+
+    private function insertCommonMetadata()
+    {
+        foreach (require database_path('setup/meta.php') as $item) {
+            MetaData::updateOrCreate($item);
+        }
+    }
+
     /**
      * Create new categories or show form to confirm categories recreation if exist.
      *
@@ -65,16 +78,16 @@ class SetupController extends Controller
 
     public function watermark()
     {
-        $text=config('app.url');
+        $text = config('app.url');
         $font = public_path('fonts/OpenSans-Regular.ttf');
-        foreach (Storage::disk('local')->allFiles('images/products/raw') as $file){
+        foreach (Storage::disk('local')->allFiles('images/products/raw') as $file) {
             $imagePath = Storage::disk('local')->getDriver()->getAdapter()->getPathPrefix() . $file;
             $imageSize = getimagesize($imagePath);
             $textLeft = $imageSize[0] * 0.1;
             $textTop = $imageSize[1] * 0.8;
             $textSize = $imageSize[0] * 0.08;
             $image = imagecreatefromjpeg($imagePath);
-            if($imageSize[0] > $imageSize[1]){
+            if ($imageSize[0] > $imageSize[1]) {
                 $image = imagerotate($image, 90, 0);
             }
             $color = 0x50317EAC;
@@ -144,12 +157,13 @@ class SetupController extends Controller
     /**
      * Create success message.
      *
+     * @param string $message
      * @return array
      */
-    private function successMessage()
+    private function successMessage($message = 'Database was successfully filled.')
     {
         return [
-            'setup_message' => 'Database was successfully filled.'
+            'setup_message' => $message,
         ];
     }
 
@@ -188,9 +202,10 @@ class SetupController extends Controller
             foreach ($categories as $category) {
 
                 $metaData = MetaData::create($category);
-
+                usleep(1000);
                 $metaData->categories_id = Category::where('breadcrumb', $category['breadcrumb'])->first()->id;
                 $metaData->save();
+                usleep(1000);
 
                 if (isset($category['children'])) {
                     $metaDataFiller($category['children']);
@@ -252,10 +267,12 @@ class SetupController extends Controller
             $brand = Brand::where('title', $item['brand'])->first();
             $models = DeviceModel::whereIn('title', $item['models'])->get();
             $quality = Quality::where('title_en', $item['quality'])->first();
+            $color = $item['color'] ? Color::where('title_en', $item['color'])->first() : null;
             $item['categories_id'] = $category->id;
             $item['brands_id'] = $brand->id;
             $item['quality_id'] = $quality->id;
-            if (config('app.env') === 'local' || !Product::where('url', $item['url'])->count()) {
+            $item['colors_id'] = $color ? $color->id : null;
+            if (!Product::where('url', $item['url'])->count()) {
                 $product = Product::create($item);
                 foreach ($models as $model) {
                     ProductModelCompatible::create(['products_id' => $product->id, 'models_id' => $model->id]);
@@ -263,16 +280,17 @@ class SetupController extends Controller
                 usleep(1000);
                 $this->addCrossLinks($category, $brand, $models);
                 usleep(1000);
-            }
-            if (isset($item['images']) && is_array($item['images'])) {
-                foreach ($item['images'] as $image) {
-                    $this->copyImage($image['url']);
-                    ProductImage::create(['products_id' => $product->id, 'image' => $image['url'], 'is_primary' => isset($image['is_primary']) ? 1 : 0]);
+
+                if (isset($item['images']) && is_array($item['images'])) {
+                    foreach ($item['images'] as $image) {
+                        $this->copyImage($image['url']);
+                        ProductImage::create(['products_id' => $product->id, 'image' => $image['url'], 'is_primary' => isset($image['is_primary']) ? 1 : 0]);
+                    }
                 }
-            }
-            if (isset($item['vendors']) && is_array($item['vendors'])) {
-                foreach ($item['vendors'] as $vendorTitle => $vendorData) {
-                    VendorProduct::create(['vendors_id' => Vendor::where('title', $vendorTitle)->first()->id, 'products_id' => $product->id, 'vendor_product_id' => $vendorData['code']]);
+                if (isset($item['vendors']) && is_array($item['vendors'])) {
+                    foreach ($item['vendors'] as $vendorTitle => $vendorData) {
+                        VendorProduct::create(['vendors_id' => Vendor::where('title', $vendorTitle)->first()->id, 'products_id' => $product->id, 'vendor_product_id' => $vendorData['code']]);
+                    }
                 }
             }
         }

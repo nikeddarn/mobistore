@@ -12,6 +12,11 @@ php_value post_max_size 8M
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^(.*)/$ /$1 [L,R=301]
 
+    # Remove query string and redirect at pagination
+    RewriteCond %{QUERY_STRING} page=1 [NC]
+    RewriteRule ^ %{REQUEST_URI} [L,R=301,QSD]
+
+
     # Handle Front Controller...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f

@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\Traits\Translatable;
 use Illuminate\Database\Eloquent\Model;
 
 class Brand extends Model
 {
+    use Translatable;
     /**
      * Table name.
      *
@@ -21,6 +23,13 @@ class Brand extends Model
     protected $fillable = [
         'breadcrumb', 'url', 'title', 'image', 'priority', 'meta_keywords_en', 'meta_keywords_ru', 'meta_keywords_ua',
     ];
+
+    /**
+     * The attributes that should be selected depends on locale from JSON type field.
+     *
+     * @var array
+     */
+    public $translatable = ['meta_keywords'];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany

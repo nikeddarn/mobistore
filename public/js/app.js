@@ -2422,7 +2422,7 @@ if (token) {
     /**
      * Creates a `lodash` object which wraps `value` to enable implicit method
      * chain sequences. Methods that operate on and return arrays, collections,
-     * and functions can be chained together. Methods that retrieve a single value
+     * and functions can be chained together. Methods that retrieve a Single value
      * or may return a primitive value will automatically end the chain sequence
      * and return the unwrapped value. Otherwise, the value must be unwrapped
      * with `_#value`.
@@ -5567,7 +5567,7 @@ if (token) {
 
     /**
      * Creates an array that is the composition of partially applied arguments,
-     * placeholders, and provided arguments into a single array of arguments.
+     * placeholders, and provided arguments into a Single array of arguments.
      *
      * @private
      * @param {Array} args The provided arguments.
@@ -8196,7 +8196,7 @@ if (token) {
     }
 
     /**
-     * Flattens `array` a single level deep.
+     * Flattens `array` a Single level deep.
      *
      * @static
      * @memberOf _
@@ -21293,7 +21293,7 @@ jQuery.Callbacks = function( options ) {
 		// Fire callbacks
 		fire = function() {
 
-			// Enforce single-firing
+			// Enforce Single-firing
 			locked = locked || options.once;
 
 			// Execute callbacks for all pending executions,
@@ -22176,8 +22176,8 @@ var dataUser = new Data();
 //
 //	1. Enforce API surface and semantic compatibility with 1.9.x branch
 //	2. Improve the module's maintainability by reducing the storage
-//		paths to a single mechanism.
-//	3. Use the same single mechanism to support "private" and "user" data.
+//		paths to a Single mechanism.
+//	3. Use the same Single mechanism to support "private" and "user" data.
 //	4. _Never_ expose "private" data to user code (TODO: Drop _data, _removeData)
 //	5. Avoid exposing implementation details on user objects (eg. expando properties)
 //	6. Provide a clear path for implementation upgrade to WeakMap in 2014
@@ -24596,7 +24596,7 @@ jQuery.each( {
 			var i = 0,
 				expanded = {},
 
-				// Assumes a single number if not a string
+				// Assumes a Single number if not a string
 				parts = typeof value === "string" ? value.split( " " ) : [ value ];
 
 			for ( ; i < 4; i++ ) {
@@ -26304,7 +26304,7 @@ support.focusin = "onfocusin" in window;
 if ( !support.focusin ) {
 	jQuery.each( { focus: "focusin", blur: "focusout" }, function( orig, fix ) {
 
-		// Attach a single capturing handler on the document while someone wants focusin/focusout
+		// Attach a Single capturing handler on the document while someone wants focusin/focusout
 		var handler = function( event ) {
 			jQuery.event.simulate( fix, event.target, jQuery.event.fix( event ) );
 		};
@@ -26808,7 +26808,7 @@ jQuery.extend( {
 		},
 
 		// Data converters
-		// Keys separate source (or catchall "*") and destination types with a single space
+		// Keys separate source (or catchall "*") and destination types with a Single space
 		converters: {
 
 			// Convert anything to text
@@ -31538,7 +31538,7 @@ var utils = __webpack_require__(0);
  *
  * @param {Object|String} data The data to be transformed
  * @param {Array} headers The headers for the request or response
- * @param {Array|Function} fns A single function or Array of functions
+ * @param {Array|Function} fns A Single function or Array of functions
  * @returns {*} The resulting transformed data
  */
 module.exports = function transformData(data, headers, fns) {
@@ -31907,7 +31907,7 @@ function extend (to, _from) {
 }
 
 /**
- * Merge an Array of Objects into a single Object.
+ * Merge an Array of Objects into a Single Object.
  */
 function toObject (arr) {
   var res = {};
@@ -33491,7 +33491,7 @@ function createFnInvoker (fns) {
         cloned[i].apply(null, arguments$1);
       }
     } else {
-      // return handler return value for single handlers
+      // return handler return value for Single handlers
       return fns.apply(null, arguments)
     }
   }
@@ -33644,7 +33644,7 @@ function checkProp (
 // two cases where extra normalization is needed:
 
 // 1. When the children contains components - because a functional component
-// may return an Array instead of a single root. In this case, just a simple
+// may return an Array instead of a Single root. In this case, just a simple
 // normalization is needed - if any child is an Array, we flatten the whole
 // thing with Array.prototype.concat. It is guaranteed to be only 1-level deep
 // because functional components already normalize their own children.
@@ -35440,7 +35440,7 @@ function _createElement (
       context
     );
   }
-  // support single function children as default scoped slot
+  // support Single function children as default scoped slot
   if (Array.isArray(children) &&
     typeof children[0] === 'function'
   ) {
@@ -35815,7 +35815,7 @@ function renderMixin (Vue) {
       if ("development" !== 'production' && Array.isArray(vnode)) {
         warn(
           'Multiple root nodes returned from render function. Render function ' +
-          'should return a single root node.',
+          'should return a Single root node.',
           vm
         );
       }
@@ -39155,7 +39155,7 @@ var platformDirectives = {
 
 /*  */
 
-// Provides transition support for a single element/component.
+// Provides transition support for a Single element/component.
 // supports transition mode (out-in / in-out)
 
 var transitionProps = {
@@ -39250,7 +39250,7 @@ var Transition = {
     // warn multiple elements
     if ("development" !== 'production' && children.length > 1) {
       warn(
-        '<transition> can only be used on a single element. Use ' +
+        '<transition> can only be used on a Single element. Use ' +
         '<transition-group> for lists.',
         this.$parent
       );
@@ -39799,7 +39799,7 @@ var singleAttrAssign = /(?:=)/;
 var singleAttrValues = [
   // attr value double quotes
   /"([^"]*)"+/.source,
-  // attr value, single quotes
+  // attr value, Single quotes
   /'([^']*)'+/.source,
   // attr value, no quotes
   /([^\s"'=<>`]+)/.source
@@ -41291,7 +41291,7 @@ function genChildren (
   var children = el.children;
   if (children.length) {
     var el$1 = children[0];
-    // optimize single v-for
+    // optimize Single v-for
     if (children.length === 1 &&
       el$1.for &&
       el$1.tag !== 'template' &&

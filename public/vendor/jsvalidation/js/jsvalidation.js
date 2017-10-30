@@ -1428,7 +1428,7 @@ function strlen (string) {
     var next = '',
       prev = ''
     if (0xD800 <= code && code <= 0xDBFF) {
-      // High surrogate (could change last hex to 0xDB7F to treat high private surrogates as single characters)
+      // High surrogate (could change last hex to 0xDB7F to treat high private surrogates as Single characters)
       if (str.length <= (i + 1)) {
         throw 'High surrogate without following low surrogate'
       }
@@ -1444,7 +1444,7 @@ function strlen (string) {
       }
       prev = str.charCodeAt(i - 1)
       if (0xD800 > prev || prev > 0xDBFF) {
-        // (could change last hex to 0xDB7F to treat high private surrogates as single characters)
+        // (could change last hex to 0xDB7F to treat high private surrogates as Single characters)
         throw 'Low surrogate without preceding high surrogate'
       }
       // We can pass over low surrogates now as the second component in a pair which we have already processed
