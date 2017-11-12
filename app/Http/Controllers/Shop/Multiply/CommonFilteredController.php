@@ -46,11 +46,14 @@ abstract class CommonFilteredController extends ShopController
     {
         $modelsData = $this->parseUrl($url);
 
-        foreach (['category', 'brand', 'model', 'color', 'quality'] as $model) {
+        foreach (['brand', 'model', 'color', 'quality'] as $model) {
             if (isset($modelsData[$model])) {
                 $selectedModelName = 'selected' . ucfirst($model);
                 $this->$selectedModelName = $this->$model->whereIn('breadcrumb', explode(',', $modelsData[$model]))->get();
             }
+        }
+        if (isset($modelsData['category'])) {
+            $this->selectedCategory = $this->category->withDepth()->whereIn('breadcrumb', explode(',', $modelsData['category']))->get();
         }
     }
 
@@ -63,8 +66,8 @@ abstract class CommonFilteredController extends ShopController
     {
         $query = $this->product->select();
 
-        if (isset($this->selectedCategory) && $this->selectedCategory->count()) {
-            $query->whereIn('categories_id', $this->selectedCategory->pluck('id'));
+        if ($this->selectedCategory) {
+            $this->categoryHasProductsQueryBuilder($query);
         }
 
         if (isset($this->selectedBrand) && $this->selectedBrand->count()) {
@@ -95,9 +98,9 @@ abstract class CommonFilteredController extends ShopController
     {
         $pageTitleParts = [];
 
-        if(isset($this->selectedCategory)){
+        if (isset($this->selectedCategory)) {
             $pageTitleParts[] = $this->selectedCategory->implode('title', ', ');
-        }else{
+        } else {
             $pageTitleParts[] = $this->category->whereIsRoot()->first()->title;
         }
 

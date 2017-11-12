@@ -11,7 +11,7 @@
         @foreach($possibleQuality as $quality)
             <a href="{{ $quality->filterUrl }}" class="filter-sidebar-checkbox">
                 <div class="checkbox">
-                    <label> {{ $quality->title }}</label>
+                    <label @if($quality->selected) class="filter-sidebar-checkbox-checked" @endif> {{ $quality->title }}</label>
                 </div>
             </a>
         @endforeach

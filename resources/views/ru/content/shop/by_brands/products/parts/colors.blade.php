@@ -11,7 +11,7 @@
         @foreach($possibleColors as $color)
             <a href="{{ $color->filterUrl }}" class="filter-sidebar-checkbox">
                 <div class="checkbox">
-                    <label> {{ $color->title }}</label>
+                    <label @if($color->selected) class="filter-sidebar-checkbox-checked" @endif> {{ $color->title }}</label>
                 </div>
             </a>
         @endforeach

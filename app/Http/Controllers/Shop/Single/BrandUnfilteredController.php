@@ -113,8 +113,11 @@ class BrandUnfilteredController extends CommonUnfilteredController
         }
 
         // add category's breadcrumb if exists
-        if($this->selectedCategory){
-            $breadcrumbs[] = ['title' => $this->selectedCategory->title, 'url' => $this->selectedCategory->url];
+        if ($this->selectedCategory) {
+            $this->selectedCategory->ancestors->forget(0)->each(function ($ancestor) use (&$breadcrumbs){
+                $breadcrumbs[] = ['title' => $ancestor->title, 'url' => $this->selectedModel->url . '/' . $ancestor->url];
+            });
+            $breadcrumbs[] = ['title' => $this->selectedCategory->title, 'url' => $this->selectedModel->url . '/' . $this->selectedCategory->url];
         }
 
         return $breadcrumbs;
@@ -145,7 +148,7 @@ class BrandUnfilteredController extends CommonUnfilteredController
     {
         $this->notEmptyCategories = $this->notEmptyCategoriesMap();
 
-        if($this->selectedCategory){
+        if ($this->selectedCategory) {
             $parentCategoriesFilters = $this->getParentCategoriesFilters();
 
             if ($parentCategoriesFilters->count()) {
@@ -155,7 +158,7 @@ class BrandUnfilteredController extends CommonUnfilteredController
 
         $childrenCategoriesFilter = $this->getChildrenCategoriesFilter();
 
-        if ($childrenCategoriesFilter && $childrenCategoriesFilter->count() > 1){
+        if ($childrenCategoriesFilter && $childrenCategoriesFilter->count() > 1) {
             $this->childrenCategoriesFilter = $childrenCategoriesFilter;
         }
 
@@ -187,10 +190,10 @@ class BrandUnfilteredController extends CommonUnfilteredController
      */
     protected function categoryHasProductsQueryBuilder()
     {
-        return function ($query){
-            if($this->selectedCategory->descendants && $this->selectedCategory->descendants->count()){
+        return function ($query) {
+            if ($this->selectedCategory->descendants && $this->selectedCategory->descendants->count()) {
                 return $query->whereIn('categories_id', $this->selectedCategory->descendants->pluck('id'));
-            }else{
+            } else {
                 return $query->where('categories_id', $this->selectedCategory->id);
             }
         };

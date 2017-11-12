@@ -7,7 +7,6 @@
 
 namespace App\Http\Controllers\Shop\Filters;
 
-use App\Models\Category;
 use Illuminate\Support\Collection;
 
 trait CategoriesFilter
@@ -19,12 +18,21 @@ trait CategoriesFilter
      */
     private function getParentCategoriesFilters()
     {
-        return $this->category->withDepth()->ancestorsAndSelf($this->selectedCategory->id)
+        $unfilteredPathPrefix = '/brand/' . $this->selectedModel->url;
+        $filteredPathPrefix = '/filter/brand/brand=' . $this->selectedBrand->breadcrumb . '/model=' . $this->selectedModel->breadcrumb . '/category=';
+
+        return $this->category->ancestorsAndSelf($this->selectedCategory->id)
             ->forget(0)// remove root node
-            ->each(function ($ancestor) {
-                $ancestor->siblings = $ancestor->parent->children()->get()->filter(function ($sibling) use ($ancestor) {
+            ->each(function ($ancestor) use ($unfilteredPathPrefix, $filteredPathPrefix){
+                $ancestor->siblings = $ancestor->parent->children()->get()->filter(function ($sibling) use ($ancestor, $unfilteredPathPrefix, $filteredPathPrefix) {
                     if($this->hasBranchProducts($sibling)){
-                        $this->formFilterItemUrl($ancestor, $sibling);
+                        if ($ancestor->id === $sibling->id) {
+                            $sibling->selected = true;
+                            $sibling->filterUrl = $unfilteredPathPrefix . '/' . $ancestor->parent->url;
+                        } else {
+                            $sibling->selected = false;
+                            $sibling->filterUrl = $filteredPathPrefix . $ancestor->breadcrumb . ',' . $sibling->breadcrumb;
+                        }
                         return true;
                     }
                     return false;
@@ -35,27 +43,22 @@ trait CategoriesFilter
             });
     }
 
-
-
     private function getChildrenCategoriesFilter()
     {
+        $unfilteredPathPrefix = '/brand/' . $this->selectedModel->url;
         if ($this->selectedCategory) {
-            return $this->selectedCategory->children->filter(function($child){
-                if($this->hasBranchProducts($child)){
-                    $child->filterUrl = '/brand/' . $this->selectedModel->url . '/' . $child->url;
-                    return true;
-                }
-                return false;
-            });
-        } else {
-            return $this->category->whereIsRoot()->first()->children->filter(function ($item){
-                if($this->hasBranchProducts($item)){
-                    $item->filterUrl = '/brand/' . $this->selectedModel->url . '/' . $item->url;
-                    return true;
-                }
-                return false;
-            });
+            $filterItems = $this->selectedCategory->children;
+        }else{
+            $filterItems = $this->category->whereIsRoot()->first()->children;
         }
+
+        return $filterItems->filter(function($child) use ($unfilteredPathPrefix){
+                if($this->hasBranchProducts($child)){
+                    $child->filterUrl = $unfilteredPathPrefix . '/' . $child->url;
+                    return true;
+                }
+                return false;
+            });
     }
 
     private function notEmptyCategoriesMap()
@@ -82,16 +85,5 @@ trait CategoriesFilter
             }
         }
         return false;
-    }
-
-    private function formFilterItemUrl(Category $ancestor, Category $sibling)
-    {
-        if ($ancestor->id === $sibling->id) {
-            $sibling->selected = true;
-            $sibling->filterUrl = '/brand/' . $this->selectedModel->url . '/' . $ancestor->parent->url;
-        } else {
-            $sibling->selected = false;
-            $sibling->filterUrl = '/filter/brand/brand=' . $this->selectedBrand->breadcrumb . '/model=' . $this->selectedModel->breadcrumb . '/category=' . $ancestor->breadcrumb . ',' . $sibling->breadcrumb;
-        }
     }
 }

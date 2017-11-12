@@ -6,6 +6,7 @@ use App\Http\Controllers\Shop\Filters\BrandMultiplyFilter;
 use App\Http\Controllers\Shop\Filters\ColorMultiplyFilter;
 use App\Http\Controllers\Shop\Filters\ModelMultiplyFilter;
 use App\Http\Controllers\Shop\Filters\QualityMultiplyFilter;
+use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
@@ -200,5 +201,15 @@ class CategoryFilteredController extends CommonFilteredController
         }
 
         return $url;
+    }
+
+    /**
+     * Add category query constraint to retrieve products query.
+     *
+     * @return Closure
+     */
+    protected function categoryHasProductsQueryBuilder($query)
+    {
+        return $query->where('categories_id', $this->selectedCategory->first()->id);
     }
 }

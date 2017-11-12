@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers\Shop\Multiply;
 
-use App\Http\Controllers\Shop\Filters\BrandMultiplyFilter;
-use App\Http\Controllers\Shop\Filters\CategoriesFilter;
-use App\Http\Controllers\Shop\Filters\ColorMultiplyFilter;
-use App\Http\Controllers\Shop\Filters\ModelMultiplyFilter;
-use App\Http\Controllers\Shop\Filters\QualityMultiplyFilter;
+use App\Http\Controllers\Shop\Filters\CategoriesMultiplyFilter;
+use App\Http\Controllers\Shop\Filters\ColorByBrandMultiplyFilter;
+use App\Http\Controllers\Shop\Filters\QualityByBrandMultiplyFilter;
+use App\Models\Category;
+use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
 class BrandFilteredController extends CommonFilteredController
 {
-    use CategoriesFilter;
-    use QualityMultiplyFilter;
-    use ColorMultiplyFilter;
+    use CategoriesMultiplyFilter;
+    use QualityByBrandMultiplyFilter;
+    use ColorByBrandMultiplyFilter;
 
     /**
      * @var Collection
@@ -66,7 +66,7 @@ class BrandFilteredController extends CommonFilteredController
 //        if ($this->selectedBrand && $this->selectedBrand->count() === 1) {
 //            $breadcrumbs[] = ['title' => $this->selectedBrand->first()->title, 'url' => $this->selectedCategory->first()->url . '/' . $this->selectedBrand->first()->url];
 
-            // add model's breadcrumb if exists
+        // add model's breadcrumb if exists
 //            if ($this->selectedModel && $this->selectedModel->count() === 1) {
 //                $breadcrumbs[] = ['title' => $this->selectedModel->first()->title, 'url' => $this->selectedCategory->first()->url . '/' . $this->selectedModel->first()->url];
 //            }
@@ -85,7 +85,7 @@ class BrandFilteredController extends CommonFilteredController
     {
         $this->retrieveModels($url);
 
-        if (!($this->selectedBrand && $this->selectedModel && $this->selectedBrand->count() === 1) && $this->selectedModel->count() == 1) {
+        if (!($this->selectedBrand && $this->selectedModel && $this->selectedBrand->count() === 1 && $this->selectedModel->count() === 1)) {
             abort(404);
         }
     }
@@ -113,84 +113,78 @@ class BrandFilteredController extends CommonFilteredController
      */
     private function getPossibleFilters()
     {
-        if($this->selectedCategory){
-            $parentCategoriesFilters = $this->getParentCategoriesFilters();
-
-            if ($parentCategoriesFilters->count()) {
-                $this->parentCategoriesFilters = $parentCategoriesFilters;
-            }
+        if ($this->selectedCategory) {
+            $this->parentCategoriesFilters = $this->getParentCategoriesFilters();
         }
 
-        $childrenCategoriesFilter = $this->getChildrenCategoriesFilter();
-        if ($childrenCategoriesFilter->count() > 1){
-            $this->childrenCategoriesFilter = $childrenCategoriesFilter;
-        }
+        $this->childrenCategoriesFilter = $this->getChildrenCategoriesFilter();
 
-//        $possibleQuality = $this->getPossibleQuality();
-//        if ($possibleQuality->count() > 1) {
-//            $this->possibleQuality = $this->formPossibleQualityUrl($possibleQuality);
-//        }
-//
-//        $possibleColors = $this->getPossibleColors();
-//        if ($possibleColors->count() > 1) {
-//            $this->possibleColors = $this->formPossibleColorsUrl($possibleColors);
-//        }
+        $this->possibleQuality = $this->getPossibleQuality();
+
+        $this->possibleColors = $this->getPossibleColors();
     }
 
-    protected function getFilteredUrl(Collection $selectedBrands = null, Collection $selectedModels = null, Collection $selectedQuality = null, Collection $selectedColor = null)
+
+    /**
+     * Add category query constraint to retrieve products query.
+     *
+     * @param $query
+     * @return Closure
+     */
+    protected function categoryHasProductsQueryBuilder($query)
     {
-        $url = '/filter/category/category=' . $this->selectedCategory->first()->breadcrumb;
+        $leavesSelectedCategories = collect();
+        $this->selectedCategory->each(function (Category $category) use (&$leavesSelectedCategories) {
+            if ($category->descendants && $category->descendants->count()) {
+                if ($category->descendants->pluck('id')->intersect($this->selectedCategory->pluck('id'))->count()) {
+                    $category->descendants->each(function ($leaf) use ($leavesSelectedCategories) {
+                        if ($this->selectedCategory->pluck('id')->contains($leaf->id)) {
+                            $leavesSelectedCategories->push($leaf);
+                        }
+                    });
+                } else {
+                    $leavesSelectedCategories = $leavesSelectedCategories->merge($category->descendants);
+                }
 
-        if (!$selectedBrands) {
-            $selectedBrands = $this->selectedBrand;
+            } else {
+                $leavesSelectedCategories->push($category);
+            }
+        });
+
+        return $query->whereIn('categories_id', $leavesSelectedCategories->pluck('id'));
+    }
+
+    protected function getFilterItemUrl(array $urlParts)
+    {
+        if ((isset($urlParts['quality']) && $urlParts['quality']->count()) || (isset($urlParts['color']) && $urlParts['color']->count()) || (isset($urlParts['category']) && $urlParts['category']->count() > 2)) {
+            return $this->getFilteredUrl($urlParts);
         }
 
-        if (!$selectedModels) {
-            $selectedModels = $this->selectedModel;
+        if (isset($urlParts['category']) && $urlParts['category']->count() === 2 && $urlParts['category']->first()->id !== $urlParts['category']->last()->parent->id && $urlParts['category']->last()->id !== $urlParts['category']->first()->parent->id) {
+            return $this->getFilteredUrl($urlParts);
         }
 
-        if (!$selectedQuality) {
-            $selectedQuality = $this->selectedQuality;
-        }
+        return $this->getUnfilteredUrl($urlParts);
+    }
 
-        if (!$selectedColor) {
-            $selectedColor = $this->selectedColor;
-        }
+    protected function getFilteredUrl(array $urlParts)
+    {
+        $url = '/filter/brand/brand=' . $this->selectedBrand->first()->breadcrumb . '/model=' . $this->selectedModel->first()->breadcrumb;
 
-        if ($selectedBrands && $selectedBrands->count()) {
-            $url .= '/brand=' . $selectedBrands->implode('breadcrumb', ',');
-        }
-
-        if ($selectedModels && $selectedModels->count()) {
-            $url .= '/model=' . $selectedModels->implode('breadcrumb', ',');
-        }
-
-        if ($selectedQuality && $selectedQuality->count()) {
-            $url .= '/quality=' . $selectedQuality->implode('breadcrumb', ',');
-        }
-
-        if ($selectedColor && $selectedColor->count()) {
-            $url .= '/color=' . $selectedColor->implode('breadcrumb', ',');
+        foreach ($urlParts as $partName => $part) {
+            if (isset($part) && $part->count()) {
+                $url .= '/' . $partName . '=' . $part->implode('breadcrumb', ',');
+            }
         }
 
         return $url;
     }
 
-    protected function getUnfilteredUrl(Collection $selectedBrand = null, Collection $selectedModel = null)
+    protected function getUnfilteredUrl(array $urlParts)
     {
-        $url = '/category/' . $this->selectedCategory->first()->url;
+        $url = '/brand/' . $this->selectedModel->first()->url . '/';
 
-        if ($selectedModel && $selectedModel->count()) {
-            $url .= '/' . $selectedModel->first()->url;
-        } elseif ($selectedBrand && $selectedBrand->count()) {
-            $url .= '/' . $selectedBrand->first()->url;
-        } else {
-            if (isset($this->selectedModel) && $this->selectedModel->count()) {
-                $url .= '/' . $this->selectedModel->first()->url;
-            } elseif (isset($this->selectedBrand) && $this->selectedBrand->count()) {
-                $url .= '/' . $this->selectedBrand->first()->url;
-            }
-        }
+        $url .= ($urlParts['category']->sortBy('depth'))->implode('breadcrumb', '/');
 
         return $url;
     }
