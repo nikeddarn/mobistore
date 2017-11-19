@@ -10,23 +10,23 @@
 
         <div class="row">
 
-        @if($filtersAvailable)
+        @if($filters)
             <!-- Filters -->
                 <div class="col-xs-12 col-sm-3">
 
-                    @if(isset($possibleBrands))
+                    @if(isset($filters['brand']))
                         @include('content.shop.by_categories.products.parts.brands')
                     @endif
 
-                    @if(isset($possibleModels))
+                    @if(isset($filters['model']))
                         @include('content.shop.by_categories.products.parts.models')
                     @endif
 
-                    @if(isset($possibleQuality))
+                    @if(isset($filters['quality']))
                         @include('content.shop.by_categories.products.parts.quality')
                     @endif
 
-                    @if(isset($possibleColors))
+                    @if(isset($filters['color']))
                         @include('content.shop.by_categories.products.parts.colors')
                     @endif
 
@@ -35,7 +35,7 @@
 
         <!-- Products -->
             <div id="products-list"
-                 class="col-xs-12 col-sm-9 @if(!$filtersAvailable) col-sm-offset-1 @endif">
+                 class="col-xs-12 col-sm-9 @if(!$filters) col-sm-offset-1 @endif">
                 <div class="row">
                     @include('content.shop.by_categories.products.parts.products')
                 </div>

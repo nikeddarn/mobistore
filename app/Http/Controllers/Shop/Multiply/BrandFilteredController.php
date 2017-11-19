@@ -2,29 +2,32 @@
 
 namespace App\Http\Controllers\Shop\Multiply;
 
-use App\Http\Controllers\Shop\Filters\CategoriesMultiplyFilter;
-use App\Http\Controllers\Shop\Filters\ColorByBrandMultiplyFilter;
-use App\Http\Controllers\Shop\Filters\QualityByBrandMultiplyFilter;
+use App\Http\Controllers\Shop\Filters\BrandRouteFiltersGenerator;
+use App\Models\Brand;
 use App\Models\Category;
-use Closure;
+use App\Models\Color;
+use App\Models\DeviceModel;
+use App\Models\MetaData;
+use App\Models\Product;
+use App\Models\Quality;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
 class BrandFilteredController extends CommonFilteredController
 {
-    use CategoriesMultiplyFilter;
-    use QualityByBrandMultiplyFilter;
-    use ColorByBrandMultiplyFilter;
-
     /**
-     * @var Collection
+     * Filter generator for 'brand' route.
+     *
+     * @var BrandRouteFiltersGenerator
      */
-    private $parentCategoriesFilters = null;
+    protected $brandRouteFiltersGenerator;
 
-    /**
-     * @var Collection
-     */
-    private $childrenCategoriesFilter = null;
+    public function __construct(Request $request, MetaData $metaData, Category $category, Brand $brand, DeviceModel $model, Product $product, Quality $quality, Color $color, BrandRouteFiltersGenerator $brandRouteFiltersGenerator)
+    {
+        parent::__construct($request, $metaData, $category, $brand, $model, $product, $quality, $color);
+
+        $this->brandRouteFiltersGenerator = $brandRouteFiltersGenerator;
+    }
 
     /**
      * Handle incoming url.
@@ -44,7 +47,7 @@ class BrandFilteredController extends CommonFilteredController
 
         $this->getPossibleFilters();
 
-        return view('content.shop.by_brands.products.index')->with($this->commonViewData())->with($this->productsViewData($request))->with($this->filtersViewData());
+        return view('content.shop.by_brands.products.index')->with($this->commonViewData())->with($this->productsViewData($request))->with(['filters' => $this->getPossibleFilters()]);
 
     }
 
@@ -91,50 +94,82 @@ class BrandFilteredController extends CommonFilteredController
     }
 
     /**
-     * Data for user filters.
+     * Create possible user filters.
      *
      * @return array
      */
-    private function filtersViewData()
+    private function getPossibleFilters(): array
     {
-        return [
-            'filtersAvailable' => $this->parentCategoriesFilters || $this->childrenCategoriesFilter || $this->possibleQuality || $this->possibleColors,
-            'parentCategoriesFilters' => $this->parentCategoriesFilters,
-            'childrenCategoriesFilter' => $this->childrenCategoriesFilter,
-            'possibleQuality' => $this->possibleQuality,
-            'possibleColors' => $this->possibleColors,
-        ];
-    }
+        $filters = [];
 
-    /**
-     * Define possible data for user filters.
-     *
-     * @return void
-     */
-    private function getPossibleFilters()
-    {
-        if ($this->selectedCategory) {
-            $this->parentCategoriesFilters = $this->getParentCategoriesFilters();
+        $selectedItems = $this->prepareSelectedItems();
+
+        $this->brandRouteFiltersGenerator->setCurrentSelectedItems($selectedItems);
+
+
+        $categoryFilters = [];
+
+        $rootCategory = $this->category->whereIsRoot()->first();
+        $this->brandRouteFiltersGenerator->getFilterCreator(self::CATEGORY)->setAdditionalConstraints(function ($query) use ($rootCategory) {
+            return $query->where('categories.parent_id', $rootCategory->id);
+        });
+
+        $rootCategoryFilter = $this->brandRouteFiltersGenerator->getFilter(self::CATEGORY);
+        if ($rootCategoryFilter->count() > 1) {
+            $categoryFilters[] = $rootCategoryFilter;
         }
 
-        $this->childrenCategoriesFilter = $this->getChildrenCategoriesFilter();
+        for ($depth = 1; $depth < config('shop.category_filters_depth'); $depth++) {
+            $selectedItemsOnDepth = $this->getSelectedCategoriesIdByDepth($depth);
+            $this->brandRouteFiltersGenerator->getFilterCreator(self::CATEGORY)->setAdditionalConstraints(function ($query) use ($selectedItemsOnDepth) {
+                return $query->whereIn('categories.parent_id', $selectedItemsOnDepth);
+            });
+            $categoryFilter = $this->brandRouteFiltersGenerator->getFilter(self::CATEGORY);
+            if ($categoryFilter->count() > 1){
+                $categoryFilters[] = $categoryFilter;
+            }
+        }
 
-        $this->possibleQuality = $this->getPossibleQuality();
+        if (!empty($categoryFilters)) {
+            $filters[self::CATEGORY] = $categoryFilters;
+        }
 
-        $this->possibleColors = $this->getPossibleColors();
+
+        $qualityFilter = $this->brandRouteFiltersGenerator->getFilter(self::QUALITY);
+        if ($qualityFilter->count() > 1) {
+            $filters[self::QUALITY] = $qualityFilter;
+        }
+
+        $colorFilter = $this->brandRouteFiltersGenerator->getFilter(self::COLOR);
+        if ($colorFilter->count() > 1) {
+            $filters[self::COLOR] = $colorFilter;
+        }
+        return $filters;
     }
 
+    private function getSelectedCategoriesIdByDepth(int $depth): array
+    {
+        return $this->selectedCategory
+            ->filter(function (Category $category) use ($depth) {
+                return $category->depth === $depth;
+            })
+            ->pluck('id')
+            ->toArray();
+    }
 
     /**
-     * Add category query constraint to retrieve products query.
+     * Collect selected categories for retrieve product constraint.
+     * Collect all leaves of parent selected directory or only selected leaf.
      *
-     * @param $query
-     * @return Closure
+     * @param Collection $selectedCategories
+     * @return Collection
+     * @internal param $query
      */
-    protected function categoryHasProductsQueryBuilder($query)
+    protected function collectProductConstraintsSelectedCategories(Collection $selectedCategories):Collection
     {
         $leavesSelectedCategories = collect();
-        $this->selectedCategory->each(function (Category $category) use (&$leavesSelectedCategories) {
+
+        $selectedCategories->each(function (Category $category) use (&$leavesSelectedCategories) {
             if ($category->descendants && $category->descendants->count()) {
                 if ($category->descendants->pluck('id')->intersect($this->selectedCategory->pluck('id'))->count()) {
                     $category->descendants->each(function ($leaf) use ($leavesSelectedCategories) {
@@ -145,47 +180,11 @@ class BrandFilteredController extends CommonFilteredController
                 } else {
                     $leavesSelectedCategories = $leavesSelectedCategories->merge($category->descendants);
                 }
-
             } else {
                 $leavesSelectedCategories->push($category);
             }
         });
 
-        return $query->whereIn('categories_id', $leavesSelectedCategories->pluck('id'));
-    }
-
-    protected function getFilterItemUrl(array $urlParts)
-    {
-        if ((isset($urlParts['quality']) && $urlParts['quality']->count()) || (isset($urlParts['color']) && $urlParts['color']->count()) || (isset($urlParts['category']) && $urlParts['category']->count() > 2)) {
-            return $this->getFilteredUrl($urlParts);
-        }
-
-        if (isset($urlParts['category']) && $urlParts['category']->count() === 2 && $urlParts['category']->first()->id !== $urlParts['category']->last()->parent->id && $urlParts['category']->last()->id !== $urlParts['category']->first()->parent->id) {
-            return $this->getFilteredUrl($urlParts);
-        }
-
-        return $this->getUnfilteredUrl($urlParts);
-    }
-
-    protected function getFilteredUrl(array $urlParts)
-    {
-        $url = '/filter/brand/brand=' . $this->selectedBrand->first()->breadcrumb . '/model=' . $this->selectedModel->first()->breadcrumb;
-
-        foreach ($urlParts as $partName => $part) {
-            if (isset($part) && $part->count()) {
-                $url .= '/' . $partName . '=' . $part->implode('breadcrumb', ',');
-            }
-        }
-
-        return $url;
-    }
-
-    protected function getUnfilteredUrl(array $urlParts)
-    {
-        $url = '/brand/' . $this->selectedModel->first()->url . '/';
-
-        $url .= ($urlParts['category']->sortBy('depth'))->implode('breadcrumb', '/');
-
-        return $url;
+        return $leavesSelectedCategories;
     }
 }

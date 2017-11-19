@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Shop\Multiply;
 
 use App\Http\Controllers\Shop\ShopController;
+use App\Models\Category;
 use App\Models\MetaData;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -47,13 +48,20 @@ abstract class CommonFilteredController extends ShopController
         $modelsData = $this->parseUrl($url);
 
         foreach (['brand', 'model', 'color', 'quality'] as $model) {
+
+            $selectedModelName = 'selected' . ucfirst($model);
+
             if (isset($modelsData[$model])) {
-                $selectedModelName = 'selected' . ucfirst($model);
                 $this->$selectedModelName = $this->$model->whereIn('breadcrumb', explode(',', $modelsData[$model]))->get();
+            } else {
+                $this->$selectedModelName = collect();
             }
         }
+
         if (isset($modelsData['category'])) {
             $this->selectedCategory = $this->category->withDepth()->whereIn('breadcrumb', explode(',', $modelsData['category']))->get();
+        } else {
+            $this->selectedCategory = collect();
         }
     }
 
@@ -66,8 +74,8 @@ abstract class CommonFilteredController extends ShopController
     {
         $query = $this->product->select();
 
-        if ($this->selectedCategory) {
-            $this->categoryHasProductsQueryBuilder($query);
+        if (isset($this->selectedCategory) && $this->selectedCategory->count()) {
+            $query->whereIn('categories_id', $this->collectProductConstraintsSelectedCategories($this->selectedCategory)->pluck('id'));
         }
 
         if (isset($this->selectedBrand) && $this->selectedBrand->count()) {
@@ -81,7 +89,10 @@ abstract class CommonFilteredController extends ShopController
         }
 
         if (isset($this->selectedColor) && $this->selectedColor->count()) {
-            $query->whereIn('colors_id', $this->selectedColor->pluck('id'));
+            $query->where(function ($query) {
+                $query->whereIn('colors_id', $this->selectedColor->pluck('id'))
+                    ->orWhereNull('colors_id');
+            });
         }
 
         if (isset($this->selectedQuality) && $this->selectedQuality->count()) {
@@ -90,6 +101,16 @@ abstract class CommonFilteredController extends ShopController
 
         return $this->isPaginable ? $query->paginate(config('shop.products_per_page')) : $query->get();
     }
+
+    /**
+     * Collect selected categories for retrieve product constraint.
+     * Collect all leaves of parent selected directory or only selected leaf.
+     *
+     * @param Collection $selectedCategories
+     * @return Collection
+     * @internal param $query
+     */
+    abstract protected function collectProductConstraintsSelectedCategories(Collection $selectedCategories): Collection;
 
     /**
      * @return MetaData
@@ -117,6 +138,22 @@ abstract class CommonFilteredController extends ShopController
         $metaData->page_title = implode('. ', $pageTitleParts);
 
         return $metaData;
+    }
+
+    /**
+     * Create array of selected items.
+     *
+     * @return array
+     */
+    protected function prepareSelectedItems(): array
+    {
+        return [
+            'brand' => $this->selectedBrand,
+            'model' => $this->selectedModel,
+            'category' => $this->selectedCategory,
+            'color' => $this->selectedColor,
+            'quality' => $this->selectedQuality
+        ];
     }
 
 }

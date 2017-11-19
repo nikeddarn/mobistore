@@ -1,5 +1,3 @@
-@foreach($parentCategoriesFilters as $filter)
-
     <div class="filter-sidebar">
 
         <!-- Title -->
@@ -10,15 +8,13 @@
         </div>
 
         <div class="col-lg-12">
-            @foreach($filter->siblings as $sibling)
-                <a href="{{ $sibling->filterUrl }}" class="filter-sidebar-checkbox">
+            @foreach($categoriesFilter as $filterItem)
+                <a href="{{ $filterItem->filterUrl }}" class="filter-sidebar-checkbox">
                     <div class="checkbox">
-                        <label @if($sibling->selected) class="filter-sidebar-checkbox-checked" @endif> {{ $sibling->title }}</label>
+                        <label @if($filterItem->selected) class="filter-sidebar-checkbox-checked" @endif> {{ $filterItem->title }}</label>
                     </div>
                 </a>
             @endforeach
         </div>
 
     </div>
-
-@endforeach

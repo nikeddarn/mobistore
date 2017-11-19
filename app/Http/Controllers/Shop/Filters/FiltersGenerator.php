@@ -1,0 +1,266 @@
+<?php
+/**
+ * Create filter creators.
+ * Generate filters.
+ */
+
+namespace App\Http\Controllers\Shop\Filters;
+
+
+use App\Contracts\Shop\Products\Filters\FilterCreatorInterface;
+use App\Contracts\Shop\Products\Filters\FilterTypes;
+use Closure;
+use Exception;
+use Illuminate\Support\Collection;
+
+abstract class FiltersGenerator implements FilterTypes
+{
+    /**
+     * Set of filters selected items.
+     *
+     * @var Collection
+     */
+    private $currentSelectedItems = null;
+
+    /**
+     * Set selected items for forming any filter.
+     *
+     * @param array $currentSelectedItems
+     */
+    public function setCurrentSelectedItems(array $currentSelectedItems)
+    {
+        $this->currentSelectedItems = $currentSelectedItems;
+    }
+
+    /**
+     * Create filter items by given filter type with filter items urls depends on current selected items.
+     *
+     * @param string $type
+     * @param array|null $currentSelectedItems
+     * @return Collection
+     * @throws Exception
+     */
+    public function getFilter(string $type, array $currentSelectedItems = null): Collection
+    {
+        if ($currentSelectedItems) {
+            $this->currentSelectedItems = $currentSelectedItems;
+        }
+
+        // selected items on any filter must be defined (may be empty) for correct work of filter items route creator.
+        if (!isset($this->currentSelectedItems[$type])) {
+            throw new Exception('Current selected items on ' . $type . ' filter is undefined');
+        }
+
+
+        $filter = $this->getFilterCreator($type)->getFilterItems($this->getDefaultConstraints($type, $this->currentSelectedItems));
+
+        return $this->createFilterItemsUrl($filter, $this->currentSelectedItems, $type);
+    }
+
+    /**
+     * Get filter creator
+     *
+     * @param string $type
+     * @return FilterCreatorInterface
+     * @throws Exception
+     */
+    public function getFilterCreator(string $type): FilterCreatorInterface
+    {
+        $creatorName = $type . 'FilterCreator';
+
+        if (property_exists($this, $creatorName)) {
+            return $this->$creatorName;
+        } else {
+            throw new Exception('Undefined Filter Type');
+        }
+    }
+
+    /**
+     * Get base constraints for given filter type.
+     *
+     * @param string $type
+     * @param array $currentSelectedItems
+     * @return Closure
+     */
+    abstract protected function getDefaultConstraints(string $type, array $currentSelectedItems): Closure;
+
+    /**
+     * Create and add url to each filter item.
+     *
+     * @param Collection $filter
+     * @param array $currentSelectedItems
+     * @param string $type
+     * @return Collection
+     */
+    protected function createFilterItemsUrl(Collection $filter, array $currentSelectedItems, string $type): Collection
+    {
+        $currentSelectedItemsOnThisFilter = clone $currentSelectedItems[$type];
+
+        foreach ($filter as $filterItem) {
+
+            $shouldBeSelectedItemsOnThisFilter = clone $currentSelectedItems[$type];
+
+            if ($this->isFilterItemSelected($filterItem, $currentSelectedItemsOnThisFilter)) {
+                $filterItem->selected = true;
+                $shouldBeSelectedItemsOnThisFilter = $this->subtractFilterItemWithDescendantsFromShouldBeSelectedItems($filterItem, $shouldBeSelectedItemsOnThisFilter);
+            } else {
+                $filterItem->selected = false;
+                $this->addFilterItemToShouldBeSelectedItems($filterItem, $shouldBeSelectedItemsOnThisFilter);
+            }
+
+            $shouldBeSelectedItems = $this->getShouldBeSelectedItems($currentSelectedItems, $type, $shouldBeSelectedItemsOnThisFilter);
+
+            $filterItem->filterUrl = $this->formFilterItemUrl($shouldBeSelectedItems);
+        }
+
+        return $filter;
+    }
+
+    /**
+     * Is current filter item selected on this route?
+     *
+     * @param $item
+     * @param Collection $currentSelectedItemsOnThisFilter
+     * @return bool
+     */
+    private function isFilterItemSelected($item, Collection $currentSelectedItemsOnThisFilter): bool
+    {
+        return $currentSelectedItemsOnThisFilter->pluck('id')->contains($item->id);
+    }
+
+    /**
+     * Add filter item to filter items collection that will be used as selected on click at this item.
+     *
+     * @param $addingFilterItem
+     * @param Collection $shouldBeSelectedItemsOnThisFilter
+     */
+    private function addFilterItemToShouldBeSelectedItems($addingFilterItem, Collection $shouldBeSelectedItemsOnThisFilter)
+    {
+        $shouldBeSelectedItemsOnThisFilter->push($addingFilterItem);
+    }
+
+    /**
+     * Subtract filter item with its descendants from filter items collection that will be used as selected on click at this item.
+     *
+     * @param $subtractingFilterItem
+     * @param Collection $shouldBeSelectedItemsOnThisFilter
+     * @return Collection
+     */
+    private function subtractFilterItemWithDescendantsFromShouldBeSelectedItems($subtractingFilterItem, Collection $shouldBeSelectedItemsOnThisFilter): Collection
+    {
+        $subtractedShouldBeSelectedItemsOnThisFilter = $shouldBeSelectedItemsOnThisFilter->filter(function ($filterItem) use ($subtractingFilterItem) {
+            if ($filterItem->id === $subtractingFilterItem->id) {
+                return false;
+            } else {
+                $subtractingFilterItemDescendants = $subtractingFilterItem->descendants;
+                if ($subtractingFilterItemDescendants && $subtractingFilterItemDescendants->count()) {
+                    foreach ($subtractingFilterItem->descendants as $subtractingFilterItemDescendant) {
+                        if ($subtractingFilterItemDescendant->id === $filterItem->id) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        });
+
+        return $subtractedShouldBeSelectedItemsOnThisFilter;
+    }
+
+    /**
+     * Prepare array of all selected items that will be used on click at current handling filter item.
+     *
+     * @param array $currentSelectedItems
+     * @param string $type
+     * @param Collection $shouldBeSelectedItemsOnThisFilter
+     * @return array
+     */
+    private
+    function getShouldBeSelectedItems(array $currentSelectedItems, string $type, Collection $shouldBeSelectedItemsOnThisFilter): array
+    {
+        $shouldBeSelectedItems = $currentSelectedItems;
+        $shouldBeSelectedItems[$type] = $shouldBeSelectedItemsOnThisFilter;
+
+        return $shouldBeSelectedItems;
+    }
+
+    /**
+     * Create filter item url depends on selected item that will be used at this url.
+     *
+     * @param array $shouldBeSelectedItems
+     * @return string
+     */
+    private
+    function formFilterItemUrl(array $shouldBeSelectedItems): string
+    {
+        if ($this->isMultiplyRoute($shouldBeSelectedItems)) {
+            return $this->getMultiplyRoutePrefix() . $this->getMultiplyRoutePath($shouldBeSelectedItems);
+        } else {
+            return $this->getSingleRoutePrefix() . $this->getSingleRoutePath($shouldBeSelectedItems);
+        }
+    }
+
+    /**
+     * Is filter item route multiply ?
+     *
+     * @param array $shouldBeSelectedItems
+     * @return bool
+     */
+    abstract protected function isMultiplyRoute(array $shouldBeSelectedItems): bool;
+
+    /**
+     * Prefix for "single" route.
+     *
+     * @return string
+     */
+    abstract protected function getSingleRoutePrefix(): string;
+
+    /**
+     * Prefix for "multiply" route.
+     *
+     * @return string
+     */
+    abstract protected function getMultiplyRoutePrefix(): string;
+
+    /**
+     * Create "single" route path part.
+     *
+     * @param array $shouldBeSelectedItems
+     * @return string
+     */
+    abstract protected function getSingleRoutePath(array $shouldBeSelectedItems): string;
+
+    /**
+     * Create part of url from given selected items.
+     *
+     * @param Collection $shouldBeSelectedItems
+     * @return string
+     */
+    protected function createUrlPart(Collection $shouldBeSelectedItems):string
+    {
+        if (isset($shouldBeSelectedItems) && $shouldBeSelectedItems->count()) {
+            return '/' . $shouldBeSelectedItems->pluck('breadcrumb')->implode('/');
+        }else{
+            return '';
+        }
+    }
+
+    /**
+     * Create "multiply" route path part.
+     *
+     * @param array $shouldBeSelectedItems
+     * @return string
+     */
+    private function getMultiplyRoutePath(array $shouldBeSelectedItems): string
+    {
+        $routePath = '';
+
+        foreach ($shouldBeSelectedItems as $urlItemsGroup => $urlItems) {
+            if ($urlItems->count()) {
+                $routePath .= '/' . $urlItemsGroup . '=' . $urlItems->pluck('breadcrumb')->implode(',');
+            }
+        }
+
+        return $routePath;
+    }
+}

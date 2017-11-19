@@ -13,6 +13,9 @@
 
 /******************* Common Routes *************************************************/
 
+
+use Illuminate\Support\Facades\Route;
+
 // Change language
 Route::get('/language/{language}', 'Localization\LanguageController@changeLanguage');
 
@@ -119,3 +122,5 @@ Route::get('/filter/category/{url?}', 'Shop\Multiply\CategoryFilteredController@
 
 Route::get('/brand/{url?}', 'Shop\Single\BrandUnfilteredController@index')->where(['url' => '.*']);
 Route::get('/filter/brand/{url?}', 'Shop\Multiply\BrandFilteredController@index')->where(['url' => '.*']);
+
+//Route::get('/filter/{url?}', 'Shop\Multiply\BrandFilteredController@index')->where(['url' => '.*']);

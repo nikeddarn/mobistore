@@ -10,23 +10,21 @@
 
         <div class="row">
 
-        @if($filtersAvailable)
+        @if($filters)
             <!-- Filters -->
                 <div class="col-xs-12 col-sm-3">
 
-                    @if(isset($parentCategoriesFilters))
-                        @include('content.shop.by_brands.products.parts.parent_categories')
+                    @if(isset($filters['category']))
+                        @foreach($filters['category'] as $categoriesFilter)
+                            @include('content.shop.by_brands.products.parts.categories')
+                        @endforeach
                     @endif
 
-                    @if(isset($childrenCategoriesFilter))
-                        @include('content.shop.by_brands.products.parts.children_categories')
-                    @endif
-
-                    @if(isset($possibleQuality))
+                    @if(isset($filters['quality']))
                         @include('content.shop.by_brands.products.parts.quality')
                     @endif
 
-                    @if(isset($possibleColors))
+                    @if(isset($filters['color']))
                         @include('content.shop.by_brands.products.parts.colors')
                     @endif
 
@@ -35,7 +33,7 @@
 
         <!-- Products -->
             <div id="products-list"
-                 class="col-xs-12 col-sm-9 @if(!$filtersAvailable) col-sm-offset-1 @endif">
+                 class="col-xs-12 col-sm-9 @if(!$filters) col-sm-offset-1 @endif">
                 <div class="row">
                     @include('content.shop.by_brands.products.parts.products')
                 </div>

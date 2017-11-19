@@ -26,9 +26,20 @@ abstract class CommonUnfilteredController extends ShopController
             ->select($this->metaData->transformAttributesByLocale(['categories_id', 'brands_id', 'models_id', 'page_title', 'meta_title', 'meta_description', 'meta_keywords', 'summary']))
             ->firstOrFail();
 
-        $this->selectedCategory = $this->selectedMetaData->category;
-        $this->selectedBrand = $this->selectedMetaData->brand;
-        $this->selectedModel = $this->selectedMetaData->deviceModel;
+        $this->selectedCategory = collect();
+        if ($this->selectedMetaData->category){
+            $this->selectedCategory->push($this->selectedMetaData->category);
+        }
+
+        $this->selectedBrand = collect();
+        if ($this->selectedMetaData->brand){
+            $this->selectedBrand->push($this->selectedMetaData->brand);
+        }
+
+        $this->selectedModel = collect();
+        if ($this->selectedMetaData->deviceModel){
+            $this->selectedModel->push($this->selectedMetaData->deviceModel);
+        }
     }
 
     /**
@@ -71,20 +82,36 @@ abstract class CommonUnfilteredController extends ShopController
     protected function getProducts()
     {
         $query = $this->product->where(function ($query) {
-            if ($this->selectedCategory) {
+            if ($this->selectedCategory->count()) {
                 $this->categoryHasProductsQueryBuilder()($query);
             }
-            if ($this->selectedBrand) {
-                $query->where('brands_id', $this->selectedBrand->id);
+            if ($this->selectedBrand->count()) {
+                $query->where('brands_id', $this->selectedBrand->first()->id);
             }
-            if ($this->selectedModel) {
+            if ($this->selectedModel->count()) {
                 $query->whereHas('deviceModel', function ($query) {
-                    $query->where('id', $this->selectedModel->id);
+                    $query->where('id', $this->selectedModel->first()->id);
                 });
             }
         })
             ->with('primaryImage');
 
         return $this->isPaginable ? $query->paginate(config('shop.products_per_page')) : $query->get();
+    }
+
+    /**
+     * Create array of selected items.
+     *
+     * @return array
+     */
+    protected function prepareSelectedItems(): array
+    {
+        return [
+            'brand' => $this->selectedBrand,
+            'model' => $this->selectedModel,
+            'category' => $this->selectedCategory,
+            'color' => collect(),
+            'quality' => collect(),
+        ];
     }
 }

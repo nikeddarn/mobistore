@@ -73,7 +73,11 @@ trait CategoriesMultiplyFilter
 
     private function getChildrenCategoriesFilter()
     {
-        if ($this->selectedCategory) {
+        if(!$this->notEmptyCategories){
+            $this->notEmptyCategories = $this->notEmptyCategoriesMap();
+        }
+
+        if ($this->selectedCategory && $this->selectedCategory->count()) {
             $filterItems = collect();
             $this->selectedCategory->each(function ($category) use (&$filterItems){
                 if ($category->depth === $this->mostDeepSelectedCategory->depth && $category->children && $category->children->count()) {

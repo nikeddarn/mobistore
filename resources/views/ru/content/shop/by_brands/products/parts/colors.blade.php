@@ -8,7 +8,7 @@
     </div>
 
     <div class="col-lg-12">
-        @foreach($possibleColors as $color)
+        @foreach($filters['color'] as $color)
             <a href="{{ $color->filterUrl }}" class="filter-sidebar-checkbox">
                 <div class="checkbox">
                     <label @if($color->selected) class="filter-sidebar-checkbox-checked" @endif> {{ $color->title }}</label>

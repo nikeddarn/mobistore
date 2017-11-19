@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Shop;
 
+use App\Contracts\Shop\Products\Filters\FilterTypes;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Brand;
@@ -15,7 +16,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 
-abstract class ShopController extends Controller
+abstract class ShopController extends Controller implements FilterTypes
 {
     /**
      * @var MetaData
@@ -67,12 +68,12 @@ abstract class ShopController extends Controller
     protected $selectedMetaData = null;
 
     /**
-     * @var Category|collection
+     * @var collection
      */
     protected $selectedCategory = null;
 
     /**
-     * @var Brand|collection
+     * @var collection
      */
     protected $selectedBrand = null;
 
@@ -82,7 +83,7 @@ abstract class ShopController extends Controller
     protected $usedInFiltersBrand = null;
 
     /**
-     * @var DeviceModel|collection
+     * @var collection
      */
     protected $selectedModel = null;
 
@@ -95,6 +96,7 @@ abstract class ShopController extends Controller
      * @var Collection|LengthAwarePaginator
      */
     protected $products;
+
 
     /**
      * CategoryUnfilteredController constructor.
