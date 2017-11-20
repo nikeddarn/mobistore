@@ -12,6 +12,7 @@ use App\Http\Controllers\Shop\Filters\FilterCreators\ColorFilterCreator;
 use App\Http\Controllers\Shop\Filters\FilterCreators\ModelFilterCreator;
 use App\Http\Controllers\Shop\Filters\FilterCreators\QualityFilterCreator;
 use App\Models\Category;
+use App\Models\DeviceModel;
 use Closure;
 use Exception;
 use Illuminate\Support\Collection;
@@ -62,11 +63,11 @@ class CategoryRouteFiltersGenerator extends FiltersGenerator
      * @param array $currentSelectedItems
      * @return Closure
      */
-    protected function getDefaultConstraints(string $type, array $currentSelectedItems):Closure
+    protected function getDefaultConstraints(string $type, array $currentSelectedItems): Closure
     {
-        if ($type === self::MODEL){
+        if ($type === self::MODEL) {
             return $this->modelFilterConstraints($currentSelectedItems);
-        }else{
+        } else {
             return $this->commonFilterConstraints($currentSelectedItems);
         }
     }
@@ -100,7 +101,7 @@ class CategoryRouteFiltersGenerator extends FiltersGenerator
 
                     $query->whereIn('categories_id', $leavesOfSelectedCategories->pluck('id'));
                 })
-                ->whereHas('brand', function ($query) use ($currentSelectedItems){
+                ->whereHas('brand', function ($query) use ($currentSelectedItems) {
                     $query->whereIn('id', $currentSelectedItems[self::BRAND]->pluck('id'));
                 });
         };
@@ -112,18 +113,18 @@ class CategoryRouteFiltersGenerator extends FiltersGenerator
      * @param Collection $selectedCategories
      * @return Collection
      */
-    private function getLeavesOfSelectedCategories(Collection $selectedCategories):Collection
+    private function getLeavesOfSelectedCategories(Collection $selectedCategories): Collection
     {
         $leavesOfSelectedCategories = collect();
 
-        $selectedCategories->each(function (Category $selectedCategory) use (&$leavesOfSelectedCategories){
-            if ($selectedCategory->isLeaf()){
+        $selectedCategories->each(function (Category $selectedCategory) use (&$leavesOfSelectedCategories) {
+            if ($selectedCategory->isLeaf()) {
                 $leavesOfSelectedCategories->push($selectedCategory);
-            }else{
+            } else {
                 $selectedCategoryDescendants = $selectedCategory->descendants;
-                if ($selectedCategoryDescendants && $selectedCategoryDescendants->count()){
-                    $selectedCategoryDescendants->each(function($descendant) use (&$leavesOfSelectedCategories){
-                        if ($descendant->isLeaf()){
+                if ($selectedCategoryDescendants && $selectedCategoryDescendants->count()) {
+                    $selectedCategoryDescendants->each(function ($descendant) use (&$leavesOfSelectedCategories) {
+                        if ($descendant->isLeaf()) {
                             $leavesOfSelectedCategories->push($descendant);
                         }
                     });
@@ -132,6 +133,45 @@ class CategoryRouteFiltersGenerator extends FiltersGenerator
         });
 
         return $leavesOfSelectedCategories;
+    }
+
+    /**
+     * Subtract filter item and its dependent items (if needing) from selected items that will be used on click at this filter.
+     *
+     * @param $subtractingFilterItem
+     * @param array $currentSelectedItems
+     * @param string $type
+     * @return array
+     * @internal param array $shouldBeSelectedItemsOnThisFilter
+     */
+    protected function subtractSelectedItemWithDependentItems($subtractingFilterItem, array $currentSelectedItems, string $type): array
+    {
+        if ($type === self::BRAND) {
+            return $this->subtractBrandFilterItemWithDependedDeviceModels($subtractingFilterItem, $currentSelectedItems);
+        }else{
+            $currentSelectedItems[$type] = $this->subtractFilterItem($subtractingFilterItem, clone $currentSelectedItems[$type]);
+            return $currentSelectedItems;
+        }
+    }
+
+    /**
+     * Subtract filter item from selected brands collection.
+     * Subtract models of this brand from selected models collection.
+     *
+     * @param $subtractingFilterItem
+     * @param array $currentSelectedItems
+     * @return array
+     * @internal param array $shouldBeSelectedItemsOnThisFilter
+     */
+    private function subtractBrandFilterItemWithDependedDeviceModels($subtractingFilterItem, array $currentSelectedItems)
+    {
+        $currentSelectedItems[self::BRAND] = $this->subtractFilterItem($subtractingFilterItem, clone $currentSelectedItems[self::BRAND]);
+
+        $currentSelectedItems[self::MODEL] = clone $currentSelectedItems[self::MODEL]->filter(function (DeviceModel $model) use ($subtractingFilterItem){
+            return $model->brands_id !== $subtractingFilterItem->id;
+        });
+
+        return $currentSelectedItems;
     }
 
     /**
@@ -176,7 +216,7 @@ class CategoryRouteFiltersGenerator extends FiltersGenerator
     {
         $routePath = '';
 
-        if (!$shouldBeSelectedItems[self::CATEGORY]->count()){
+        if (!$shouldBeSelectedItems[self::CATEGORY]->count()) {
             throw new Exception('CATEGORY route component is missing on "single" route');
         }
 

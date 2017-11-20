@@ -2,36 +2,32 @@
 
 namespace App\Http\Controllers\Shop\Single;
 
-use App\Http\Controllers\Shop\Filters\CategoriesFilter;
-use App\Http\Controllers\Shop\Filters\ColorFilter;
-use App\Http\Controllers\Shop\Filters\QualityFilter;
+use App\Http\Controllers\Shop\Filters\BrandRouteFiltersGenerator;
+use App\Models\Brand;
+use App\Models\Category;
+use App\Models\Color;
+use App\Models\DeviceModel;
+use App\Models\MetaData;
+use App\Models\Product;
+use App\Models\Quality;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class BrandUnfilteredController extends CommonUnfilteredController
 {
-    use CategoriesFilter;
-    use QualityFilter;
-    use ColorFilter;
-
     /**
-     * @var Collection
-     */
-    private $parentCategoriesFilters = null;
-
-    /**
-     * @var Collection
-     */
-    private $childrenCategoriesFilter = null;
-
-    /**
-     * Categories with its ancestors that has products.
+     * Filter generator for 'brand' route.
      *
-     * @var Collection
+     * @var BrandRouteFiltersGenerator
      */
-    protected $notEmptyCategories;
+    private $brandRouteFiltersGenerator;
+
+    public function __construct(Request $request, MetaData $metaData, Category $category, Brand $brand, DeviceModel $model, Product $product, Quality $quality, Color $color, BrandRouteFiltersGenerator $brandRouteFiltersGenerator)
+    {
+        parent::__construct($request, $metaData, $category, $brand, $model, $product, $quality, $color);
+        $this->brandRouteFiltersGenerator = $brandRouteFiltersGenerator;
+    }
 
     /**
      * Handle incoming url.
@@ -59,9 +55,7 @@ class BrandUnfilteredController extends CommonUnfilteredController
 
             if ($this->selectedModel) {
 
-                $this->getPossibleFilters();
-
-                return view('content.shop.by_brands.products.index')->with($this->commonViewData())->with($this->productsViewData($request))->with($this->filtersViewData());
+                return view('content.shop.by_brands.products.index')->with($this->commonViewData())->with($this->productsViewData($request))->with(['filters' => $this->getPossibleFilters()]);
 
             } else {
 
@@ -124,54 +118,72 @@ class BrandUnfilteredController extends CommonUnfilteredController
     }
 
     /**
-     * Data for user filters.
+     * Create possible user filters.
      *
      * @return array
      */
-    private function filtersViewData()
+    private function getPossibleFilters(): array
     {
-        return [
-            'filtersAvailable' => $this->parentCategoriesFilters || $this->childrenCategoriesFilter || $this->possibleQuality || $this->possibleColors,
-            'parentCategoriesFilters' => $this->parentCategoriesFilters,
-            'childrenCategoriesFilter' => $this->childrenCategoriesFilter,
-            'possibleQuality' => $this->possibleQuality,
-            'possibleColors' => $this->possibleColors,
-        ];
-    }
+        $filters = [];
 
-    /**
-     * Define possible data for user filters.
-     *
-     * @return void
-     */
-    private function getPossibleFilters()
-    {
-        $this->notEmptyCategories = $this->notEmptyCategoriesMap();
+        $selectedItems = $this->prepareSelectedItems();
 
-        if ($this->selectedCategory) {
-            $parentCategoriesFilters = $this->getParentCategoriesFilters();
+        $this->brandRouteFiltersGenerator->setCurrentSelectedItems($selectedItems);
 
-            if ($parentCategoriesFilters->count()) {
-                $this->parentCategoriesFilters = $parentCategoriesFilters;
+
+        $categoryFilters = [];
+
+        $rootCategory = $this->category->whereIsRoot()->first();
+        $this->brandRouteFiltersGenerator->getFilterCreator(self::CATEGORY)->setAdditionalConstraints(function ($query) use ($rootCategory) {
+            return $query->where('categories.parent_id', $rootCategory->id);
+        });
+
+        $rootCategoryFilter = $this->brandRouteFiltersGenerator->getFilter(self::CATEGORY);
+        if ($rootCategoryFilter->count() > 1) {
+            $categoryFilters[] = $rootCategoryFilter;
+        }
+
+        for ($depth = 1; $depth < config('shop.category_filters_depth'); $depth++) {
+            $selectedItemsOnDepth = $this->getSelectedCategoriesIdByDepth($depth);
+            $this->brandRouteFiltersGenerator->getFilterCreator(self::CATEGORY)->setAdditionalConstraints(function ($query) use ($selectedItemsOnDepth) {
+                return $query->whereIn('categories.parent_id', $selectedItemsOnDepth);
+            });
+            $categoryFilter = $this->brandRouteFiltersGenerator->getFilter(self::CATEGORY);
+            if ($categoryFilter->count() > 1){
+                $categoryFilters[] = $categoryFilter;
             }
         }
 
-        $childrenCategoriesFilter = $this->getChildrenCategoriesFilter();
-
-        if ($childrenCategoriesFilter && $childrenCategoriesFilter->count() > 1) {
-            $this->childrenCategoriesFilter = $childrenCategoriesFilter;
+        if (!empty($categoryFilters)) {
+            $filters[self::CATEGORY] = $categoryFilters;
         }
 
 
-        $possibleQuality = $this->getPossibleQuality();
-        if ($possibleQuality->count() > 1) {
-            $this->possibleQuality = $this->formPossibleQualityUrl($possibleQuality);
+        $qualityFilter = $this->brandRouteFiltersGenerator->getFilter(self::QUALITY);
+        if ($qualityFilter->count() > 1) {
+            $filters[self::QUALITY] = $qualityFilter;
         }
 
-        $possibleColors = $this->getPossibleColors();
-        if ($possibleColors->count() > 1) {
-            $this->possibleColors = $this->formPossibleColorsUrl($possibleColors);
+        $colorFilter = $this->brandRouteFiltersGenerator->getFilter(self::COLOR);
+        if ($colorFilter->count() > 1) {
+            $filters[self::COLOR] = $colorFilter;
         }
+        return $filters;
+    }
+
+    /**
+     * Define array of selected categories id which has received depth.
+     * @param int $depth
+     * @return array
+     */
+    private function getSelectedCategoriesIdByDepth(int $depth): array
+    {
+        return $this->selectedCategory
+            ->filter(function (Category $category) use ($depth) {
+                return $category->depth === $depth;
+            })
+            ->pluck('id')
+            ->toArray();
     }
 
     /**

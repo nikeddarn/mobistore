@@ -117,6 +117,54 @@ class BrandRouteFiltersGenerator extends FiltersGenerator
     }
 
     /**
+     * Subtract filter item and its dependent items (if needing) from selected items that will be used on click at this filter.
+     *
+     * @param $subtractingFilterItem
+     * @param array $currentSelectedItems
+     * @param string $type
+     * @return array
+     * @internal param array $shouldBeSelectedItemsOnThisFilter
+     */
+    protected function subtractSelectedItemWithDependentItems($subtractingFilterItem, array $currentSelectedItems, string $type): array
+    {
+        if ($type === self::CATEGORY) {
+            $currentSelectedItems[$type] = $this->subtractCategoryFilterItemWithDescendantsFromShouldBeSelectedItems($subtractingFilterItem, clone $currentSelectedItems[$type]);
+        }else{
+            $currentSelectedItems[$type] =  $this->subtractFilterItem($subtractingFilterItem, clone $currentSelectedItems[$type]);
+        }
+
+        return $currentSelectedItems;
+    }
+
+    /**
+     * Subtract filter item with its descendants from filter items collection that will be used as selected on click at this item.
+     *
+     * @param $subtractingFilterItem
+     * @param Collection $shouldBeSelectedItemsOnThisFilter
+     * @return Collection
+     */
+    private function subtractCategoryFilterItemWithDescendantsFromShouldBeSelectedItems($subtractingFilterItem, Collection $shouldBeSelectedItemsOnThisFilter): Collection
+    {
+        $subtractedShouldBeSelectedItemsOnThisFilter = $shouldBeSelectedItemsOnThisFilter->filter(function ($filterItem) use ($subtractingFilterItem) {
+            if ($filterItem->id === $subtractingFilterItem->id) {
+                return false;
+            } else {
+                $subtractingFilterItemDescendants = $subtractingFilterItem->descendants;
+                if ($subtractingFilterItemDescendants && $subtractingFilterItemDescendants->count()) {
+                    foreach ($subtractingFilterItem->descendants as $subtractingFilterItemDescendant) {
+                        if ($subtractingFilterItemDescendant->id === $filterItem->id) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        });
+
+        return $subtractedShouldBeSelectedItemsOnThisFilter;
+    }
+
+    /**
      * Is filter item route multiply ?
      *
      * @param array $shouldBeSelectedItems

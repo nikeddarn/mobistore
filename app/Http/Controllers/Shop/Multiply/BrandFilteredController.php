@@ -147,6 +147,11 @@ class BrandFilteredController extends CommonFilteredController
         return $filters;
     }
 
+    /**
+     * Define array of selected categories id which has received depth.
+     * @param int $depth
+     * @return array
+     */
     private function getSelectedCategoriesIdByDepth(int $depth): array
     {
         return $this->selectedCategory

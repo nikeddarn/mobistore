@@ -1,7 +1,7 @@
 <?php
 /**
  * Create filter creators.
- * Generate filters.
+ * Generate filters with url on each item.
  */
 
 namespace App\Http\Controllers\Shop\Filters;
@@ -94,23 +94,17 @@ abstract class FiltersGenerator implements FilterTypes
      */
     protected function createFilterItemsUrl(Collection $filter, array $currentSelectedItems, string $type): Collection
     {
-        $currentSelectedItemsOnThisFilter = clone $currentSelectedItems[$type];
-
         foreach ($filter as $filterItem) {
 
-            $shouldBeSelectedItemsOnThisFilter = clone $currentSelectedItems[$type];
-
-            if ($this->isFilterItemSelected($filterItem, $currentSelectedItemsOnThisFilter)) {
+            if ($this->isFilterItemSelected($filterItem, $currentSelectedItems[$type])) {
                 $filterItem->selected = true;
-                $shouldBeSelectedItemsOnThisFilter = $this->subtractFilterItemWithDescendantsFromShouldBeSelectedItems($filterItem, $shouldBeSelectedItemsOnThisFilter);
+                $shouldBeSelectedItemsOnThisFilter = $this->subtractSelectedItemWithDependentItems($filterItem, $currentSelectedItems, $type);
             } else {
                 $filterItem->selected = false;
-                $this->addFilterItemToShouldBeSelectedItems($filterItem, $shouldBeSelectedItemsOnThisFilter);
+                $shouldBeSelectedItemsOnThisFilter = $this->addFilterItemToShouldBeSelectedItems($filterItem, $currentSelectedItems, $type);
             }
 
-            $shouldBeSelectedItems = $this->getShouldBeSelectedItems($currentSelectedItems, $type, $shouldBeSelectedItemsOnThisFilter);
-
-            $filterItem->filterUrl = $this->formFilterItemUrl($shouldBeSelectedItems);
+            $filterItem->filterUrl = $this->formFilterItemUrl($shouldBeSelectedItemsOnThisFilter);
         }
 
         return $filter;
@@ -132,56 +126,45 @@ abstract class FiltersGenerator implements FilterTypes
      * Add filter item to filter items collection that will be used as selected on click at this item.
      *
      * @param $addingFilterItem
-     * @param Collection $shouldBeSelectedItemsOnThisFilter
+     * @param array $currentSelectedItems
+     * @param string $type
+     * @return array
+     * @internal param array $shouldBeSelectedItemsOnThisFilter
      */
-    private function addFilterItemToShouldBeSelectedItems($addingFilterItem, Collection $shouldBeSelectedItemsOnThisFilter)
+    private function addFilterItemToShouldBeSelectedItems($addingFilterItem, array $currentSelectedItems, string $type):array
     {
+        $shouldBeSelectedItemsOnThisFilter = clone $currentSelectedItems[$type];
+
         $shouldBeSelectedItemsOnThisFilter->push($addingFilterItem);
+
+        $currentSelectedItems[$type] = $shouldBeSelectedItemsOnThisFilter;
+
+        return $currentSelectedItems;
     }
 
     /**
-     * Subtract filter item with its descendants from filter items collection that will be used as selected on click at this item.
+     * Subtract filter item and its dependent items (if needing) from selected items that will be used on click at this filter.
+     *
+     * @param $subtractingFilterItem
+     * @param array $currentSelectedItems
+     * @param string $type
+     * @return array
+     * @internal param array $shouldBeSelectedItemsOnThisFilter
+     */
+    abstract protected function subtractSelectedItemWithDependentItems($subtractingFilterItem, array $currentSelectedItems, string $type): array;
+
+    /**
+     * Subtract filter item from selected items collection.
      *
      * @param $subtractingFilterItem
      * @param Collection $shouldBeSelectedItemsOnThisFilter
      * @return Collection
      */
-    private function subtractFilterItemWithDescendantsFromShouldBeSelectedItems($subtractingFilterItem, Collection $shouldBeSelectedItemsOnThisFilter): Collection
+    protected function subtractFilterItem($subtractingFilterItem, Collection $shouldBeSelectedItemsOnThisFilter): Collection
     {
-        $subtractedShouldBeSelectedItemsOnThisFilter = $shouldBeSelectedItemsOnThisFilter->filter(function ($filterItem) use ($subtractingFilterItem) {
-            if ($filterItem->id === $subtractingFilterItem->id) {
-                return false;
-            } else {
-                $subtractingFilterItemDescendants = $subtractingFilterItem->descendants;
-                if ($subtractingFilterItemDescendants && $subtractingFilterItemDescendants->count()) {
-                    foreach ($subtractingFilterItem->descendants as $subtractingFilterItemDescendant) {
-                        if ($subtractingFilterItemDescendant->id === $filterItem->id) {
-                            return false;
-                        }
-                    }
-                }
-            }
-            return true;
+        return $shouldBeSelectedItemsOnThisFilter->filter(function ($filterItem) use ($subtractingFilterItem) {
+            return $filterItem->id !== $subtractingFilterItem->id;
         });
-
-        return $subtractedShouldBeSelectedItemsOnThisFilter;
-    }
-
-    /**
-     * Prepare array of all selected items that will be used on click at current handling filter item.
-     *
-     * @param array $currentSelectedItems
-     * @param string $type
-     * @param Collection $shouldBeSelectedItemsOnThisFilter
-     * @return array
-     */
-    private
-    function getShouldBeSelectedItems(array $currentSelectedItems, string $type, Collection $shouldBeSelectedItemsOnThisFilter): array
-    {
-        $shouldBeSelectedItems = $currentSelectedItems;
-        $shouldBeSelectedItems[$type] = $shouldBeSelectedItemsOnThisFilter;
-
-        return $shouldBeSelectedItems;
     }
 
     /**
@@ -190,8 +173,7 @@ abstract class FiltersGenerator implements FilterTypes
      * @param array $shouldBeSelectedItems
      * @return string
      */
-    private
-    function formFilterItemUrl(array $shouldBeSelectedItems): string
+    private function formFilterItemUrl(array $shouldBeSelectedItems): string
     {
         if ($this->isMultiplyRoute($shouldBeSelectedItems)) {
             return $this->getMultiplyRoutePrefix() . $this->getMultiplyRoutePath($shouldBeSelectedItems);
@@ -236,11 +218,11 @@ abstract class FiltersGenerator implements FilterTypes
      * @param Collection $shouldBeSelectedItems
      * @return string
      */
-    protected function createUrlPart(Collection $shouldBeSelectedItems):string
+    protected function createUrlPart(Collection $shouldBeSelectedItems): string
     {
         if (isset($shouldBeSelectedItems) && $shouldBeSelectedItems->count()) {
             return '/' . $shouldBeSelectedItems->pluck('breadcrumb')->implode('/');
-        }else{
+        } else {
             return '';
         }
     }
