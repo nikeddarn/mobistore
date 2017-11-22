@@ -4,15 +4,7 @@ namespace App\Http\Controllers\Shop\Single;
 
 use App\Http\Controllers\Shop\Filters\CategoryRouteFilters;
 use App\Http\Controllers\Shop\Filters\FilterGenerators\CategoryRouteFiltersGenerator;
-use App\Models\Brand;
-use App\Models\Category;
-use App\Models\Color;
-use App\Models\DeviceModel;
-use App\Models\MetaData;
-use App\Models\Product;
-use App\Models\Quality;
-use Closure;
-use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 class CategoryUnfilteredController extends CommonUnfilteredController
 {
@@ -23,22 +15,19 @@ class CategoryUnfilteredController extends CommonUnfilteredController
      */
     private $categoryRouteFiltersGenerator;
 
-    public function __construct(Request $request, MetaData $metaData, Category $category, Brand $brand, DeviceModel $model, Product $product, Quality $quality, Color $color, CategoryRouteFiltersGenerator $categoryRouteFiltersGenerator)
-    {
-        parent::__construct($request, $metaData, $category, $brand, $model, $product, $quality, $color);
-        $this->categoryRouteFiltersGenerator = $categoryRouteFiltersGenerator;
-    }
-
     /**
      * Handle incoming url.
      * Show categories view or products by category view.
      *
      * @param string $url
-     * @param Request $request
+     * @param CategoryRouteFiltersGenerator $categoryRouteFiltersGenerator
      * @return \Illuminate\View\View
+     * @internal param Request $request
      */
-    public function index(string $url = '', Request $request)
+    public function index(string $url = '', CategoryRouteFiltersGenerator $categoryRouteFiltersGenerator)
     {
+        $this->categoryRouteFiltersGenerator = $categoryRouteFiltersGenerator;
+
         $this->getSelectedModels($url);
 
         if(!$this->selectedCategory->count()){
@@ -47,7 +36,7 @@ class CategoryUnfilteredController extends CommonUnfilteredController
 
         if ($this->selectedCategory->last()->isLeaf()) {
 
-            return view('content.shop.by_categories.products.index')->with($this->commonViewData())->with($this->productsViewData($request))->with(['filters' => $this->getPossibleFilters()]);
+            return view('content.shop.by_categories.products.index')->with($this->commonViewData())->with($this->productsViewData())->with(['filters' => $this->getPossibleFilters()]);
 
         } else {
 
@@ -93,5 +82,16 @@ class CategoryUnfilteredController extends CommonUnfilteredController
         }
 
         return $breadcrumbs;
+    }
+
+    /**
+     * Categories that will constraint products retrieving.
+     *
+     * @param Collection $selectedCategories
+     * @return Collection
+     */
+    protected function productRetrieveConstraintCategories(Collection $selectedCategories): Collection
+    {
+        return $this->getLeavesOfMostDeepSelectedCategory($this->selectedCategory);
     }
 }

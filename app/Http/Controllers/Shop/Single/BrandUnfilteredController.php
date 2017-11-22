@@ -4,15 +4,7 @@ namespace App\Http\Controllers\Shop\Single;
 
 use App\Http\Controllers\Shop\Filters\BrandRouteFilters;
 use App\Http\Controllers\Shop\Filters\FilterGenerators\BrandRouteFiltersGenerator;
-use App\Models\Brand;
-use App\Models\Category;
-use App\Models\Color;
-use App\Models\DeviceModel;
-use App\Models\MetaData;
-use App\Models\Product;
-use App\Models\Quality;
-use Closure;
-use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class BrandUnfilteredController extends CommonUnfilteredController
@@ -25,22 +17,19 @@ class BrandUnfilteredController extends CommonUnfilteredController
      */
     private $brandRouteFiltersGenerator;
 
-    public function __construct(Request $request, MetaData $metaData, Category $category, Brand $brand, DeviceModel $model, Product $product, Quality $quality, Color $color, BrandRouteFiltersGenerator $brandRouteFiltersGenerator)
-    {
-        parent::__construct($request, $metaData, $category, $brand, $model, $product, $quality, $color);
-        $this->brandRouteFiltersGenerator = $brandRouteFiltersGenerator;
-    }
-
     /**
      * Handle incoming url.
      * Show brands view or products by brand view.
      *
      * @param string $url
-     * @param Request $request
+     * @param BrandRouteFiltersGenerator $brandRouteFiltersGenerator
      * @return \Illuminate\View\View
+     * @internal param Request $request
      */
-    public function index(string $url = '', Request $request)
+    public function index(string $url = '', BrandRouteFiltersGenerator $brandRouteFiltersGenerator)
     {
+        $this->brandRouteFiltersGenerator = $brandRouteFiltersGenerator;
+
         if ($url === '') {
 
             $this->getSelectedModels('brand');
@@ -57,7 +46,7 @@ class BrandUnfilteredController extends CommonUnfilteredController
 
             if ($this->selectedModel->count()) {
 
-                return view('content.shop.by_brands.products.index')->with($this->commonViewData())->with($this->productsViewData($request))->with(['filters' => $this->getPossibleFilters()]);
+                return view('content.shop.by_brands.products.index')->with($this->commonViewData())->with($this->productsViewData())->with(['filters' => $this->getPossibleFilters()]);
 
             } else {
 
@@ -117,5 +106,16 @@ class BrandUnfilteredController extends CommonUnfilteredController
 //        }
 
         return $breadcrumbs;
+    }
+
+    /**
+     * Categories that will constraint products retrieving.
+     *
+     * @param Collection $selectedCategories
+     * @return Collection
+     */
+    protected function productRetrieveConstraintCategories(Collection $selectedCategories): Collection
+    {
+        return $this->getLeavesOfMostDeepSelectedCategory($this->selectedCategory);
     }
 }

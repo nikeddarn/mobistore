@@ -31,30 +31,29 @@ trait BrandRouteFilters
 
         // create categories filters
 
-        $categoryFilters = [];
+            $categoryFilters = [];
 
-        $selectedCategoriesWithRoot = (clone $this->selectedCategory)->push($this->category->withDepth()->whereIsRoot()->first());
-        $maxSelectedCategoriesDepth = $this->maxSelectedCategoriesDepth($selectedCategoriesWithRoot);
+            $selectedCategoriesWithRoot = (clone $this->selectedCategory)->push($this->category->withDepth()->whereIsRoot()->first());
+            $maxSelectedCategoriesDepth = $this->maxSelectedCategoriesDepth($selectedCategoriesWithRoot);
 
-        for ($depth = 0; $depth < config('shop.category_filters_depth') && $depth < ($maxSelectedCategoriesDepth + 1); $depth++) {
+            for ($depth = 0; $depth < config('shop.category_filters_depth') && $depth < ($maxSelectedCategoriesDepth + 1); $depth++) {
 
-            $selectedItemsOnDepth = $this->getSelectedCategoriesIdByDepth($selectedCategoriesWithRoot, $depth);
+                $selectedItemsOnDepth = $this->getSelectedCategoriesIdByDepth($selectedCategoriesWithRoot, $depth);
 
-            $this->brandRouteFiltersGenerator->getFilterCreator(self::CATEGORY)->setAdditionalConstraints(function ($query) use ($selectedItemsOnDepth) {
-                return $query->whereIn('categories.parent_id', $selectedItemsOnDepth);
-            });
+                $this->brandRouteFiltersGenerator->getFilterCreator(self::CATEGORY)->setAdditionalConstraints(function ($query) use ($selectedItemsOnDepth) {
+                    return $query->whereIn('categories.parent_id', $selectedItemsOnDepth);
+                });
 
-            $categoryFilter = $this->brandRouteFiltersGenerator->getFilter(self::CATEGORY);
+                $categoryFilter = $this->brandRouteFiltersGenerator->getFilter(self::CATEGORY);
 
-            if ($categoryFilter->count() > 1){
-                $categoryFilters[] = $categoryFilter;
+                if ($categoryFilter->count() > 1) {
+                    $categoryFilters[] = $categoryFilter;
+                }
             }
-        }
 
-        if (!empty($categoryFilters)) {
-            $filters[self::CATEGORY] = $categoryFilters;
-        }
-
+            if (!empty($categoryFilters)) {
+                $filters[self::CATEGORY] = $categoryFilters;
+            }
 
         // create quality filter
 
@@ -95,7 +94,7 @@ trait BrandRouteFilters
      * @param Collection $selectedCategories
      * @return int
      */
-    private function maxSelectedCategoriesDepth(Collection $selectedCategories):int
+    private function maxSelectedCategoriesDepth(Collection $selectedCategories): int
     {
         return $selectedCategories->sortBy('depth')->last()->depth;
     }

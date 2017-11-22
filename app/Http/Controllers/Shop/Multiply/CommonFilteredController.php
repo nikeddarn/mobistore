@@ -66,53 +66,6 @@ abstract class CommonFilteredController extends ShopController
     }
 
     /**
-     * Collection of products that relevant the conditions.
-     *
-     * @return Collection|LengthAwarePaginator
-     */
-    protected function getProducts()
-    {
-        $query = $this->product->select();
-
-        if (isset($this->selectedCategory) && $this->selectedCategory->count()) {
-            $query->whereIn('categories_id', $this->collectProductConstraintsSelectedCategories($this->selectedCategory)->pluck('id'));
-        }
-
-        if (isset($this->selectedBrand) && $this->selectedBrand->count()) {
-            $query->whereIn('brands_id', $this->selectedBrand->pluck('id'));
-        }
-
-        if (isset($this->selectedModel) && $this->selectedModel->count()) {
-            $query->whereHas('deviceModel', function ($query) {
-                $query->whereIn('id', $this->selectedModel->pluck('id'));
-            });
-        }
-
-        if (isset($this->selectedColor) && $this->selectedColor->count()) {
-            $query->where(function ($query) {
-                $query->whereIn('colors_id', $this->selectedColor->pluck('id'))
-                    ->orWhereNull('colors_id');
-            });
-        }
-
-        if (isset($this->selectedQuality) && $this->selectedQuality->count()) {
-            $query->whereIn('quality_id', $this->selectedQuality->pluck('id'));
-        }
-
-        return $this->isPaginable ? $query->paginate(config('shop.products_per_page')) : $query->get();
-    }
-
-    /**
-     * Collect selected categories for retrieve product constraint.
-     * Collect all leaves of parent selected directory or only selected leaf.
-     *
-     * @param Collection $selectedCategories
-     * @return Collection
-     * @internal param $query
-     */
-    abstract protected function collectProductConstraintsSelectedCategories(Collection $selectedCategories): Collection;
-
-    /**
      * @return MetaData
      */
     protected function createMetaData()

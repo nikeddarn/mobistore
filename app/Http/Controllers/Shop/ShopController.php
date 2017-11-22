@@ -76,11 +76,10 @@ abstract class ShopController extends Controller implements FilterTypes
      * @var bool
      */
     protected $isPaginable;
-
     /**
-     * @var Collection|LengthAwarePaginator
+     * @var Request
      */
-    protected $products;
+    private $request;
 
 
     /**
@@ -104,6 +103,7 @@ abstract class ShopController extends Controller implements FilterTypes
         $this->product = $product;
         $this->quality = $quality;
         $this->color = $color;
+        $this->request = $request;
 
         $this->isPaginable = $request->has('view') ? false : true;
     }
@@ -123,18 +123,64 @@ abstract class ShopController extends Controller implements FilterTypes
 
     /**
      * Create an array of view data for products page.
-     *
-     * @param Request $request
      * @return array
+     * @internal param Request $request
      */
-    protected function productsViewData(Request $request)
+    protected function productsViewData()
     {
-        $this->products = $this->getProducts();
+        $products = $this->getProducts();
 
         return [
-            'products' => $this->products,
+            'products' => $this->getProducts(),
             'productImagePathPrefix' => Storage::disk('public')->url('images/products/'),
-            'viewAllUrl' => $this->isPaginable && $this->products->lastPage() > 1 ? $request->url() . '?view=all' : null,
+            'viewAllUrl' => $this->isPaginable && $products->lastPage() > 1 ? $this->request->url() . '?view=all' : null,
         ];
     }
+
+    /**
+     * Get products with constraints that defined by selected items.
+     *
+     * @return LengthAwarePaginator|Collection
+     */
+    private function getProducts()
+    {
+        $query = $this->product->select();
+
+        if (isset($this->selectedCategory) && $this->selectedCategory->count()) {
+            $query->whereIn('categories_id', $this->productRetrieveConstraintCategories($this->selectedCategory)->pluck('id'));
+        }
+
+        if (isset($this->selectedBrand) && $this->selectedBrand->count()) {
+            $query->whereIn('brands_id', $this->selectedBrand->pluck('id'));
+        }
+
+        if (isset($this->selectedModel) && $this->selectedModel->count()) {
+            $query->whereHas('deviceModel', function ($query) {
+                $query->whereIn('id', $this->selectedModel->pluck('id'));
+            });
+        }
+
+        if (isset($this->selectedColor) && $this->selectedColor->count()) {
+            $query->where(function ($query) {
+                $query->whereIn('colors_id', $this->selectedColor->pluck('id'))
+                    ->orWhereNull('colors_id');
+            });
+        }
+
+        if (isset($this->selectedQuality) && $this->selectedQuality->count()) {
+            $query->whereIn('quality_id', $this->selectedQuality->pluck('id'));
+        }
+
+        $query->with('primaryImage');
+
+        return $this->isPaginable ? $query->paginate(config('shop.products_per_page')) : $query->get();
+    }
+
+    /**
+     * Categories that will constraint products retrieving.
+     *
+     * @param Collection $selectedCategories
+     * @return Collection
+     */
+    abstract protected function productRetrieveConstraintCategories(Collection $selectedCategories):Collection;
 }

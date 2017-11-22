@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Shop\Single;
 
 use App\Http\Controllers\Shop\ShopController;
 use App\Models\MetaData;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
 abstract class CommonUnfilteredController extends ShopController
@@ -51,35 +50,7 @@ abstract class CommonUnfilteredController extends ShopController
         return $this->selectedMetaData;
     }
 
-    /**
-     * Collection of products that relevant the conditions.
-     *
-     * @return Collection|LengthAwarePaginator
-     */
-    protected function getProducts()
-    {
-        $query = $this->product->where(function ($query) {
-
-            if ($this->selectedCategory->count()) {
-                $query->whereIn('categories_id', $this->getLeavesOfMostDeepSelectedCategory($this->selectedCategory)->pluck('id'));
-            }
-
-            if ($this->selectedBrand->count()) {
-                $query->where('brands_id', $this->selectedBrand->first()->id);
-            }
-
-            if ($this->selectedModel->count()) {
-                $query->whereHas('deviceModel', function ($query) {
-                    $query->where('id', $this->selectedModel->first()->id);
-                });
-            }
-        })
-            ->with('primaryImage');
-
-        return $this->isPaginable ? $query->paginate(config('shop.products_per_page')) : $query->get();
-    }
-
-    private function getLeavesOfMostDeepSelectedCategory(Collection $selectedCategory):Collection
+    protected function getLeavesOfMostDeepSelectedCategory(Collection $selectedCategory):Collection
     {
         $mostDeepSelectedCategory = $selectedCategory->sortBy('depth')->last();
         $leaves = collect();
