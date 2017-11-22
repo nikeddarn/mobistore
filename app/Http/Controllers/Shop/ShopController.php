@@ -53,16 +53,6 @@ abstract class ShopController extends Controller implements FilterTypes
     protected $color;
 
     /**
-     * @var Collection
-     */
-    protected $possibleQuality = null;
-
-    /**
-     * @var Collection
-     */
-    protected $possibleColors = null;
-
-    /**
      * @var MetaData
      */
     protected $selectedMetaData = null;
@@ -76,11 +66,6 @@ abstract class ShopController extends Controller implements FilterTypes
      * @var collection
      */
     protected $selectedBrand = null;
-
-    /**
-     * @var Brand
-     */
-    protected $usedInFiltersBrand = null;
 
     /**
      * @var collection

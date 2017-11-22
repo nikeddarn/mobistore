@@ -4,7 +4,7 @@
  * Generate filters for "brand" route.
  */
 
-namespace App\Http\Controllers\Shop\Filters;
+namespace App\Http\Controllers\Shop\Filters\FilterGenerators;
 
 
 use App\Http\Controllers\Shop\Filters\FilterCreators\CategoryFilterCreator;
@@ -52,11 +52,11 @@ class BrandRouteFiltersGenerator extends FiltersGenerator
      * @param array $currentSelectedItems
      * @return Closure
      */
-    protected function getDefaultConstraints(string $type, array $currentSelectedItems):Closure
+    protected function getDefaultConstraints(string $type, array $currentSelectedItems): Closure
     {
-        if ($type === self::CATEGORY){
+        if ($type === self::CATEGORY) {
             return $this->categoriesFilterConstraints($currentSelectedItems);
-        }else{
+        } else {
             return $this->commonFilterConstraints($currentSelectedItems);
         }
     }
@@ -73,13 +73,15 @@ class BrandRouteFiltersGenerator extends FiltersGenerator
         $selectedModel = $currentSelectedItems[self::MODEL];
 
         return function ($query) use ($selectedBrand, $selectedModel) {
+
             return $query
+
                 ->whereHas('product', function ($query) use ($selectedBrand) {
 
                     $query->where('brands_id', $selectedBrand->first()->id);
                 })
-                ->whereHas('product.deviceModel', function ($query) use ($selectedModel) {
 
+                ->whereHas('product.deviceModel', function ($query) use ($selectedModel) {
                     $query->where('id', $selectedModel->first()->id);
                 });
         };
@@ -93,25 +95,32 @@ class BrandRouteFiltersGenerator extends FiltersGenerator
      */
     private function categoriesFilterConstraints(array $currentSelectedItems): closure
     {
-        $selectedBrand = $currentSelectedItems[self::BRAND];
-        $selectedModel = $currentSelectedItems[self::MODEL];
+        $selectedBrand = $currentSelectedItems[self::BRAND]->first();
+        $selectedModel = $currentSelectedItems[self::MODEL]->first();
 
         return function ($query) use ($selectedBrand, $selectedModel) {
+
             return $query
+
                 ->join('categories as node', function ($join) {
                     $join->whereRaw('node._lft BETWEEN categories._lft AND categories._rgt');
 
                 })
-                ->join('products', function ($join) use ($selectedBrand){
+
+                ->join('products', function ($join) use ($selectedBrand) {
                     $join->on('products.categories_id', '=', 'node.id')
-                        ->where('brands_id', $selectedBrand->first()->id);
+                        ->where('brands_id', $selectedBrand->id);
 
                 })
-                ->join('products_models_compatible', function ($join) use ($selectedModel){
+
+                ->join('products_models_compatible', function ($join) use ($selectedModel) {
                     $join->on('products.id', '=', 'products_models_compatible.products_id')
-                        ->where('products_models_compatible.models_id', $selectedModel->first()->id);
+                        ->where('products_models_compatible.models_id', $selectedModel->id);
                 })
-                ->distinct();
+
+                ->distinct()
+
+                ->withDepth();
         };
 
     }
@@ -129,8 +138,8 @@ class BrandRouteFiltersGenerator extends FiltersGenerator
     {
         if ($type === self::CATEGORY) {
             $currentSelectedItems[$type] = $this->subtractCategoryFilterItemWithDescendantsFromShouldBeSelectedItems($subtractingFilterItem, clone $currentSelectedItems[$type]);
-        }else{
-            $currentSelectedItems[$type] =  $this->subtractFilterItem($subtractingFilterItem, clone $currentSelectedItems[$type]);
+        } else {
+            $currentSelectedItems[$type] = $this->subtractFilterItem($subtractingFilterItem, clone $currentSelectedItems[$type]);
         }
 
         return $currentSelectedItems;
@@ -226,11 +235,11 @@ class BrandRouteFiltersGenerator extends FiltersGenerator
     {
         $routePath = '';
 
-        if ($shouldBeSelectedItems[self::BRAND] !== 1){
+        if ($shouldBeSelectedItems[self::BRAND]->count() !== 1) {
             throw new Exception('BRAND route component is missing or multiply in selected items on "single" route');
         }
 
-        if ($shouldBeSelectedItems[self::MODEL] !== 1){
+        if ($shouldBeSelectedItems[self::MODEL]->count() !== 1) {
             throw new Exception('MODEL route component is missing or multiply in selected items on "single" route');
         }
 
@@ -238,4 +247,5 @@ class BrandRouteFiltersGenerator extends FiltersGenerator
 
         return $routePath;
     }
+
 }

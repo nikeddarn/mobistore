@@ -4,7 +4,7 @@
  * Generate filters for "category" route.
  */
 
-namespace App\Http\Controllers\Shop\Filters;
+namespace App\Http\Controllers\Shop\Filters\FilterGenerators;
 
 
 use App\Http\Controllers\Shop\Filters\FilterCreators\BrandFilterCreator;
@@ -96,6 +96,7 @@ class CategoryRouteFiltersGenerator extends FiltersGenerator
         $leavesOfSelectedCategories = $this->getLeavesOfSelectedCategories($currentSelectedItems[self::CATEGORY]);
 
         return function ($query) use ($leavesOfSelectedCategories, $currentSelectedItems) {
+
             return $query
                 ->whereHas('product', function ($query) use ($leavesOfSelectedCategories) {
 
@@ -148,7 +149,7 @@ class CategoryRouteFiltersGenerator extends FiltersGenerator
     {
         if ($type === self::BRAND) {
             return $this->subtractBrandFilterItemWithDependedDeviceModels($subtractingFilterItem, $currentSelectedItems);
-        }else{
+        } else {
             $currentSelectedItems[$type] = $this->subtractFilterItem($subtractingFilterItem, clone $currentSelectedItems[$type]);
             return $currentSelectedItems;
         }
@@ -167,7 +168,7 @@ class CategoryRouteFiltersGenerator extends FiltersGenerator
     {
         $currentSelectedItems[self::BRAND] = $this->subtractFilterItem($subtractingFilterItem, clone $currentSelectedItems[self::BRAND]);
 
-        $currentSelectedItems[self::MODEL] = clone $currentSelectedItems[self::MODEL]->filter(function (DeviceModel $model) use ($subtractingFilterItem){
+        $currentSelectedItems[self::MODEL] = clone $currentSelectedItems[self::MODEL]->filter(function (DeviceModel $model) use ($subtractingFilterItem) {
             return $model->brands_id !== $subtractingFilterItem->id;
         });
 

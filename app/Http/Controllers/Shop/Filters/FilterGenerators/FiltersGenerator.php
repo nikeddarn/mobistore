@@ -4,7 +4,7 @@
  * Generate filters with url on each item.
  */
 
-namespace App\Http\Controllers\Shop\Filters;
+namespace App\Http\Controllers\Shop\Filters\FilterGenerators;
 
 
 use App\Contracts\Shop\Products\Filters\FilterCreatorInterface;

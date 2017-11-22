@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers\Shop\Multiply;
 
-use App\Http\Controllers\Shop\Filters\BrandRouteFiltersGenerator;
+use App\Http\Controllers\Shop\Filters\BrandRouteFilters;
+use App\Http\Controllers\Shop\Filters\FilterGenerators\BrandRouteFiltersGenerator;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Color;
@@ -15,6 +16,7 @@ use Illuminate\Support\Collection;
 
 class BrandFilteredController extends CommonFilteredController
 {
+    use BrandRouteFilters;
     /**
      * Filter generator for 'brand' route.
      *
@@ -44,8 +46,6 @@ class BrandFilteredController extends CommonFilteredController
         }
 
         $this->getSelectedModels($url);
-
-        $this->getPossibleFilters();
 
         return view('content.shop.by_brands.products.index')->with($this->commonViewData())->with($this->productsViewData($request))->with(['filters' => $this->getPossibleFilters()]);
 
@@ -91,75 +91,6 @@ class BrandFilteredController extends CommonFilteredController
         if (!($this->selectedBrand && $this->selectedModel && $this->selectedBrand->count() === 1 && $this->selectedModel->count() === 1)) {
             abort(404);
         }
-    }
-
-    /**
-     * Create possible user filters.
-     *
-     * @return array
-     */
-    private function getPossibleFilters(): array
-    {
-        $filters = [];
-
-        $selectedItems = $this->prepareSelectedItems();
-
-        $this->brandRouteFiltersGenerator->setCurrentSelectedItems($selectedItems);
-
-
-        $categoryFilters = [];
-
-        $rootCategory = $this->category->whereIsRoot()->first();
-        $this->brandRouteFiltersGenerator->getFilterCreator(self::CATEGORY)->setAdditionalConstraints(function ($query) use ($rootCategory) {
-            return $query->where('categories.parent_id', $rootCategory->id);
-        });
-
-        $rootCategoryFilter = $this->brandRouteFiltersGenerator->getFilter(self::CATEGORY);
-        if ($rootCategoryFilter->count() > 1) {
-            $categoryFilters[] = $rootCategoryFilter;
-        }
-
-        for ($depth = 1; $depth < config('shop.category_filters_depth'); $depth++) {
-            $selectedItemsOnDepth = $this->getSelectedCategoriesIdByDepth($depth);
-            $this->brandRouteFiltersGenerator->getFilterCreator(self::CATEGORY)->setAdditionalConstraints(function ($query) use ($selectedItemsOnDepth) {
-                return $query->whereIn('categories.parent_id', $selectedItemsOnDepth);
-            });
-            $categoryFilter = $this->brandRouteFiltersGenerator->getFilter(self::CATEGORY);
-            if ($categoryFilter->count() > 1){
-                $categoryFilters[] = $categoryFilter;
-            }
-        }
-
-        if (!empty($categoryFilters)) {
-            $filters[self::CATEGORY] = $categoryFilters;
-        }
-
-
-        $qualityFilter = $this->brandRouteFiltersGenerator->getFilter(self::QUALITY);
-        if ($qualityFilter->count() > 1) {
-            $filters[self::QUALITY] = $qualityFilter;
-        }
-
-        $colorFilter = $this->brandRouteFiltersGenerator->getFilter(self::COLOR);
-        if ($colorFilter->count() > 1) {
-            $filters[self::COLOR] = $colorFilter;
-        }
-        return $filters;
-    }
-
-    /**
-     * Define array of selected categories id which has received depth.
-     * @param int $depth
-     * @return array
-     */
-    private function getSelectedCategoriesIdByDepth(int $depth): array
-    {
-        return $this->selectedCategory
-            ->filter(function (Category $category) use ($depth) {
-                return $category->depth === $depth;
-            })
-            ->pluck('id')
-            ->toArray();
     }
 
     /**

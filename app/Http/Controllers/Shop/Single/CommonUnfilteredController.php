@@ -26,18 +26,19 @@ abstract class CommonUnfilteredController extends ShopController
             ->select($this->metaData->transformAttributesByLocale(['categories_id', 'brands_id', 'models_id', 'page_title', 'meta_title', 'meta_description', 'meta_keywords', 'summary']))
             ->firstOrFail();
 
+        // add selected category with ancestors without root category to collection.
         $this->selectedCategory = collect();
-        if ($this->selectedMetaData->category){
-            $this->selectedCategory->push($this->selectedMetaData->category);
+        if ($this->selectedMetaData->category) {
+            $this->selectedCategory = $this->category->withDepth()->ancestorsAndSelf($this->selectedMetaData->category->id)->forget(0);
         }
 
         $this->selectedBrand = collect();
-        if ($this->selectedMetaData->brand){
+        if ($this->selectedMetaData->brand) {
             $this->selectedBrand->push($this->selectedMetaData->brand);
         }
 
         $this->selectedModel = collect();
-        if ($this->selectedMetaData->deviceModel){
+        if ($this->selectedMetaData->deviceModel) {
             $this->selectedModel->push($this->selectedMetaData->deviceModel);
         }
     }
@@ -45,33 +46,9 @@ abstract class CommonUnfilteredController extends ShopController
     /**
      * @return MetaData
      */
-    protected function createMetaData(){
+    protected function createMetaData()
+    {
         return $this->selectedMetaData;
-    }
-
-
-    /**
-     * Form start part of path to filtered route
-     *
-     * @return string
-     */
-    protected function getPersistentFilteredUrlPart(){
-
-        $filterPath = $this->filteredRoutePrefix();
-
-        if($this->selectedCategory){
-            $filterPath .= '/category=' . $this->selectedCategory->breadcrumb;
-        }
-
-        if($this->selectedBrand){
-            $filterPath .= '/brand=' . $this->selectedBrand->breadcrumb;
-        }
-
-        if ($this->selectedModel) {
-            $filterPath .= '/model=' . $this->selectedModel->breadcrumb;
-        }
-
-        return $filterPath;
     }
 
     /**
@@ -82,12 +59,15 @@ abstract class CommonUnfilteredController extends ShopController
     protected function getProducts()
     {
         $query = $this->product->where(function ($query) {
+
             if ($this->selectedCategory->count()) {
-                $this->categoryHasProductsQueryBuilder()($query);
+                $query->whereIn('categories_id', $this->getLeavesOfMostDeepSelectedCategory($this->selectedCategory)->pluck('id'));
             }
+
             if ($this->selectedBrand->count()) {
                 $query->where('brands_id', $this->selectedBrand->first()->id);
             }
+
             if ($this->selectedModel->count()) {
                 $query->whereHas('deviceModel', function ($query) {
                     $query->where('id', $this->selectedModel->first()->id);
@@ -99,12 +79,30 @@ abstract class CommonUnfilteredController extends ShopController
         return $this->isPaginable ? $query->paginate(config('shop.products_per_page')) : $query->get();
     }
 
+    private function getLeavesOfMostDeepSelectedCategory(Collection $selectedCategory):Collection
+    {
+        $mostDeepSelectedCategory = $selectedCategory->sortBy('depth')->last();
+        $leaves = collect();
+
+        if ($mostDeepSelectedCategory->isLeaf()){
+            return $leaves->push($mostDeepSelectedCategory);
+        }else{
+            foreach ($mostDeepSelectedCategory->descendants as $descendant){
+                if ($descendant->isLeaf()){
+                    $leaves->push($descendant);
+                }
+            }
+        }
+
+        return $leaves;
+    }
+
     /**
-     * Create array of selected items.
+     * Create array of selected items for filters.
      *
      * @return array
      */
-    protected function prepareSelectedItems(): array
+    protected function prepareSelectedItemsForFiltersCreator(): array
     {
         return [
             'brand' => $this->selectedBrand,

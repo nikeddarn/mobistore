@@ -145,7 +145,7 @@ abstract class CommonFilteredController extends ShopController
      *
      * @return array
      */
-    protected function prepareSelectedItems(): array
+    protected function prepareSelectedItemsForFiltersCreator(): array
     {
         return [
             'brand' => $this->selectedBrand,
