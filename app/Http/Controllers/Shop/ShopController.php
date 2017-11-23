@@ -63,6 +63,13 @@ abstract class ShopController extends Controller implements FilterTypes
     protected $selectedCategory = null;
 
     /**
+     * Root category with depth = 0.
+     *
+     * @var Category
+     */
+    protected $rootCategory = null;
+
+    /**
      * @var collection
      */
     protected $selectedBrand = null;
@@ -106,6 +113,8 @@ abstract class ShopController extends Controller implements FilterTypes
         $this->request = $request;
 
         $this->isPaginable = $request->has('view') ? false : true;
+
+        $this->rootCategory = $this->category->withDepth()->whereIsRoot()->first();
     }
 
     /**
@@ -182,5 +191,79 @@ abstract class ShopController extends Controller implements FilterTypes
      * @param Collection $selectedCategories
      * @return Collection
      */
-    abstract protected function productRetrieveConstraintCategories(Collection $selectedCategories):Collection;
+    abstract protected function productRetrieveConstraintCategories(Collection $selectedCategories): Collection;
+
+    /**
+     * Create categories breadcrumb part.
+     *
+     * @param bool $withRoot
+     * @param bool $withPrefix
+     * @return array
+     */
+    protected function categoryBreadcrumbPart(bool $withRoot = false, bool $withPrefix = false): array
+    {
+        $breadcrumbs = [];
+
+        $breadcrumbCategories = clone $this->selectedCategory;
+
+        if ($withRoot) {
+            $breadcrumbCategories->push($this->rootCategory);
+        }
+
+        if ($breadcrumbCategories->count()) {
+            foreach ($breadcrumbCategories->sortBy('depth') as $category) {
+                $breadcrumbs[] = [
+                    'title' => $category->title,
+                    'url' => $withPrefix ? $this->selectedModel->first()->url . '/' . $category->url : $category->url,
+                ];
+            }
+        }
+
+        return $breadcrumbs;
+    }
+
+    /**
+     * Create brand breadcrumb part.
+     *
+     * @param bool $withRoot
+     * @param bool $withPrefix
+     * @return array
+     */
+    protected function brandBreadcrumbPart(bool $withRoot = false, bool $withPrefix = false): array
+    {
+        $breadcrumbs = [];
+
+        if ($withRoot) {
+            $breadcrumbs[] = ['title' => $this->metaData->where('url', 'brand')->first()->page_title, 'url' => ''];
+        }
+
+        if ($this->selectedBrand->count() === 1) {
+            $breadcrumbs[] = [
+                'title' => $this->selectedBrand->first()->title,
+                'url' => $withPrefix ? $this->selectedCategory->first()->url . '/' . $this->selectedBrand->first()->url : $this->selectedBrand->first()->url,
+            ];
+        }
+
+        return $breadcrumbs;
+    }
+
+    /**
+     * Create model breadcrumb part.
+     *
+     * @param bool $withPrefix
+     * @return array
+     */
+    protected function modelBreadcrumbPart(bool $withPrefix = false): array
+    {
+        $breadcrumbs = [];
+
+        if ($this->selectedModel->count() === 1) {
+            $breadcrumbs[] = [
+                'title' => $this->selectedModel->first()->title,
+                'url' => $withPrefix ? $this->selectedCategory->first()->url . '/' . $this->selectedModel->first()->url : $this->selectedModel->first()->url,
+            ];
+        }
+
+        return $breadcrumbs;
+    }
 }

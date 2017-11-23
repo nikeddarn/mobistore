@@ -26,22 +26,22 @@ class CategoryUnfilteredController extends CommonUnfilteredController
      */
     public function index(string $url = '', CategoryRouteFiltersGenerator $categoryRouteFiltersGenerator)
     {
-        $this->categoryRouteFiltersGenerator = $categoryRouteFiltersGenerator;
+        if (!$url){
+            $this->getSelectedModels('category');
+            return view('content.shop.by_categories.categories.index')->with($this->commonViewData())->with($this->subcategoriesList());
+        }else{
+            $this->getSelectedModels($url);
 
-        $this->getSelectedModels($url);
+            if(!$this->selectedCategory->count()){
+                abort(404);
+            }
 
-        if(!$this->selectedCategory->count()){
-            abort(404);
-        }
-
-        if ($this->selectedCategory->last()->isLeaf()) {
-
-            return view('content.shop.by_categories.products.index')->with($this->commonViewData())->with($this->productsViewData())->with(['filters' => $this->getPossibleFilters()]);
-
-        } else {
-
-            return view('content.shop.by_categories.categories.index')->with($this->commonViewData())->with($this->categoriesViewData());
-
+            if ($this->selectedCategory->last()->isLeaf()) {
+                $this->categoryRouteFiltersGenerator = $categoryRouteFiltersGenerator;
+                return view('content.shop.by_categories.products.index')->with($this->commonViewData())->with($this->productsViewData())->with(['filters' => $this->getPossibleFilters()]);
+            } else {
+                return view('content.shop.by_categories.categories.index')->with($this->commonViewData())->with($this->subcategoriesList());
+            }
         }
     }
 
@@ -50,10 +50,12 @@ class CategoryUnfilteredController extends CommonUnfilteredController
      *
      * @return array
      */
-    private function categoriesViewData()
+    private function subcategoriesList()
     {
+        $categories = $this->selectedCategory->count() ? $this->selectedCategory->last()->children : $this->category->whereIsRoot()->first()->children;
+
         return [
-            'categories' => $this->selectedCategory->first()->children,
+            'categories' => $categories,
         ];
     }
 
@@ -64,24 +66,7 @@ class CategoryUnfilteredController extends CommonUnfilteredController
      */
     protected function createBreadcrumbs()
     {
-        $breadcrumbs = [];
-
-        // add ancestors' breadcrumbs
-        foreach ($this->category->ancestorsAndSelf($this->selectedCategory->first()->id) as $item) {
-            $breadcrumbs[] = ['title' => $item->title, 'url' => $item->url];
-        }
-
-        // add brand's breadcrumb if exists
-        if ($this->selectedBrand->count()) {
-            $breadcrumbs[] = ['title' => $this->selectedBrand->first()->title, 'url' => $this->selectedCategory->first()->url . '/' . $this->selectedBrand->first()->url];
-        }
-
-        // add model's breadcrumb if exists
-        if ($this->selectedModel->count()) {
-            $breadcrumbs[] = ['title' => $this->selectedModel->first()->title, 'url' => $this->selectedCategory->first()->url . '/' . $this->selectedModel->first()->url];
-        }
-
-        return $breadcrumbs;
+        return array_merge($this->categoryBreadcrumbPart(true), $this->brandBreadcrumbPart(false, true), $this->modelBreadcrumbPart(true));
     }
 
     /**

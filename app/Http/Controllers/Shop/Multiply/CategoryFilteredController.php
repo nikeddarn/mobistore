@@ -36,8 +36,6 @@ class CategoryFilteredController extends CommonFilteredController
 
         $this->getSelectedModels($url);
 
-        $this->getPossibleFilters();
-
         return view('content.shop.by_categories.products.index')->with($this->commonViewData())->with($this->productsViewData())->with(['filters' => $this->getPossibleFilters()]);
 
     }
@@ -49,24 +47,7 @@ class CategoryFilteredController extends CommonFilteredController
      */
     protected function createBreadcrumbs()
     {
-        $breadcrumbs = [];
-
-        // add ancestors' breadcrumbs
-        foreach ($this->category->ancestorsAndSelf($this->selectedCategory->first()->id) as $item) {
-            $breadcrumbs[] = ['title' => $item->title, 'url' => $item->url];
-        }
-
-        // add brand's breadcrumb if exists
-        if ($this->selectedBrand && $this->selectedBrand->count() === 1) {
-            $breadcrumbs[] = ['title' => $this->selectedBrand->first()->title, 'url' => $this->selectedCategory->first()->url . '/' . $this->selectedBrand->first()->url];
-
-            // add model's breadcrumb if exists
-            if ($this->selectedModel && $this->selectedModel->count() === 1) {
-                $breadcrumbs[] = ['title' => $this->selectedModel->first()->title, 'url' => $this->selectedCategory->first()->url . '/' . $this->selectedModel->first()->url];
-            }
-        }
-
-        return $breadcrumbs;
+        return $this->categoryBreadcrumbPart(true);
     }
 
     /**

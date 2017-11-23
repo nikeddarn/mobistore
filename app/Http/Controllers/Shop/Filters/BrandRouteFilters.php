@@ -33,7 +33,7 @@ trait BrandRouteFilters
 
             $categoryFilters = [];
 
-            $selectedCategoriesWithRoot = (clone $this->selectedCategory)->push($this->category->withDepth()->whereIsRoot()->first());
+            $selectedCategoriesWithRoot = (clone $this->selectedCategory)->push($this->rootCategory);
             $maxSelectedCategoriesDepth = $this->maxSelectedCategoriesDepth($selectedCategoriesWithRoot);
 
             for ($depth = 0; $depth < config('shop.category_filters_depth') && $depth < ($maxSelectedCategoriesDepth + 1); $depth++) {
