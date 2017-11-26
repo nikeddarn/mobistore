@@ -3,9 +3,6 @@
 namespace App\Http\Controllers\Shop\Multiply;
 
 use App\Http\Controllers\Shop\ShopController;
-use App\Models\Category;
-use App\Models\MetaData;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
 abstract class CommonFilteredController extends ShopController
@@ -66,31 +63,110 @@ abstract class CommonFilteredController extends ShopController
     }
 
     /**
-     * @return MetaData
+     * Create title, description, keywords
+     *
+     * @return array
      */
-    protected function createMetaData()
+    protected function createCommonMetaData(): array
     {
-        $pageTitleParts = [];
+        return [
+            'title' => $this->createPageTitle(),
+            'description' => null,
+            'keywords' => null,
 
-        if (isset($this->selectedCategory)) {
-            $pageTitleParts[] = $this->selectedCategory->implode('title', ', ');
-        } else {
-            $pageTitleParts[] = $this->category->whereIsRoot()->first()->title;
+        ];
+    }
+
+    /**
+     * Create array of data for meta and link tags.
+     *
+     * @return array
+     */
+    protected function createSpecialMetaData(): array
+    {
+        return [
+            'meta' => [
+                [
+                    'name' => 'robots',
+                    'content' => 'noindex,nofollow',
+                ],
+            ]
+        ];
+    }
+
+    /**
+     * Create page title, summary.
+     *
+     * @return array
+     */
+    protected function createPageData(): array
+    {
+        return [
+            'pageTitle' => $this->createPageTitle(),
+            'summary' => null,
+        ];
+    }
+
+    protected function createPageTitle()
+    {
+        $pageTitle = '';
+
+        if ($this->selectedCategory->count()) {
+            $pageTitle .= $this->categoryPageTitlePart();
         }
 
-        foreach (['brand', 'model', 'color', 'quality'] as $model) {
+        if ($this->selectedBrand->count()) {
+            $pageTitle .= ' ' . $this->selectedBrand->implode('title', ', ');
+        }
 
-            $selectedModelName = 'selected' . ucfirst($model);
+        if ($this->selectedModel->count()) {
+            $pageTitle .= ' ' . $this->selectedModel->implode('title', ', ');
+        }
 
-            if (isset($this->$selectedModelName)) {
-                $pageTitleParts[] = $this->$selectedModelName->implode('title', ', ');
+        $pageTitle .= '.';
+
+        if ($this->selectedQuality->count()) {
+            $pageTitle .= ' ' . $this->selectedQuality->implode('title', ', ') . '.';
+        }
+
+        if ($this->selectedColor->count()) {
+            $pageTitle .= ' ' . $this->selectedColor->implode('title', ', ') . '.';
+        }
+
+        return $pageTitle;
+    }
+
+    /**
+     * Create category page title part.
+     *
+     * @return string
+     */
+    protected function categoryPageTitlePart(): string
+    {
+        if ($this->isCategoriesParentAndChild($this->selectedCategory)) {
+            return $this->selectedCategory->sortBy('depth')->last()->title;
+        } else {
+            return $this->selectedCategory->sortBy('depth')->implode('title', ', ');
+        }
+    }
+
+    /**
+     * Are given categories sequence nested ?
+     *
+     * @param Collection $categories
+     * @return bool
+     */
+    private function isCategoriesParentAndChild(Collection $categories): bool
+    {
+        $sortedCategoriesDepths = $categories->sortBy('depth')->pluck('depth');
+
+        for ($i = 0; $i < count($sortedCategoriesDepths); $i++) {
+            if (isset($sortedCategoriesDepths[$i + 1]) && $sortedCategoriesDepths[$i] !== ($sortedCategoriesDepths[$i + 1] - 1)) {
+                return false;
             }
         }
 
-        $metaData = $this->metaData;
-        $metaData->page_title = implode('. ', $pageTitleParts);
-
-        return $metaData;
+        return true;
     }
 
     /**

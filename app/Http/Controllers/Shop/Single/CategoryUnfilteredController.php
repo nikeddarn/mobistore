@@ -28,7 +28,9 @@ class CategoryUnfilteredController extends CommonUnfilteredController
     {
         if (!$url){
             $this->getSelectedModels('category');
-            return view('content.shop.by_categories.categories.index')->with($this->commonViewData())->with($this->subcategoriesList());
+
+            $responseContent = view('content.shop.by_categories.categories.index')
+                ->with($this->subcategoriesList());
         }else{
             $this->getSelectedModels($url);
 
@@ -38,11 +40,23 @@ class CategoryUnfilteredController extends CommonUnfilteredController
 
             if ($this->selectedCategory->last()->isLeaf()) {
                 $this->categoryRouteFiltersGenerator = $categoryRouteFiltersGenerator;
-                return view('content.shop.by_categories.products.index')->with($this->commonViewData())->with($this->productsViewData())->with(['filters' => $this->getPossibleFilters()]);
+                $this->retrieveProducts();
+
+                $responseContent = view('content.shop.by_categories.products.index')
+                        ->with($this->productsViewData())
+                        ->with($this->specialMetaData())
+                        ->with(['filters' => $this->getPossibleFilters()]);
             } else {
-                return view('content.shop.by_categories.categories.index')->with($this->commonViewData())->with($this->subcategoriesList());
+                $responseContent = view('content.shop.by_categories.categories.index')
+                    ->with($this->subcategoriesList());
             }
         }
+
+        return response(
+            $responseContent
+                ->with($this->commonViewData())
+        )
+            ->withHeaders($this->createHeaders());
     }
 
     /**
@@ -64,7 +78,7 @@ class CategoryUnfilteredController extends CommonUnfilteredController
      *
      * @return array
      */
-    protected function createBreadcrumbs()
+    protected function createBreadcrumbs():array
     {
         return array_merge($this->categoryBreadcrumbPart(true), $this->brandBreadcrumbPart(false, true), $this->modelBreadcrumbPart(true));
     }
@@ -78,5 +92,15 @@ class CategoryUnfilteredController extends CommonUnfilteredController
     protected function productRetrieveConstraintCategories(Collection $selectedCategories): Collection
     {
         return $this->getLeavesOfMostDeepSelectedCategory($this->selectedCategory);
+    }
+
+    /**
+     * Create canonical url for meta data.
+     *
+     * @return string
+     */
+    protected function createCanonicalUrl():string
+    {
+        return '/brand/' . $this->selectedModel->first()->url . '/' . $this->selectedCategory->sortBy('depth')->last()->url;
     }
 }

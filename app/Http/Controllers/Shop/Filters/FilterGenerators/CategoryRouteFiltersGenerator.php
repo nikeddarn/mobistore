@@ -168,9 +168,10 @@ class CategoryRouteFiltersGenerator extends FiltersGenerator
     {
         $currentSelectedItems[self::BRAND] = $this->subtractFilterItem($subtractingFilterItem, clone $currentSelectedItems[self::BRAND]);
 
-        $currentSelectedItems[self::MODEL] = clone $currentSelectedItems[self::MODEL]->filter(function (DeviceModel $model) use ($subtractingFilterItem) {
+        $currentSelectedItems[self::MODEL] = (clone $currentSelectedItems[self::MODEL])->filter(function (DeviceModel $model) use ($subtractingFilterItem) {
             return $model->brands_id !== $subtractingFilterItem->id;
         });
+
 
         return $currentSelectedItems;
     }

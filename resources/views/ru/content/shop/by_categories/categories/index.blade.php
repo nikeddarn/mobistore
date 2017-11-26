@@ -10,7 +10,7 @@
         <div class="row">
             <div class="col-lg-12">
                 <div class="underlined-title">
-                    <h3 class="page-header text-gray">{{ $metaData->page_title }}</h3>
+                    <h3 class="page-header text-gray">{{ $pageData['pageTitle'] }}</h3>
                 </div>
             </div>
         </div>
@@ -21,7 +21,7 @@
         </div>
 
         <!-- Category summary -->
-        @if($metaData->summary)
+        @if($pageData['summary'])
             <div class="row m-t-4">
                 @include('content.shop.by_categories.categories.parts.summary')
             </div>
@@ -32,5 +32,7 @@
 @endsection
 
 @section('meta_data')
-
+    <title>{{ $commonMetaData['title'] }}</title>
+    <meta name="description" content="{{ $commonMetaData['description'] }}">
+    <meta name="keywords" content="{{ $commonMetaData['keywords'] }}">
 @endsection

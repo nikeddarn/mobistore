@@ -3,6 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 @yield('description')
+@yield('meta_data')
 
 <meta name="author" content="{{ trans('meta.author') }}">
 <meta name="csrf-token" content="{{ csrf_token() }}">

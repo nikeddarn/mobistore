@@ -28,11 +28,11 @@ class BrandUnfilteredController extends CommonUnfilteredController
      */
     public function index(string $url = '', BrandRouteFiltersGenerator $brandRouteFiltersGenerator)
     {
-        $this->brandRouteFiltersGenerator = $brandRouteFiltersGenerator;
-
         if ($url === '') {
             $this->getSelectedModels('brand');
-            return view('content.shop.by_brands.brands.index')->with($this->commonViewData())->with($this->brandsList());
+
+            $responseContent = view('content.shop.by_brands.brands.index')
+                ->with($this->brandsList());
         } else {
             $this->getSelectedModels($url);
 
@@ -41,11 +41,24 @@ class BrandUnfilteredController extends CommonUnfilteredController
             }
 
             if ($this->selectedModel->count() === 1) {
-                return view('content.shop.by_brands.products.index')->with($this->commonViewData())->with($this->productsViewData())->with(['filters' => $this->getPossibleFilters()]);
+                $this->brandRouteFiltersGenerator = $brandRouteFiltersGenerator;
+                $this->retrieveProducts();
+
+                $responseContent = view('content.shop.by_brands.products.index')
+                    ->with($this->productsViewData())
+                    ->with($this->specialMetaData())
+                    ->with(['filters' => $this->getPossibleFilters()]);
             } else {
-                return view('content.shop.by_brands.models.index')->with($this->commonViewData())->with($this->modelsList());
+                $responseContent = view('content.shop.by_brands.models.index')
+                    ->with($this->modelsList());
             }
         }
+
+        return response(
+            $responseContent
+                ->with($this->commonViewData())
+        )
+            ->withHeaders($this->createHeaders());
     }
 
     /**
@@ -53,7 +66,7 @@ class BrandUnfilteredController extends CommonUnfilteredController
      *
      * @return array
      */
-    private function brandsList():array
+    private function brandsList(): array
     {
         return [
             'brands' => $this->brand->orderBy('priority')->get()
@@ -65,7 +78,7 @@ class BrandUnfilteredController extends CommonUnfilteredController
      *
      * @return array
      */
-    private function modelsList():array
+    private function modelsList(): array
     {
         $modelsBySeries = $this->selectedBrand->first()->deviceModel()->select(DB::raw('series, GROUP_CONCAT(JSON_OBJECT("title", title, "url", url, "image", image) ORDER BY title) as models'))->groupBy('series')->orderBy('series')->get();
 
@@ -83,7 +96,7 @@ class BrandUnfilteredController extends CommonUnfilteredController
      *
      * @return array
      */
-    protected function createBreadcrumbs()
+    protected function createBreadcrumbs(): array
     {
         return array_merge($this->brandBreadcrumbPart(true), $this->modelBreadcrumbPart(), $this->categoryBreadcrumbPart(false, true));
     }
@@ -97,5 +110,15 @@ class BrandUnfilteredController extends CommonUnfilteredController
     protected function productRetrieveConstraintCategories(Collection $selectedCategories): Collection
     {
         return $this->getLeavesOfMostDeepSelectedCategory($this->selectedCategory);
+    }
+
+    /**
+     * Create canonical url for meta data.
+     *
+     * @return string
+     */
+    protected function createCanonicalUrl(): string
+    {
+        return '/category/' . $this->selectedCategory->sortBy('depth')->last()->url . '/' . $this->selectedModel->first()->url;
     }
 }

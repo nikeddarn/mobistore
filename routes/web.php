@@ -117,10 +117,13 @@ Route::middleware(['admin'])->group(function () {
 
 /**************************** Shop Pages *********************************************/
 
+// products list by categories
 Route::get('/category/{url?}', 'Shop\Single\CategoryUnfilteredController@index')->where(['url' => '.*']);
 Route::get('/filter/category/{url?}', 'Shop\Multiply\CategoryFilteredController@index')->where(['url' => '.*']);
 
+// products list by brands
 Route::get('/brand/{url?}', 'Shop\Single\BrandUnfilteredController@index')->where(['url' => '.*']);
 Route::get('/filter/brand/{url?}', 'Shop\Multiply\BrandFilteredController@index')->where(['url' => '.*']);
 
-//Route::get('/filter/{url?}', 'Shop\Multiply\BrandFilteredController@index')->where(['url' => '.*']);
+// product detail page
+Route::get('/product/{url}', '');

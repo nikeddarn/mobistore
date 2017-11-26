@@ -38,7 +38,13 @@ class BrandFilteredController extends CommonFilteredController
 
         $this->getSelectedModels($url);
 
-        return view('content.shop.by_brands.products.index')->with($this->commonViewData())->with($this->productsViewData())->with(['filters' => $this->getPossibleFilters()]);
+        $this->retrieveProducts();
+
+        return view('content.shop.by_brands.products.index')
+            ->with($this->productsViewData())
+            ->with($this->commonViewData())
+            ->with($this->specialMetaData())
+            ->with(['filters' => $this->getPossibleFilters()]);
 
     }
 
@@ -47,7 +53,7 @@ class BrandFilteredController extends CommonFilteredController
      *
      * @return array
      */
-    protected function createBreadcrumbs()
+    protected function createBreadcrumbs():array
     {
         return array_merge($this->brandBreadcrumbPart(true), $this->modelBreadcrumbPart());
     }

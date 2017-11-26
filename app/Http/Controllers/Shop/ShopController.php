@@ -80,13 +80,28 @@ abstract class ShopController extends Controller implements FilterTypes
     protected $selectedModel = null;
 
     /**
+     * @var Collection|LengthAwarePaginator
+     */
+    protected $products;
+
+    /**
+     * False if there is get parameter view = 'all' (can't paginate this page)
+     *
      * @var bool
      */
-    protected $isPaginable;
+    protected $isPaginable = null;
+
+    /**
+     * True if page is not paginable or product list can be splitted only to 1 page.
+     *
+     * @var bool
+     */
+    protected $isProductPageSingle = null;
+
     /**
      * @var Request
      */
-    private $request;
+    protected $request;
 
 
     /**
@@ -112,7 +127,7 @@ abstract class ShopController extends Controller implements FilterTypes
         $this->color = $color;
         $this->request = $request;
 
-        $this->isPaginable = $request->has('view') ? false : true;
+        $this->isPaginable = $request->has('view') && $request->get('view') === 'all' ? false : true;
 
         $this->rootCategory = $this->category->withDepth()->whereIsRoot()->first();
     }
@@ -122,13 +137,54 @@ abstract class ShopController extends Controller implements FilterTypes
      *
      * @return array
      */
-    protected function commonViewData()
+    protected function commonViewData():array
     {
         return [
-            'metaData' => $this->createMetaData(),
+            'commonMetaData' => $this->createCommonMetaData(),
             'breadcrumbs' => $this->createBreadcrumbs(),
+            'pageData' => $this->createPageData(),
         ];
     }
+
+    /**
+     * Create special meta data
+     *
+     * @return array
+     */
+    protected function specialMetaData():array
+    {
+        return [
+            'specialMetaData' => $this->createSpecialMetaData(),
+        ];
+    }
+
+    /**
+     * Create title, description, keywords
+     *
+     * @return array
+     */
+    abstract protected function createCommonMetaData():array;
+
+    /**
+     * Create array of data for meta and link tags.
+     *
+     * @return array
+     */
+    abstract protected function createSpecialMetaData():array;
+
+    /**
+     * Create breadcrumbs.
+     *
+     * @return array
+     */
+    abstract protected function createBreadcrumbs():array;
+
+    /**
+     * Create page title, summary.
+     *
+     * @return array
+     */
+    abstract protected function createPageData():array;
 
     /**
      * Create an array of view data for products page.
@@ -137,13 +193,30 @@ abstract class ShopController extends Controller implements FilterTypes
      */
     protected function productsViewData()
     {
-        $products = $this->getProducts();
-
-        return [
+        $productsData = [
             'products' => $this->getProducts(),
             'productImagePathPrefix' => Storage::disk('public')->url('images/products/'),
-            'viewAllUrl' => $this->isPaginable && $products->lastPage() > 1 ? $this->request->url() . '?view=all' : null,
+            'isPageFirstOrSingle' => !$this->isProductPageSingle && $this->products->currentPage() === 1,
         ];
+
+        if (!$this->isProductPageSingle){
+            $productsData['viewAllUrl'] = $this->request->url() . '?view=all';
+            $productsData['productsPagesLinks'] = $this->products->links();
+        }
+
+        return $productsData;
+    }
+
+    /**
+     * Retrieve products.
+     * Define whether products page is single.
+     *
+     * @return void
+     */
+    protected function retrieveProducts()
+    {
+        $this->products = $this->getProducts();
+        $this->isProductPageSingle = !($this->isPaginable && $this->products instanceof LengthAwarePaginator && $this->products->hasPages());
     }
 
     /**

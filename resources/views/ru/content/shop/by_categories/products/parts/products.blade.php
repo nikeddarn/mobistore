@@ -2,7 +2,7 @@
 <div class="row">
     <div class="col-lg-12">
         <div class="underlined-title">
-            <h4 class="page-header text-gray">{{ $metaData->page_title }}</h4>
+            <h4 class="page-header text-gray">{{ $pageData['pageTitle'] }}</h4>
         </div>
     </div>
 </div>
