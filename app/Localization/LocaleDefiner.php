@@ -100,5 +100,6 @@ class LocaleDefiner implements LocaleDefinerInterface
 
             return $locales;
         }
+        return [config('app.fallback_locale')];
     }
 }

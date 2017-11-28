@@ -36,9 +36,7 @@
         <!-- Products -->
             <div id="products-list"
                  class="col-xs-12 col-sm-9 @if(!$filters) col-sm-offset-1 @endif">
-                <div class="row">
                     @include('content.shop.by_categories.products.parts.products')
-                </div>
 
                 @if(isset($productsPagesLinks))
 

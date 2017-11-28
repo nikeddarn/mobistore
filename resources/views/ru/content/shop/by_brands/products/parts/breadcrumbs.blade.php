@@ -6,7 +6,7 @@
                 @if($breadcrumb === end($breadcrumbs))
                     <li>{{ $breadcrumb['title'] }}</li>
                 @else
-                    <li><a href="/brand/{{ $breadcrumb['url'] }}">{{ $breadcrumb['title'] }}</a></li>
+                    <li><a href="{{ $breadcrumb['url'] }}">{{ $breadcrumb['title'] }}</a></li>
                 @endif
             @endforeach
         </ol>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Shop\Multiply;
 
+use App\Breadcrumbs\BrandRouteBreadcrumbsCreator;
 use App\Http\Controllers\Shop\Filters\BrandRouteFilters;
 use App\Http\Controllers\Shop\Filters\FilterGenerators\BrandRouteFiltersGenerator;
 use App\Models\Category;
@@ -18,6 +19,11 @@ class BrandFilteredController extends CommonFilteredController
      */
     protected $brandRouteFiltersGenerator;
 
+    /**
+     * @var BrandRouteBreadcrumbsCreator
+     */
+    private $brandRouteBreadcrumbsCreator;
+
 
     /**
      * Handle incoming url.
@@ -25,12 +31,14 @@ class BrandFilteredController extends CommonFilteredController
      *
      * @param string $url
      * @param BrandRouteFiltersGenerator $brandRouteFiltersGenerator
+     * @param BrandRouteBreadcrumbsCreator $brandRouteBreadcrumbsCreator
      * @return \Illuminate\View\View
      * @internal param Request $request
      */
-    public function index(string $url = '', BrandRouteFiltersGenerator $brandRouteFiltersGenerator)
+    public function index(string $url = '', BrandRouteFiltersGenerator $brandRouteFiltersGenerator, BrandRouteBreadcrumbsCreator $brandRouteBreadcrumbsCreator)
     {
         $this->brandRouteFiltersGenerator = $brandRouteFiltersGenerator;
+        $this->brandRouteBreadcrumbsCreator = $brandRouteBreadcrumbsCreator;
 
         if (!$url) {
             abort(404);
@@ -55,7 +63,12 @@ class BrandFilteredController extends CommonFilteredController
      */
     protected function createBreadcrumbs():array
     {
-        return array_merge($this->brandBreadcrumbPart(true), $this->modelBreadcrumbPart());
+        return $this->brandRouteBreadcrumbsCreator->createBreadcrumbs(
+            [
+                self::BRAND => $this->metaData->where('url', 'brand')->get()->merge(clone $this->selectedBrand),
+                self::MODEL => $this->selectedModel,
+            ]
+        );
     }
 
     /**

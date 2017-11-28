@@ -49,15 +49,15 @@ return [
         'page_title_en' => 'Display Apple iPhone 6 with sensor white',
         'page_title_ru' => 'Дисплей Apple iPhone 6 в сборе с сенсором белый',
         'page_title_ua' => 'Дисплей Apple iPhone 6 в зборі з сенсором білий',
-        'meta_title_en' => 'Display Apple iPhone 6 with sensor white' . $wholesaleRetail_en,
-        'meta_title_ru' => 'Дисплей Apple iPhone 6 в сборе с сенсором белый' . $wholesaleRetail_ru,
-        'meta_title_ua' => 'Дисплей Apple iPhone 6 в зборі з сенсором білий' . $wholesaleRetail_ua,
+        'meta_title_en' => 'Display Apple iPhone 6 with sensor white ' . $wholesaleRetail_en,
+        'meta_title_ru' => 'Дисплей Apple iPhone 6 в сборе с сенсором белый ' . $wholesaleRetail_ru,
+        'meta_title_ua' => 'Дисплей Apple iPhone 6 в зборі з сенсором білий ' . $wholesaleRetail_ua,
         'meta_description_en' => 'Display Apple iPhone 6 with sensor white ' . $wholesaleRetail_en . ': 
 ' . $features_en . ' &#8212; ' . $bue_en,
         'meta_description_ru' => 'Дисплей Apple iPhone 6 с сенсором белый ' . $wholesaleRetail_ru . ':
-' . $features_en . ' &#8212; ' . $bue_ru,
+' . $features_ru . ' &#8212; ' . $bue_ru,
         'meta_description_ua' => 'Дисплей Apple iPhone 6 в зборі з сенсором білий ' . $wholesaleRetail_ua . ':
-' . $features_en . ' &#8212; ' . $bue_ru,
+' . $features_ua . ' &#8212; ' . $bue_ru,
         'meta_keywords_en' => 'Display Apple iPhone 6 with sensor white',
         'meta_keywords_ru' => 'Дисплей Apple iPhone 6 с сенсором белый',
         'meta_keywords_ua' => 'Дисплей Apple iPhone 6 в зборі з сенсором білий',
@@ -283,9 +283,9 @@ return [
         'meta_description_en' => 'Display Apple iPhone 5s with sensor white ' . $wholesaleRetail_en . ': 
 ' . $features_en . ' &#8212; ' . $bue_en,
         'meta_description_ru' => 'Дисплей Apple iPhone 5s с сенсором белый ' . $wholesaleRetail_ru . ':
-' . $features_en . ' &#8212; ' . $bue_ru,
+' . $features_ru . ' &#8212; ' . $bue_ru,
         'meta_description_ua' => 'Дисплей Apple iPhone 5s в зборі з сенсором білий ' . $wholesaleRetail_ua . ':
-' . $features_en . ' &#8212; ' . $bue_ru,
+' . $features_ua . ' &#8212; ' . $bue_ua,
         'meta_keywords_en' => 'Display Apple iPhone 5s with sensor white',
         'meta_keywords_ru' => 'Дисплей Apple iPhone 5s с сенсором белый',
         'meta_keywords_ua' => 'Дисплей Apple iPhone 5s в зборі з сенсором білий',
@@ -316,9 +316,9 @@ return [
         'meta_description_en' => 'Display Apple iPhone 5s with sensor black ' . $wholesaleRetail_en . ': 
 ' . $features_en . ' &#8212; ' . $bue_en,
         'meta_description_ru' => 'Дисплей Apple iPhone 5s с сенсором черный ' . $wholesaleRetail_ru . ':
-' . $features_en . ' &#8212; ' . $bue_ru,
+' . $features_ru . ' &#8212; ' . $bue_ru,
         'meta_description_ua' => 'Дисплей Apple iPhone 5s в зборі з сенсором чорний ' . $wholesaleRetail_ua . ':
-' . $features_en . ' &#8212; ' . $bue_ru,
+' . $features_ua . ' &#8212; ' . $bue_ua,
         'meta_keywords_en' => 'Display Apple iPhone 5s with sensor black',
         'meta_keywords_ru' => 'Дисплей Apple iPhone 5s с сенсором черный',
         'meta_keywords_ua' => 'Дисплей Apple iPhone 5s в зборі з сенсором чорний',
@@ -910,9 +910,9 @@ return [
         'meta_description_en' => 'Original rechargeable battery for Apple iPhone 5s/5c ' . $wholesaleRetail_en . ': 
 ' . $features_en . ' &#8212; ' . $bue_en,
         'meta_description_ru' => 'Оригинальная аккумуляторная батарея для Apple iPhone 5s/5c ' . $wholesaleRetail_ru . ':
-' . $features_en . ' &#8212; ' . $bue_ru,
+' . $features_ru . ' &#8212; ' . $bue_ru,
         'meta_description_ua' => 'Оригінальна аккумуляторна батарея для Apple iPhone 5s/5c ' . $wholesaleRetail_ua . ':
-' . $features_en . ' &#8212; ' . $bue_ru,
+' . $features_ua . ' &#8212; ' . $bue_ua,
         'meta_keywords_en' => 'Battery Apple iPhone 5s/5c original',
         'meta_keywords_ru' => 'Аккумулятор Apple iPhone 5s/5c оригинал',
         'meta_keywords_ua' => 'Акумулятор Apple iPhone 5s/5c оригінал',
@@ -944,9 +944,9 @@ return [
         'meta_description_en' => 'Original rechargeable battery for Apple iPhone 6 ' . $wholesaleRetail_en . ': 
 ' . $features_en . ' &#8212; ' . $bue_en,
         'meta_description_ru' => 'Оригинальная аккумуляторная батарея для Apple iPhone 6 ' . $wholesaleRetail_ru . ':
-' . $features_en . ' &#8212; ' . $bue_ru,
+' . $features_ru . ' &#8212; ' . $bue_ru,
         'meta_description_ua' => 'Оригінальна аккумуляторна батарея для Apple iPhone 6 ' . $wholesaleRetail_ua . ':
-' . $features_en . ' &#8212; ' . $bue_ru,
+' . $features_ua . ' &#8212; ' . $bue_ua,
         'meta_keywords_en' => 'Battery Apple iPhone 6 original',
         'meta_keywords_ru' => 'Аккумулятор Apple iPhone 6 оригинал',
         'meta_keywords_ua' => 'Акумулятор Apple iPhone 6 оригінал',
@@ -978,9 +978,9 @@ return [
         'meta_description_en' => 'Original rechargeable battery for Apple iPhone 6s ' . $wholesaleRetail_en . ': 
 ' . $features_en . ' &#8212; ' . $bue_en,
         'meta_description_ru' => 'Оригинальная аккумуляторная батарея для Apple iPhone 6s ' . $wholesaleRetail_ru . ':
-' . $features_en . ' &#8212; ' . $bue_ru,
+' . $features_ru . ' &#8212; ' . $bue_ru,
         'meta_description_ua' => 'Оригінальна аккумуляторна батарея для Apple iPhone 6s ' . $wholesaleRetail_ua . ':
-' . $features_en . ' &#8212; ' . $bue_ru,
+' . $features_ua . ' &#8212; ' . $bue_ua,
         'meta_keywords_en' => 'Battery Apple iPhone 6s original',
         'meta_keywords_ru' => 'Аккумулятор Apple iPhone 6s оригинал',
         'meta_keywords_ua' => 'Акумулятор Apple iPhone 6s оригінал',

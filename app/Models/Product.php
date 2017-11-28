@@ -63,4 +63,28 @@ class Product extends Model
     {
         return $this->belongsToMany('App\Models\DeviceModel', 'products_models_compatible', 'products_id', 'models_id' );
     }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function color()
+    {
+        return $this->belongsTo('App\Models\Color', 'colors_id', 'id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function quality()
+    {
+        return $this->belongsTo('App\Models\Quality', 'quality_id', 'id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function category()
+    {
+        return $this->belongsTo('App\Models\Category', 'categories_id', 'id');
+    }
 }

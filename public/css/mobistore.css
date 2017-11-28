@@ -4,6 +4,16 @@ html,
 body {
   height: 100%;
   line-height: 1.6;
+  font-family: RobotoDraft, Roboto, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: RobotoDraft, Roboto, sans-serif;
 }
 
 .overflow-hidden {
@@ -110,6 +120,27 @@ input:active:not([type="radio"]):not([type="checkbox"]) {
 
 .checkbox input[type="checkbox"]:checked + label:after {
   font-weight: bold;
+}
+
+.btn {
+  border-radius: 0;
+}
+
+select,
+textarea {
+  border: 1px solid #ccc;
+  outline: none;
+  -webkit-box-shadow: none;
+          box-shadow: none;
+  border-radius: 0;
+}
+
+select:focus,
+textarea:focus {
+  border: 1px solid #30A193 !important;
+  border-radius: 0;
+  -webkit-box-shadow: none !important;
+          box-shadow: none !important;
 }
 
 @media (min-width: 1200px) {
@@ -776,6 +807,85 @@ input:active:not([type="radio"]):not([type="checkbox"]) {
   color: #30A193;
   content: "\2714";
   text-align: center;
+}
+
+.product-detail-main-image {
+  margin-bottom: 10px;
+}
+
+.product-detail-main-image img {
+  width: 100%;
+  border: 1px solid #666666;
+}
+
+.product-detail-title {
+  font-size: 20px;
+  line-height: 1.3;
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+.product-detail-table tr td:first-child {
+  width: 150px;
+}
+
+.product-detail-table tr td:first-child::after {
+  float: right;
+  content: ":";
+}
+
+.product-detail-table tr:last-child td:first-child::after {
+  content: "";
+}
+
+.product-detail-table tr td {
+  vertical-align: middle !important;
+}
+
+.product-detail-table tr td button {
+  border-radius: 0;
+}
+
+.product-detail-table .product-detail-quantity {
+  width: 150px;
+}
+
+.product-detail-table .product-detail-quantity .bootstrap-touchspin .bootstrap-touchspin-prefix {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.product-detail-table .product-detail-quantity .input-group-addon:first-child {
+  border-right: 0;
+}
+
+.product-detail-table .product-detail-quantity .bootstrap-touchspin .input-group-btn-vertical > .btn {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.tab-content .well {
+  border-top: 0;
+  border-radius: 0;
+  background: #fff;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+}
+
+#product-detail-tabs table tr td:first-child {
+  background: #f8f8f8;
+}
+
+#product-detail-tabs #review .glyphicon {
+  font-size: 2rem;
+}
+
+#product-detail-tabs #review .glyphicon-star {
+  color: gold;
+}
+
+#product-detail-tabs #review .glyphicon-star-empty {
+  color: gray;
 }
 
 /* Other*/

@@ -4,6 +4,7 @@
 
 @yield('description')
 @yield('meta_data')
+@yield('styles')
 
 <meta name="author" content="{{ trans('meta.author') }}">
 <meta name="csrf-token" content="{{ csrf_token() }}">

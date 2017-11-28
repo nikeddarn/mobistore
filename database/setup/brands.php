@@ -20,6 +20,7 @@ $wholesaleRetail_ua = trans('meta.phrases.wholesale_and_retail', [], 'ua');
 $originalCopy_ua = trans('meta.phrases.original_and_copy', [], 'ua');
 
 return [
+
     [
         'title' => 'Apple',
         'breadcrumb' => 'apple',

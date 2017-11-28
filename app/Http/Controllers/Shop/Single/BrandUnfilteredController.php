@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Shop\Single;
 
+use App\Breadcrumbs\BrandRouteBreadcrumbsCreator;
 use App\Http\Controllers\Shop\Filters\BrandRouteFilters;
 use App\Http\Controllers\Shop\Filters\FilterGenerators\BrandRouteFiltersGenerator;
 use Illuminate\Support\Collection;
@@ -10,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 class BrandUnfilteredController extends CommonUnfilteredController
 {
     use BrandRouteFilters;
+
     /**
      * Filter generator for 'brand' route.
      *
@@ -18,16 +20,24 @@ class BrandUnfilteredController extends CommonUnfilteredController
     private $brandRouteFiltersGenerator;
 
     /**
+     * @var BrandRouteBreadcrumbsCreator
+     */
+    private $brandRouteBreadcrumbsCreator;
+
+    /**
      * Handle incoming url.
      * Show brands view or products by brand view.
      *
      * @param string $url
      * @param BrandRouteFiltersGenerator $brandRouteFiltersGenerator
+     * @param BrandRouteBreadcrumbsCreator $brandRouteBreadcrumbsCreator
      * @return \Illuminate\View\View
      * @internal param Request $request
      */
-    public function index(string $url = '', BrandRouteFiltersGenerator $brandRouteFiltersGenerator)
+    public function index(string $url = '', BrandRouteFiltersGenerator $brandRouteFiltersGenerator, BrandRouteBreadcrumbsCreator $brandRouteBreadcrumbsCreator)
     {
+        $this->brandRouteBreadcrumbsCreator = $brandRouteBreadcrumbsCreator;
+
         if ($url === '') {
             $this->getSelectedModels('brand');
 
@@ -42,6 +52,7 @@ class BrandUnfilteredController extends CommonUnfilteredController
 
             if ($this->selectedModel->count() === 1) {
                 $this->brandRouteFiltersGenerator = $brandRouteFiltersGenerator;
+
                 $this->retrieveProducts();
 
                 $responseContent = view('content.shop.by_brands.products.index')
@@ -98,7 +109,13 @@ class BrandUnfilteredController extends CommonUnfilteredController
      */
     protected function createBreadcrumbs(): array
     {
-        return array_merge($this->brandBreadcrumbPart(true), $this->modelBreadcrumbPart(), $this->categoryBreadcrumbPart(false, true));
+        return $this->brandRouteBreadcrumbsCreator->createBreadcrumbs(
+            [
+                self::CATEGORY => clone $this->selectedCategory,
+                self::BRAND => $this->metaData->where('url', 'brand')->get()->merge(clone $this->selectedBrand),
+                self::MODEL => $this->selectedModel,
+            ]
+        );
     }
 
     /**

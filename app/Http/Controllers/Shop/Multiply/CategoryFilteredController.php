@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Shop\Multiply;
 
+use App\Breadcrumbs\CategoryRouteBreadcrumbsCreator;
 use App\Http\Controllers\Shop\Filters\CategoryRouteFilters;
 use App\Http\Controllers\Shop\Filters\FilterGenerators\CategoryRouteFiltersGenerator;
 use Illuminate\Support\Collection;
@@ -18,17 +19,24 @@ class CategoryFilteredController extends CommonFilteredController
     private $categoryRouteFiltersGenerator;
 
     /**
+     * @var CategoryRouteBreadcrumbsCreator
+     */
+    private $categoryRouteBreadcrumbsCreator;
+
+    /**
      * Handle incoming url.
      * Show categories view or products by category view.
      *
      * @param string $url
      * @param CategoryRouteFiltersGenerator $categoryRouteFiltersGenerator
+     * @param CategoryRouteBreadcrumbsCreator $categoryRouteBreadcrumbsCreator
      * @return \Illuminate\View\View
      * @internal param Request $request
      */
-    public function index(string $url = '', CategoryRouteFiltersGenerator $categoryRouteFiltersGenerator)
+    public function index(string $url = '', CategoryRouteFiltersGenerator $categoryRouteFiltersGenerator, CategoryRouteBreadcrumbsCreator $categoryRouteBreadcrumbsCreator)
     {
         $this->categoryRouteFiltersGenerator = $categoryRouteFiltersGenerator;
+        $this->categoryRouteBreadcrumbsCreator = $categoryRouteBreadcrumbsCreator;
 
         if (!$url) {
             abort(404);
@@ -53,7 +61,11 @@ class CategoryFilteredController extends CommonFilteredController
      */
     protected function createBreadcrumbs():array
     {
-        return $this->categoryBreadcrumbPart(true);
+        return $this->categoryRouteBreadcrumbsCreator->createBreadcrumbs(
+            [
+                self::CATEGORY => (clone $this->selectedCategory)->push($this->rootCategory),
+            ]
+        );
     }
 
     /**

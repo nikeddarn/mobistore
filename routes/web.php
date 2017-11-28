@@ -62,6 +62,7 @@ Route::post('/reset', 'Auth\ResetPasswordController@reset');
 
 /******************* User Pages *************************************************/
 
+// auth middleware with parameter : 'web' (guard name)
 Route::middleware(['auth:web'])->group(function () {
 
     Route::get('/user', 'Profile\UserProfileController@showUserProfile');
@@ -126,4 +127,4 @@ Route::get('/brand/{url?}', 'Shop\Single\BrandUnfilteredController@index')->wher
 Route::get('/filter/brand/{url?}', 'Shop\Multiply\BrandFilteredController@index')->where(['url' => '.*']);
 
 // product detail page
-Route::get('/product/{url}', '');
+Route::get('/product/{url}', 'Product\ProductDetailsController@index');

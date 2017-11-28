@@ -19,6 +19,7 @@
     "vue": "^2.1.10"
   },
   "dependencies": {
+    "bootstrap-rating": "0.0.1",
     "bootstrap-select": "^1.12.3",
     "isotope": "^1.0.0-alpha.3",
     "isotope-cells-by-row": "^1.1.3",
