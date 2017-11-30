@@ -70,7 +70,7 @@ class ProductDetailsController extends Controller implements FilterTypes
     {
         return $this->product
             ->where('url', $productUrl)
-            ->select(array_merge($this->product->transformAttributesByLocale(['page_title', 'meta_title', 'meta_description', 'meta_keywords', 'summary']), ['id', 'categories_id', 'brands_id', 'colors_id', 'quality_id', 'updated_at']))
+            ->select(array_merge($this->product->transformAttributesByLocale(['page_title', 'meta_title', 'meta_description', 'meta_keywords', 'summary']), ['id', 'categories_id', 'brands_id', 'colors_id', 'quality_id', 'rating', 'rating_count',  'updated_at']))
             ->with('category', 'image', 'color', 'quality')
             ->with(['brand' => function ($query) {
                 $query->select(['id', 'title', 'image', 'url']);
@@ -78,6 +78,7 @@ class ProductDetailsController extends Controller implements FilterTypes
             ->with(['deviceModel' => function ($query) {
                 $query->select(['id', 'title', 'series']);
             }])
+            ->with('comment.user')
             ->firstOrFail();
     }
 
@@ -88,8 +89,7 @@ class ProductDetailsController extends Controller implements FilterTypes
      */
     private function productViewData(): array
     {
-        return [
-            'product' => [
+        $productData = [
                 'images' => $this->getProductImages(),
                 'title' => $this->selectedProduct->page_title,
                 'summary' => $this->selectedProduct->summary,
@@ -101,7 +101,14 @@ class ProductDetailsController extends Controller implements FilterTypes
                 'model' => $this->selectedProduct->deviceModel->implode('title', ', '),
                 'color' => $this->selectedProduct->color->title,
                 'category' => $this->selectedProduct->category->title,
-            ],
+        ];
+
+        if ($this->selectedProduct->rating_count >= config('shop.min_rating_count_to_show')){
+            $productData['rating'] = ceil($this->selectedProduct->rating);
+        }
+
+        return [
+            'product' => $productData,
         ];
     }
 

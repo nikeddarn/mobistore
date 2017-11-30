@@ -87,4 +87,12 @@ class Product extends Model
     {
         return $this->belongsTo('App\Models\Category', 'categories_id', 'id');
     }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function comment()
+    {
+        return $this->hasMany('App\Models\ProductComment', 'products_id', 'id');
+    }
 }

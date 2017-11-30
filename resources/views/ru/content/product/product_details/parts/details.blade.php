@@ -20,6 +20,20 @@
             <td>Качество</td>
             <td>{{ $product['quality'] }}</td>
         </tr>
+        @if(isset($product['rating']))
+            <tr>
+                <td>Рейтинг</td>
+                <td>
+                    @for($i=1; $i<=5; $i++)
+                        @if($product['rating'] >= $i)
+                            <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+                        @else
+                            <span class="glyphicon glyphicon-star-empty" aria-hidden="true"></span>
+                        @endif
+                    @endfor
+                </td>
+            </tr>
+        @endif
         <tr>
             <td>Доступность</td>
             <td>

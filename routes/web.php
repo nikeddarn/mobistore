@@ -128,3 +128,7 @@ Route::get('/filter/brand/{url?}', 'Shop\Multiply\BrandFilteredController@index'
 
 // product detail page
 Route::get('/product/{url}', 'Product\ProductDetailsController@index');
+
+// ************************ Product Details Page. Comments ************************************
+
+Route::post('/comment/product', 'Comment\ProductCommentsController@store');

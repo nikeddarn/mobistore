@@ -11,4 +11,7 @@ return [
 
     // count of categories and subcategories filters (filters creating depth)
     'category_filters_depth' => 2,
+
+    // min number of product rating updates to show product rating on page
+    'min_rating_count_to_show' => 10,
 ];
