@@ -43,31 +43,46 @@
 @endsection
 
 @section('styles')
+    {{-- input quantity field styles --}}
     <link rel="stylesheet" href="/public/css/jquery.bootstrap-touchspin.css">
+
+    {{-- product images carousel styles --}}
     <link rel="stylesheet" href="/public/css/owl.carousel.min.css">
+
+    {{-- product main image zoom styles --}}
     <link rel="stylesheet" href="/public/css/owl.theme.default.min.css">
 @endsection
 
 @section('scripts')
+    {{-- input quantity field creator--}}
     <script src="/public/js/jquery.bootstrap-touchspin.js"></script>
+
+    {{-- input rating field creator--}}
     <script src="/public/js/bootstrap-rating.min.js"></script>
+
+    {{-- product images carousel--}}
     <script src="/public/js/owl.carousel.min.js"></script>
+
+    {{-- product main image zoom--}}
     <script src="/public/js/jquery.ez-plus.js"></script>
 
     <script>
 
         $(document).ready(function () {
 
+            // pop up tooltip
             $(function () {
                 $('[data-toggle="tooltip"]').tooltip()
             });
 
+            // input quantity field creator
             $('#product-detail-quantity').TouchSpin({
                 verticalbuttons: true,
                 min: 1,
                 prefix: 'qty'
             });
 
+            // product images carousel
             $('.owl-carousel').owlCarousel({
                 dots: false,
                 nav: true,
@@ -86,35 +101,22 @@
                 }
             });
 
+            // product main image zoom
             let zoomImage = $('#zoom-image');
-
-            $('#product-images').find('.owl-carousel a').click(function (event) {
-                event.stopPropagation();
-                event.preventDefault();
-
-                let newImageSrc =  event.target.getAttribute('src');
-
-                zoomImage.attr('src', newImageSrc);
-                zoomImage.data('zoom-image', newImageSrc).ezPlus({
+            let activateZoom = function activateZoom(zoomImage){
+                zoomImage.ezPlus({
                     zoomWindowOffsetX: 30,
                     zoomWindowWidth: $('#product-description').width(),
                     zoomWindowHeight: zoomImage.height(),
                 });
-
+            };
+            activateZoom(zoomImage);
+            $('#product-images').find('.owl-carousel a').click(function (event) {
+                event.stopPropagation();
+                event.preventDefault();
+                let newImageSrc =  event.target.getAttribute('src');
+                activateZoom(zoomImage.attr('src', newImageSrc).data('zoom-image', newImageSrc));
             });
-
-            zoomImage.ezPlus({
-                zoomWindowOffsetX: 30,
-                zoomWindowWidth: $('#product-description').width(),
-                zoomWindowHeight: zoomImage.height(),
-            });
-
-            // trigger 'click' event on anchor with href that is same to url hash tag.
-            let urlHashTag = window.location.hash;
-            if(urlHashTag){
-                $('a[href="'+urlHashTag+'"]').trigger('click');
-            }
-
         });
     </script>
 @endsection

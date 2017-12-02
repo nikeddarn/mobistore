@@ -19,7 +19,7 @@ class ProductComment extends Model
      * @var array
      */
     protected $fillable = [
-        'products_id', 'users_id', 'name', 'parent_id', 'comment',
+        'products_id', 'users_id', 'name', 'parent_id', 'rating', 'comment',
     ];
 
     /**

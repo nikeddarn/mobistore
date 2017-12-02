@@ -23,6 +23,10 @@ h1, h2, h3, h4, h5, h6 {
   margin-top: 0 !important;
 }
 
+.m-t-1 {
+  margin-top: 1rem !important;
+}
+
 .m-t-2 {
   margin-top: 2rem !important;
 }
@@ -123,14 +127,14 @@ input:focus:not([type="radio"]):not([type="checkbox"]), input:active:not([type="
   border-radius: 0;
 }
 
-select, textarea{
+select, textarea {
   border: 1px solid $input-border;
   outline: none;
   box-shadow: none;
   border-radius: 0;
 }
 
-select:focus, textarea:focus{
+select:focus, textarea:focus {
   border: 1px solid $brand-primary !important;
   border-radius: 0;
   box-shadow: none !important;
@@ -912,8 +916,8 @@ select:focus, textarea:focus{
     }
   }
 
-  .glyphicon-star{
-    color: gold;
+  .product-rating {
+    font-size: 1.2rem;
   }
 }
 
@@ -938,6 +942,44 @@ select:focus, textarea:focus{
   ul li a:hover {
     color: darken($headings-color, 13%) !important;
     background-color: $store-navbar-bg-color !important;
+  }
+}
+
+#review {
+
+  .media {
+
+    img {
+      width: 64px;
+      height: 64px;
+    }
+
+    .product-rating {
+      font-size: 10px;
+    }
+  }
+
+  form {
+    .product-rating {
+      font-size: 2rem;
+
+      .rating-symbol {
+        padding: 0 1px;
+      }
+    }
+  }
+}
+
+#product_comments {
+
+  .underlined-title h4 {
+    margin-top: 2rem;
+  }
+}
+
+.product-rating {
+  .glyphicon-star, .glyphicon-star-empty {
+    color: #fc0;
   }
 }
 
@@ -976,19 +1018,6 @@ select:focus, textarea:focus{
 
 .img-thumbnail {
   border-radius: 0;
-}
-
-// rating input
-#product-detail-tabs #review {
-  .glyphicon {
-    font-size: 2rem;
-  }
-  .glyphicon-star {
-    color: gold;
-  }
-  .glyphicon-star-empty {
-    color: gray;
-  }
 }
 
 /* Other*/

@@ -25,5 +25,7 @@ return [
         'features' => 'высокое качество, продленная гарантия, скидки, доставка по Киеву и Украине',
         'wholesale_and_retail' => 'оптом и в розницу',
         'original_and_copy' => 'оригинальные и копии',
+        'buу_for_price' => 'купить в магазине ' . config('app.name') . ' по цене :price гривень',
+        'phones' => config('shop.phones'),
     ],
 ];

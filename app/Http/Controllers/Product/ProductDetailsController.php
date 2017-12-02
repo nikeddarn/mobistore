@@ -7,7 +7,9 @@ use App\Contracts\Shop\Products\Filters\FilterTypes;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ProductDetailsController extends Controller implements FilterTypes
 {
@@ -27,27 +29,52 @@ class ProductDetailsController extends Controller implements FilterTypes
      * @var Product
      */
     private $selectedProduct;
+
+    /**
+     * @var float
+     */
+    private $productPrice;
+
+    /**
+     * @var float
+     */
+    private $uahProductPrice;
+
+    /**
+     * @var Collection
+     */
+    private $comments;
+
     /**
      * @var CategoryRouteBreadcrumbsCreator
      */
     private $categoryRouteBreadcrumbsCreator;
 
     /**
+     * @var Str
+     */
+    private $str;
+
+    /**
      * ProductDetailsController constructor.
      * @param Request $request
      * @param Product $product
      * @param CategoryRouteBreadcrumbsCreator $categoryRouteBreadcrumbsCreator
+     * @param Str $str
      */
-    public function __construct(Request $request, Product $product, CategoryRouteBreadcrumbsCreator $categoryRouteBreadcrumbsCreator)
+    public function __construct(Request $request, Product $product, CategoryRouteBreadcrumbsCreator $categoryRouteBreadcrumbsCreator, Str $str)
     {
         $this->request = $request;
         $this->product = $product;
         $this->categoryRouteBreadcrumbsCreator = $categoryRouteBreadcrumbsCreator;
+        $this->str = $str;
     }
 
     public function index(string $productUrl)
     {
         $this->selectedProduct = $this->retrieveProductData($productUrl);
+
+        $this->productPrice = $this->getProductPrice();
 
         return response(
             view('content.product.product_details.index')
@@ -70,15 +97,15 @@ class ProductDetailsController extends Controller implements FilterTypes
     {
         return $this->product
             ->where('url', $productUrl)
-            ->select(array_merge($this->product->transformAttributesByLocale(['page_title', 'meta_title', 'meta_description', 'meta_keywords', 'summary']), ['id', 'categories_id', 'brands_id', 'colors_id', 'quality_id', 'rating', 'rating_count',  'updated_at']))
+            ->select(array_merge($this->product->transformAttributesByLocale(['page_title', 'meta_title', 'meta_description', 'meta_keywords', 'summary']), ['id', 'categories_id', 'brands_id', 'colors_id', 'quality_id', 'rating', 'rating_count', 'updated_at']))
             ->with('category', 'image', 'color', 'quality')
             ->with(['brand' => function ($query) {
                 $query->select(['id', 'title', 'image', 'url']);
             }])
             ->with(['deviceModel' => function ($query) {
-                $query->select(['id', 'title', 'series']);
+                $query->select(['id', 'url', 'title', 'series']);
             }])
-            ->with('comment.user')
+            ->with('recentComment.user')
             ->firstOrFail();
     }
 
@@ -90,20 +117,20 @@ class ProductDetailsController extends Controller implements FilterTypes
     private function productViewData(): array
     {
         $productData = [
-                'images' => $this->getProductImages(),
-                'title' => $this->selectedProduct->page_title,
-                'summary' => $this->selectedProduct->summary,
-                'id' => $this->selectedProduct->id,
-                'price' => $this->getProductPrice(),
-                'quality' => $this->selectedProduct->quality->title,
-                'availability' => $this->getProductAvailability(),
-                'brand' => $this->selectedProduct->brand->title,
-                'model' => $this->selectedProduct->deviceModel->implode('title', ', '),
-                'color' => $this->selectedProduct->color->title,
-                'category' => $this->selectedProduct->category->title,
+            'images' => $this->getProductImages(),
+            'title' => $this->selectedProduct->page_title,
+            'summary' => $this->selectedProduct->summary,
+            'id' => $this->selectedProduct->id,
+            'price' => $this->productPrice,
+            'quality' => $this->selectedProduct->quality->title,
+            'availability' => $this->getProductAvailability(),
+            'brand' => $this->selectedProduct->brand->title,
+            'model' => $this->selectedProduct->deviceModel->implode('title', ', '),
+            'color' => $this->selectedProduct->color->title,
+            'category' => $this->selectedProduct->category->title,
         ];
 
-        if ($this->selectedProduct->rating_count >= config('shop.min_rating_count_to_show')){
+        if ($this->selectedProduct->rating_count >= config('shop.min_rating_count_to_show')) {
             $productData['rating'] = ceil($this->selectedProduct->rating);
         }
 
@@ -118,9 +145,20 @@ class ProductDetailsController extends Controller implements FilterTypes
      */
     private function commentsData()
     {
+        $showCommentsCount = config('shop.product_details_comment_count');
+        $this->comments = $this->selectedProduct->recentComment->take($showCommentsCount)->map(function ($item) {
+            return [
+                'comment' => $item->comment,
+                'rating' => $item->rating,
+                'userName' => isset($item->user) ? $item->user->name : $item->name,
+                'userImage' => isset($item->user) ? $item->user->image : null,
+            ];
+        });
+
         return [
-            'comments' => [],
+            'comments' => $this->comments,
             'isUserLoggedIn' => (bool)auth('web')->user(),
+            'hasMoreComments' => $this->selectedProduct->recentComment->count() > $showCommentsCount,
         ];
     }
 
@@ -163,10 +201,18 @@ class ProductDetailsController extends Controller implements FilterTypes
      */
     private function commonMetaData(): array
     {
+        $description = $this->selectedProduct->meta_description . '. ';
+        if (isset($this->uahProductPrice)){
+            $description .= $this->str->ucfirst(trans('meta.phrases.buу_for_price', ['price' => $this->uahProductPrice])) . '. ';
+        }else{
+            $description .= $this->str->ucfirst(trans('meta.phrases.bue')) . '. ';
+        }
+        $description .= $this->str->ucfirst(trans('meta.phrases.phones')) . '.';
+
         return [
             'commonMetaData' => [
                 'title' => $this->selectedProduct->meta_title,
-                'description' => $this->selectedProduct->meta_description,
+                'description' => $description,
                 'keywords' => $this->selectedProduct->meta_keywords,
             ],
         ];
@@ -180,23 +226,36 @@ class ProductDetailsController extends Controller implements FilterTypes
     private function breadcrumbs(): array
     {
         if ($this->request->session()->has('breadcrumbs')) {
-            $breadcrumbs = $this->request->session()->get('breadcrumbs');
-            $this->request->session()->forget('breadcrumbs');
+            $baseBreadcrumbs = $this->request->session()->get('breadcrumbs');
         } else {
-            $breadcrumbs = $this->createBreadcrumbs();
+            $baseBreadcrumbs = $this->categoryRouteBreadcrumbsCreator->createBreadcrumbs($this->getBreadcrumbCreatorItems());
         }
 
         return [
-            'breadcrumbs' => $breadcrumbs,
+            'breadcrumbs' => array_merge($baseBreadcrumbs, $this->additionalBreadcrumbs()),
         ];
     }
 
     /**
-     * Create breadcrumbs from product properties.
+     * Create product and comment breadcrumbs.
      *
      * @return array
      */
-    private function createBreadcrumbs(): array
+    private function additionalBreadcrumbs(): array
+    {
+        return [
+            [
+                'title' => $this->selectedProduct->breadcrumb ? $this->selectedProduct->breadcrumb : $this->selectedProduct->page_title,
+            ],
+        ];
+    }
+
+    /**
+     * Create array of selected items for breadcrumb creator.
+     *
+     * @return array
+     */
+    private function getBreadcrumbCreatorItems(): array
     {
         $breadcrumbItems = [];
 
@@ -210,7 +269,7 @@ class ProductDetailsController extends Controller implements FilterTypes
             $breadcrumbItems[self::MODEL] = $this->selectedProduct->deviceModel;
         }
 
-        return $this->categoryRouteBreadcrumbsCreator->createBreadcrumbs($breadcrumbItems);
+        return $breadcrumbItems;
     }
 
 

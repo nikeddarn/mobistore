@@ -24,13 +24,15 @@
             <tr>
                 <td>Рейтинг</td>
                 <td>
-                    @for($i=1; $i<=5; $i++)
-                        @if($product['rating'] >= $i)
-                            <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
-                        @else
-                            <span class="glyphicon glyphicon-star-empty" aria-hidden="true"></span>
-                        @endif
-                    @endfor
+                    <div class="product-rating">
+                        @for($i=1; $i<=5; $i++)
+                            @if($product['rating'] >= $i)
+                                <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+                            @else
+                                <span class="glyphicon glyphicon-star-empty" aria-hidden="true"></span>
+                            @endif
+                        @endfor
+                    </div>
                 </td>
             </tr>
         @endif

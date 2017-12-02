@@ -24,6 +24,10 @@ h6 {
   margin-top: 0 !important;
 }
 
+.m-t-1 {
+  margin-top: 1rem !important;
+}
+
 .m-t-2 {
   margin-top: 2rem !important;
 }
@@ -864,8 +868,8 @@ textarea:focus {
   border-bottom-right-radius: 0;
 }
 
-.product-detail-table .glyphicon-star {
-  color: gold;
+.product-detail-table .product-rating {
+  font-size: 1.2rem;
 }
 
 .tab-content .well {
@@ -888,6 +892,32 @@ textarea:focus {
 #product-detail-tabs ul li a:hover {
   color: #225878 !important;
   background-color: #f3f3f3 !important;
+}
+
+#review .media img {
+  width: 64px;
+  height: 64px;
+}
+
+#review .media .product-rating {
+  font-size: 10px;
+}
+
+#review form .product-rating {
+  font-size: 2rem;
+}
+
+#review form .product-rating .rating-symbol {
+  padding: 0 1px;
+}
+
+#product_comments .underlined-title h4 {
+  margin-top: 2rem;
+}
+
+.product-rating .glyphicon-star,
+.product-rating .glyphicon-star-empty {
+  color: #fc0;
 }
 
 .owl-theme .owl-nav {
@@ -923,18 +953,6 @@ textarea:focus {
 
 .img-thumbnail {
   border-radius: 0;
-}
-
-#product-detail-tabs #review .glyphicon {
-  font-size: 2rem;
-}
-
-#product-detail-tabs #review .glyphicon-star {
-  color: gold;
-}
-
-#product-detail-tabs #review .glyphicon-star-empty {
-  color: gray;
 }
 
 /* Other*/

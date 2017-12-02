@@ -132,3 +132,5 @@ Route::get('/product/{url}', 'Product\ProductDetailsController@index');
 // ************************ Product Details Page. Comments ************************************
 
 Route::post('/comment/product', 'Comment\ProductCommentsController@store');
+
+Route::get('/comment/product/{id}', 'Comment\ProductCommentsController@index');

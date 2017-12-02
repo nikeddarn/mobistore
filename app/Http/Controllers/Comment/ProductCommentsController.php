@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers\Comment;
 
+use App\Breadcrumbs\CategoryRouteBreadcrumbsCreator;
+use App\Contracts\Shop\Products\Filters\FilterTypes;
 use App\Models\Product;
 use App\Models\ProductComment;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
 
-class ProductCommentsController extends Controller
+class ProductCommentsController extends Controller implements FilterTypes
 {
     /**
      * @var ProductComment
@@ -21,15 +24,55 @@ class ProductCommentsController extends Controller
     private $product;
 
     /**
+     * Retrieved by url product.
+     *
+     * @var Product
+     */
+    private $selectedProduct;
+
+    /**
+     * @var Collection
+     */
+    private $comments;
+
+    /**
+     * @var CategoryRouteBreadcrumbsCreator
+     */
+    private $categoryRouteBreadcrumbsCreator;
+
+    /**
+     * @var Request
+     */
+    private $request;
+
+    /**
      * ProductCommentsController constructor.
+     * @param Request $request
      * @param ProductComment $productComment
      * @param Product $product
+     * @param CategoryRouteBreadcrumbsCreator $categoryRouteBreadcrumbsCreator
      */
-    public function __construct(ProductComment $productComment, Product $product)
+    public function __construct(Request $request, ProductComment $productComment, Product $product, CategoryRouteBreadcrumbsCreator $categoryRouteBreadcrumbsCreator)
     {
 
         $this->productComment = $productComment;
         $this->product = $product;
+        $this->categoryRouteBreadcrumbsCreator = $categoryRouteBreadcrumbsCreator;
+        $this->request = $request;
+    }
+
+    public function index(int $productId)
+    {
+        $this->selectedProduct = $this->retrieveProductData($productId);
+
+        return response(
+            view('content.product.product_comments.index')
+                ->with($this->productViewData())
+                ->with($this->commonMetaData())
+                ->with($this->breadcrumbs())
+                ->with($this->commentsData())
+        )
+            ->withHeaders($this->createHeaders());
     }
 
     /**
@@ -41,18 +84,156 @@ class ProductCommentsController extends Controller
         $validator = Validator::make($request->all(), $this->validationRules());
 
         if ($validator->fails()) {
-            return redirect(request()->server('HTTP_REFERER') . '#review')
+            return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
         }
 
-        $this->productComment->create($this->createCommentData($request));
+        $this->productComment->create($this->storeCommentData($request));
+
+        // update 'updated_at' for correct define Last-Modified time
+        $this->productComment->product()->touch();
 
         if ($request->get('rating') > 0) {
             $this->updateProductRating($request);
         }
 
-        return redirect(request()->server('HTTP_REFERER') . '#review');
+        return redirect()->back();
+    }
+
+    /**
+     * Retrieve product with related models.
+     *
+     * @param int $productId
+     * @return mixed
+     */
+    private function retrieveProductData(int $productId)
+    {
+        return $this->product
+            ->where('id', $productId)
+            ->select(array_merge($this->product->transformAttributesByLocale(['page_title', 'meta_title', 'meta_description', 'meta_keywords', 'summary']), ['id', 'url', 'categories_id', 'brands_id', 'colors_id', 'quality_id', 'rating', 'rating_count', 'updated_at']))
+            ->with('category')
+            ->with(['brand' => function ($query) {
+                $query->select(['id', 'title', 'image', 'url']);
+            }])
+            ->with(['deviceModel' => function ($query) {
+                $query->select(['id', 'url', 'title', 'series']);
+            }])
+            ->with('comment.user')
+            ->firstOrFail();
+    }
+
+    /**
+     * Create product data for the view.
+     *
+     * @return array
+     */
+    private function productViewData(): array
+    {
+        return [
+            'product' => [
+                'id' => $this->selectedProduct->id,
+                'title' => $this->selectedProduct->page_title . '. ' . trans('shop.comments'),
+            ],
+        ];
+    }
+
+    /**
+     * Create meta data for the view.
+     *
+     * @return array
+     */
+    private function commonMetaData(): array
+    {
+        $additionalTitlePart = trans('shop.comments');
+
+        return [
+            'commonMetaData' => [
+                'title' => $this->selectedProduct->meta_title . '. ' . $additionalTitlePart,
+                'description' => $this->selectedProduct->meta_description . '. ' . $additionalTitlePart,
+                'keywords' => $this->selectedProduct->meta_keywords . ', ' . $additionalTitlePart,
+            ],
+        ];
+    }
+
+    /**
+     * Get breadcrumbs from session if exists or create breadcrumbs from product properties.
+     *
+     * @return array
+     */
+    private function breadcrumbs(): array
+    {
+        if ($this->request->session()->has('breadcrumbs')) {
+            $baseBreadcrumbs = $this->request->session()->get('breadcrumbs');
+        } else {
+            $baseBreadcrumbs = $this->categoryRouteBreadcrumbsCreator->createBreadcrumbs($this->getBreadcrumbCreatorItems());
+        }
+
+        return [
+            'breadcrumbs' => array_merge($baseBreadcrumbs, $this->additionalBreadcrumbs()),
+        ];
+    }
+
+    /**
+     * Create product and comment breadcrumbs.
+     *
+     * @return array
+     */
+    private function additionalBreadcrumbs(): array
+    {
+        return [
+            [
+                'title' => $this->selectedProduct->breadcrumb ? $this->selectedProduct->breadcrumb : $this->selectedProduct->page_title,
+                'url' => '/product/' . $this->selectedProduct->url,
+            ],
+            [
+                'title' => trans('shop.comments'),
+            ]
+        ];
+    }
+
+    /**
+     * Create array of selected items for breadcrumb creator.
+     *
+     * @return array
+     */
+    private function getBreadcrumbCreatorItems(): array
+    {
+        $breadcrumbItems = [];
+
+        $breadcrumbItems[self::CATEGORY] = ($this->selectedProduct->category->ancestors)->push($this->selectedProduct->category);
+
+        if ($this->selectedProduct->brand) {
+            $breadcrumbItems[self::BRAND] = collect()->push($this->selectedProduct->brand);
+        }
+
+        if ($this->selectedProduct->deviceModel && $this->selectedProduct->deviceModel->count() === 1) {
+            $breadcrumbItems[self::MODEL] = $this->selectedProduct->deviceModel;
+        }
+
+        return $breadcrumbItems;
+    }
+
+    /**
+     * Retrieve comments and user data.
+     * @return array
+     */
+    private function commentsData()
+    {
+        $this->comments = $this->selectedProduct->comment->map(function ($item) {
+            return [
+                'comment' => $item->comment,
+                'rating' => $item->rating,
+                'userName' => isset($item->user) ? $item->user->name : $item->name,
+                'userImage' => isset($item->user) ? $item->user->image : null,
+                'date' => date('D, d M Y H:i', $item->updated_at->timestamp),
+            ];
+        });
+
+        return [
+            'comments' => $this->comments,
+            'isUserLoggedIn' => (bool)auth('web')->user(),
+        ];
     }
 
     /**
@@ -70,7 +251,7 @@ class ProductCommentsController extends Controller
         ];
     }
 
-    private function createCommentData(Request $request): array
+    private function storeCommentData(Request $request): array
     {
         $commentData = [];
 
@@ -82,6 +263,10 @@ class ProductCommentsController extends Controller
         }
 
         $commentData['products_id'] = $request->get('product_id');
+
+        if ($request->get('rating') > 0) {
+            $commentData['rating'] = $request->get('rating');
+        }
 
         $commentData['comment'] = $request->get('comment');
 
@@ -99,5 +284,17 @@ class ProductCommentsController extends Controller
         $product->rating = ($product->rating * $product->rating_count + $request->get('rating')) / ($product->rating_count + 1);
         $product->rating_count = $product->rating_count + 1;
         $product->save();
+    }
+
+    /**
+     * Create response headers.
+     *
+     * @return array
+     */
+    protected function createHeaders(): array
+    {
+        return [
+            'Last-Modified' => date('D, d M Y H:i:s T', $this->selectedProduct->comment->max('updated_at')->timestamp),
+        ];
     }
 }
