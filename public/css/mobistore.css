@@ -32,6 +32,10 @@ h6 {
   margin-top: 2rem !important;
 }
 
+.m-t-3 {
+  margin-top: 3rem !important;
+}
+
 .m-t-4 {
   margin-top: 4rem !important;
 }
@@ -953,6 +957,27 @@ textarea:focus {
 
 .img-thumbnail {
   border-radius: 0;
+}
+
+#product-path-selection {
+  background-color: #f9f9f9;
+  -webkit-box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+          box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+  border-bottom-style: none;
+}
+
+#product-path-selection div {
+  padding: 0;
+}
+
+#product-path-selection a {
+  color: #777777;
+  display: block;
+  padding: 4px 6px;
+}
+
+#product-path-selection .product-path-active-link {
+  background-color: #e0f2f1;
 }
 
 /* Other*/

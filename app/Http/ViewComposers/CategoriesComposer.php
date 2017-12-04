@@ -4,10 +4,32 @@ namespace App\Http\ViewComposers;
 
 use App\Models\Brand;
 use App\Models\Category;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class CategoriesComposer
 {
+    /**
+     * @var Category
+     */
+    private $category;
+
+    /**
+     * @var Brand
+     */
+    private $brand;
+
+    /**
+     * CategoriesComposer constructor.
+     * @param Category $category
+     * @param Brand $brand
+     */
+    public function __construct(Category $category, Brand $brand)
+    {
+
+        $this->category = $category;
+        $this->brand = $brand;
+    }
     /**
      * Bind data to the view.
      *
@@ -26,13 +48,13 @@ class CategoriesComposer
      */
     private function getCategoriesTree()
     {
-        $categories = Category::withDepth()->get()->toTree();
+        $categories = $this->category->withDepth()->get()->toTree();
 
-        return $categories->count() ? $categories[0]->children : [];
+        return $categories->count() ? $categories[0]->children : collect();
     }
 
     private function getBrands()
     {
-        return Brand::orderBy('priority', 'asc')->get();
+        return $this->brand->orderBy('priority', 'asc')->get();
     }
 }

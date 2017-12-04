@@ -81,12 +81,15 @@ module.exports = __webpack_require__(47);
 
 $(document).ready(function () {
 
+    // -------------------------------------- Select Picker ---------------------------------------
+
     // activate selectpicker
     $('.selectpicker').selectpicker();
 
-    var storeNavbar = $('#store-navbar');
+    // ---------------------------------------Search Panel -----------------------------------------
 
     // fixed search panel on scroll
+    var storeNavbar = $('#store-navbar');
     var bottomHeaderElement = $(storeNavbar);
     var fixingScrollHeight = $(bottomHeaderElement).offset().top + $(bottomHeaderElement).height();
     var unfixingHeight = $('#top-navbar').height();
@@ -113,37 +116,65 @@ $(document).ready(function () {
         }
     });
 
-    // Animate mega-menu. Adding class .open on hover to highlighting dropdown toggler.
+    // ------------------------------- Mega Menu ----------------------------------------------------
 
+    // Animate mega-menu. Adding class .open on hover to highlighting dropdown toggler.
     $(storeNavbar).find('li.dropdown').hover(function () {
         $(this).addClass('open');
         var megaMenu = $(this).find('.dropdown-menu');
         var megaMenuTop = parseInt($(megaMenu).css('top'));
         $(megaMenu).css({ 'top': megaMenuTop - 20 + 'px', 'opacity': 0 });
-        var grid = $('.grid');
-        grid.one('layoutComplete', function () {
+        if ($('#product-path-categories').hasClass('hidden')) {
             $(megaMenu).stop(true, true).animate({ opacity: 1, top: megaMenuTop + 'px' }, 200);
-        });
-        grid.isotope();
+        } else {
+            var grid = $('.grid');
+            grid.one('layoutComplete', function () {
+                $(megaMenu).stop(true, true).animate({ opacity: 1, top: megaMenuTop + 'px' }, 200);
+            });
+            grid.isotope();
+        }
     }, function () {
-        var megaMenu = $(this).find('.dropdown-menu');
-        var megaMenuTop = parseInt($(megaMenu).css('top'));
         $(this).removeClass('open').find('.dropdown-menu').stop(true, true).fadeOut(200);
     });
 
-    // $(storeNavbar).find('li.dropdown').click(function(event) {
-    //     // event.preventDefault();
-    //     // event.stopPropagation();
-    //     if($(this).hasClass('open')){
-    //         // $('.grid').isotope();
-    //         console.log('o')
-    //         // $(this).removeClass('open');
-    //         // $(this).find('.dropdown-menu').stop(true, true).css('display', 'none');
-    //     }else{
-    //         // $(this).addClass('open');
-    //         // $(this).find('.dropdown-menu').stop(true, true).css({'top': '100%', 'display': 'block', 'opacity': 1});
-    //     }
-    // });
+    // prevent to hide mega menu when there was clicked not on link
+    $('.yamm-content').click(function (event) {
+        if ($(event.target).parent()[0].nodeName !== 'A') {
+            event.stopPropagation();
+            event.preventDefault();
+        }
+    });
+
+    // change retrieve product path in mega menu. show appropriate block
+    var selectingPathLinks = $('#product-path-selection').find('.product-path-link');
+    $(selectingPathLinks).each(function () {
+        $(this).click(function (event) {
+            changeSelectingProductBlock(event, this);
+        }).hover(function (event) {
+            changeSelectingProductBlock(event, this);
+        });
+    });
+
+    // change active product path link. display appropriate block.
+    function changeSelectingProductBlock(event, clicked) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        // set 'product-path-active-link' class only to clicked link
+        $(selectingPathLinks).each(function () {
+            $(this).removeClass('product-path-active-link');
+        });
+        $(clicked).addClass('product-path-active-link');
+
+        // change showing block
+        var showingPathBlock = $('#' + $(clicked).data('target'));
+        if ($(showingPathBlock).hasClass('hidden')) {
+            $('.product-path-block:not(".hidden")').animate({ opacity: 0 }, 100, 'swing', function () {
+                $(this).addClass('hidden');
+                $(showingPathBlock).css('opacity', 0).removeClass('hidden').animate({ opacity: 1 }, 100, 'swing');
+            });
+        }
+    }
 });
 
 /***/ })
