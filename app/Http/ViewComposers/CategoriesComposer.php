@@ -4,7 +4,6 @@ namespace App\Http\ViewComposers;
 
 use App\Models\Brand;
 use App\Models\Category;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class CategoriesComposer

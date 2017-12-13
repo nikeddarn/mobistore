@@ -169,7 +169,7 @@ class ProductDetailsController extends Controller implements FilterTypes
      */
     private function getProductImages(): array
     {
-        $imagePathPrefix = Storage::disk('public')->url('images/products/');
+        $imagePathPrefix = Storage::disk('public')->url('images/products/big/');
 
         return $this->selectedProduct->image->sortByDesc('is_primary')->each(function ($image) use ($imagePathPrefix) {
             $image->image = $imagePathPrefix . $image->image;

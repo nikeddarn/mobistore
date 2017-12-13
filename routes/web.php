@@ -89,23 +89,24 @@ Route::middleware(['auth:web'])->group(function () {
 
 /**
  * ****************************************************************
-* ToDo this route must be removed after setup completed !!!!!!!!!!!
+* ToDo this routes must be removed after setup completed !!!!!!!!!!!
  * ****************************************************************
  */
+Route::get('/initialize', 'Admin\SetupController@initialize');
 Route::get('/setup', 'Admin\SetupController@setup');
-
+// *****************************************************************
 
 Route::middleware(['admin'])->group(function () {
 
-    Route::get('/setup/categories', 'Admin\SetupController@categories');
+//    Route::get('/setup/categories', 'Admin\SetupController@categories');
 
-    Route::get('/setup/products', 'Admin\SetupController@products');
+//    Route::get('/setup/products', 'Admin\SetupController@products');
 
     Route::get('/setup/watermark', 'Admin\SetupController@watermark');
 
-    Route::get('/setup/meta', 'Admin\SetupController@meta');
+//    Route::get('/setup/test', 'Admin\SetupController@insertInvoiceTypes');
 
-    Route::post('/setup/confirm', 'Admin\SetupController@confirmSetup');
+//    Route::post('/setup/confirm', 'Admin\SetupController@confirmSetup');
 
 
 

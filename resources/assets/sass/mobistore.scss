@@ -1025,6 +1025,10 @@ select:focus, textarea:focus {
   border-radius: 0;
 }
 
+.img-thumbnail:hover {
+  border: 1px solid $brand-primary;
+}
+
 // ************************************* Mega Menu *****************************************************
 
 #product-path-selection{

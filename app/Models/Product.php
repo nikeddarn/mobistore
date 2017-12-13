@@ -103,4 +103,12 @@ class Product extends Model
     {
         return $this->hasMany('App\Models\ProductComment', 'products_id', 'id')->limit(config('shop.product_details_comment_count') + 1)->orderByDesc('id');
     }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function vendorProduct()
+    {
+        return $this->hasMany('App\Models\VendorProduct', 'products_id', 'id');
+    }
 }

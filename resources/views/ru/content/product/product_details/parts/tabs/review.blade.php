@@ -1,4 +1,4 @@
-@if(!empty($comments))
+@if(!empty($comments['comments']))
 
     @foreach($comments as $comment)
         <div class="media">

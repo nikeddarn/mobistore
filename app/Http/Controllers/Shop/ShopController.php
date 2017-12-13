@@ -137,7 +137,7 @@ abstract class ShopController extends Controller implements FilterTypes
      *
      * @return array
      */
-    protected function commonViewData():array
+    protected function commonViewData(): array
     {
         return [
             'commonMetaData' => $this->createCommonMetaData(),
@@ -153,7 +153,7 @@ abstract class ShopController extends Controller implements FilterTypes
      *
      * @return array
      */
-    private function getBreadcrumbs():array
+    private function getBreadcrumbs(): array
     {
         $breadcrumbs = $this->createBreadcrumbs();
 
@@ -167,7 +167,7 @@ abstract class ShopController extends Controller implements FilterTypes
      *
      * @return array
      */
-    protected function specialMetaData():array
+    protected function specialMetaData(): array
     {
         return [
             'specialMetaData' => $this->createSpecialMetaData(),
@@ -179,28 +179,28 @@ abstract class ShopController extends Controller implements FilterTypes
      *
      * @return array
      */
-    abstract protected function createCommonMetaData():array;
+    abstract protected function createCommonMetaData(): array;
 
     /**
      * Create array of data for meta and link tags.
      *
      * @return array
      */
-    abstract protected function createSpecialMetaData():array;
+    abstract protected function createSpecialMetaData(): array;
 
     /**
      * Create breadcrumbs.
      *
      * @return array
      */
-    abstract protected function createBreadcrumbs():array;
+    abstract protected function createBreadcrumbs(): array;
 
     /**
      * Create page title, summary.
      *
      * @return array
      */
-    abstract protected function createPageData():array;
+    abstract protected function createPageData(): array;
 
     /**
      * Create an array of view data for products page.
@@ -211,11 +211,11 @@ abstract class ShopController extends Controller implements FilterTypes
     {
         $productsData = [
             'products' => $this->getProducts(),
-            'productImagePathPrefix' => Storage::disk('public')->url('images/products/'),
+            'productImagePathPrefix' => Storage::disk('public')->url('images/products/small/'),
             'isPageFirstOrSingle' => !$this->isProductPageSingle && $this->products->currentPage() === 1,
         ];
 
-        if (!$this->isProductPageSingle){
+        if (!$this->isProductPageSingle) {
             $productsData['viewAllUrl'] = $this->request->url() . '?view=all';
             $productsData['productsPagesLinks'] = $this->products->links();
         }

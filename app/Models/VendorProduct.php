@@ -2,23 +2,32 @@
 
 namespace App\Models;
 
+use App\Models\Traits\CompositeKeys;
 use Illuminate\Database\Eloquent\Model;
 
 class VendorProduct extends Model
 {
+    use CompositeKeys;
+
     /**
      * Table name.
      *
      * @var string
      */
-    protected $table = 'vendors_has_products';
+    protected $table = 'vendor_products';
 
     /**
-     * The attributes that are mass assignable.
+     * Array of composite primary keys.
      *
      * @var array
      */
-    protected $fillable = [
-        'vendors_id', 'products_id', 'vendor_product_id', 'vendor_price', 'vendor_stock_quantity',
-    ];
+    protected $primaryKey = ['vendors_id', 'vendor_product_id'];
+
+    /**
+     * Non auto incrementing primary key.
+     *
+     * @var bool
+     */
+    public $incrementing = false;
+
 }

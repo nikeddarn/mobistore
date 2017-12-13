@@ -4,14 +4,21 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Vendor extends Model
+class InvoiceType extends Model
 {
     /**
      * Table name.
      *
      * @var string
      */
-    protected $table = 'vendors';
+    protected $table = 'invoice_types';
+
+    /**
+     * Non auto incrementing primary key.
+     *
+     * @var bool
+     */
+    public $incrementing = false;
 
     /**
      * The attributes that are mass assignable.
