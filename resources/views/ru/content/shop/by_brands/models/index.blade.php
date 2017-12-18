@@ -16,9 +16,9 @@
         </div>
 
         <!-- Series with Models-->
-        <div id="models-of-brand" class="row">
-            @include('content.shop.by_brands.models.parts.models')
-        </div>
+                <div id="models-of-brand" class="row">
+                    @include('content.shop.by_brands.models.parts.models')
+                </div>
 
         <!-- Category summary -->
         @if($pageData['summary'])

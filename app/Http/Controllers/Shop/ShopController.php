@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Shop;
 
 use App\Contracts\Shop\Products\Filters\FilterTypes;
+use App\Http\Controllers\Admin\Support\Badges\ProductBadges;
+use App\Http\Support\Price\ProductPrice;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Brand;
@@ -103,6 +105,16 @@ abstract class ShopController extends Controller implements FilterTypes
      */
     protected $request;
 
+    /**
+     * @var ProductPrice
+     */
+    private $productPrice;
+
+    /**
+     * @var ProductBadges
+     */
+    private $productBadges;
+
 
     /**
      * CategoryUnfilteredController constructor.
@@ -114,8 +126,10 @@ abstract class ShopController extends Controller implements FilterTypes
      * @param Product $product
      * @param Quality $quality
      * @param Color $color
+     * @param ProductPrice $productPrice
+     * @param ProductBadges $productBadges
      */
-    public function __construct(Request $request, MetaData $metaData, Category $category, Brand $brand, DeviceModel $model, Product $product, Quality $quality, Color $color)
+    public function __construct(Request $request, MetaData $metaData, Category $category, Brand $brand, DeviceModel $model, Product $product, Quality $quality, Color $color, ProductPrice $productPrice, ProductBadges $productBadges)
     {
 
         $this->metaData = $metaData;
@@ -126,6 +140,8 @@ abstract class ShopController extends Controller implements FilterTypes
         $this->quality = $quality;
         $this->color = $color;
         $this->request = $request;
+        $this->productPrice = $productPrice;
+        $this->productBadges = $productBadges;
 
         $this->isPaginable = $request->has('view') && $request->get('view') === 'all' ? false : true;
 
@@ -210,7 +226,7 @@ abstract class ShopController extends Controller implements FilterTypes
     protected function productsViewData()
     {
         $productsData = [
-            'products' => $this->getProducts(),
+            'products' => $this->formProductData(),
             'productImagePathPrefix' => Storage::disk('public')->url('images/products/small/'),
             'isPageFirstOrSingle' => !$this->isProductPageSingle && $this->products->currentPage() === 1,
         ];
@@ -221,6 +237,27 @@ abstract class ShopController extends Controller implements FilterTypes
         }
 
         return $productsData;
+    }
+
+    /**
+     * Prepare data for each product
+     */
+    private function formProductData()
+    {
+        $rate = $this->productPrice->getRate();
+
+        return $this->products->each(function ($product) use ($rate) {
+
+            $price = $this->productPrice->getPrice($product);
+
+            $product->price = $price ? number_format($price, 2, '.', ',') : null;
+            $product->priceUah = $price && $rate ? number_format($price * $rate, 2, '.', ',') : null;
+
+            $product->stockStatus = $product->storageProduct->count() ? 1 : ($product->vendorProduct->count() ? 0 : null);
+
+            $product->badges = $this->productBadges->createBadges($product->productBadge);
+        });
+
     }
 
     /**
@@ -270,6 +307,16 @@ abstract class ShopController extends Controller implements FilterTypes
         }
 
         $query->with('primaryImage');
+
+        $query->with(['storageProduct' => function ($query) {
+            $query->where('stock_quantity', '>', 0);
+        }]);
+
+        $query->with(['vendorProduct' => function ($query) {
+            $query->where('stock_quantity', '>', 0);
+        }]);
+
+        $query->with('productBadge.badge');
 
         return $this->isPaginable ? $query->paginate(config('shop.products_per_page')) : $query->get();
     }

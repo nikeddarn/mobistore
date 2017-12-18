@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\Support\ImageCreator;
 use App\Http\Controllers\Admin\Support\InitializeApplication;
 use App\Http\Controllers\Admin\Support\ProductCreator;
 use App\Http\Controllers\Controller;
+use App\Models\Currency;
 use App\Models\Storage;
 use App\Models\Vendor;
 
@@ -37,16 +38,20 @@ class SetupController extends Controller
      * @var ImageCreator
      */
     private $imageCreator;
-
     /**
      * @var Vendor
      */
     private $vendor;
-
     /**
      * @var Storage
      */
     private $storage;
+
+    /**
+     * @var Currency
+     */
+    private $currency;
+
 
     /**
      * SetupController constructor.
@@ -58,8 +63,9 @@ class SetupController extends Controller
      * @param ImageCreator $imageCreator
      * @param Vendor $vendor
      * @param Storage $storage
+     * @param Currency $currency
      */
-    public function __construct(InitializeApplication $initializer, CommonMetaData $metaData, CategoriesCreator $categoriesCreator, ProductCreator $productCreator, ImageCreator $imageCreator, Vendor $vendor, Storage $storage)
+    public function __construct(InitializeApplication $initializer, CommonMetaData $metaData, CategoriesCreator $categoriesCreator, ProductCreator $productCreator, ImageCreator $imageCreator, Vendor $vendor, Storage $storage, Currency $currency)
     {
         $this->initializer = $initializer;
         $this->metaData = $metaData;
@@ -68,6 +74,7 @@ class SetupController extends Controller
         $this->imageCreator = $imageCreator;
         $this->vendor = $vendor;
         $this->storage = $storage;
+        $this->currency = $currency;
     }
 
     /**
@@ -79,8 +86,9 @@ class SetupController extends Controller
         $message .= $this->categoriesBrandsModels();
         $message .= $this->commonMetaData();
         $message .= $this->products();
-        $message .= $this->watermark();
-        $message .= $this->vendorStorage();
+//        $message .= $this->watermark();
+        $message .= $this->vendors();
+        $message .= $this->storages();
 
         return view('content.admin.setup.message')->with([
             'setup_message' => $message,
@@ -147,21 +155,28 @@ class SetupController extends Controller
         return '<p>Images was watermarked.</p>';
     }
 
-    /**
-     * Add Vendors and Storages.
+    /*
+     * Insert vendors.
      */
-    private function vendorStorage()
+    private function vendors()
     {
-        $this->vendor->updateOrCreate([
-            'title' => 'Lankin',
-        ]);
+        foreach (require database_path('setup/vendors.php') as $vendor){
+            $this->vendor->create($vendor);
+        }
 
-        $this->storage->updateOrCreate([
-            'title_en' => 'Kyiv',
-            'title_ru' => 'Киев',
-            'title_ua' => 'Київ',
-        ]);
-
-        return '<p>Vendors and Storages was added.</p>';
+        return '<p>Vendors was inserted.</p>';
     }
+
+    /*
+     * Insert storages.
+     */
+    private function storages()
+    {
+        foreach (require database_path('setup/storages.php') as $storage){
+            $this->storage->create($storage);
+        }
+
+        return '<p>Storages was inserted.</p>';
+    }
+
 }

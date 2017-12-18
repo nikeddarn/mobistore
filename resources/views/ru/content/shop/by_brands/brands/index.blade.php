@@ -16,8 +16,12 @@
         </div>
 
         <!-- Brands -->
-        <div id="supported-brands" class="row m-t-4">
-            @include('content.shop.by_brands.brands.parts.brands')
+        <div class="row">
+            <div class="col-lg-12 container-fluid">
+                <div id="supported-brands" class="row row-flex m-t-4">
+                    @include('content.shop.by_brands.brands.parts.brands')
+                </div>
+            </div>
         </div>
 
         <!-- Category summary -->

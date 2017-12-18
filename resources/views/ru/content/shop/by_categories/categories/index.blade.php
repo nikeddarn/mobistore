@@ -16,8 +16,12 @@
         </div>
 
         <!-- Children categories -->
-        <div id="children-categories" class="row m-t-4">
-            @include('content.shop.by_categories.categories.parts.categories')
+        <div class="row">
+            <div class="col-lg-12 container-fluid">
+                <div id="children-categories" class="row row-flex m-t-4">
+                    @include('content.shop.by_categories.categories.parts.categories')
+                </div>
+            </div>
         </div>
 
         <!-- Category summary -->

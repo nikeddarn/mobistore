@@ -36,18 +36,20 @@
         <!-- Products -->
             <div id="products-list"
                  class="col-xs-12 col-sm-9 @if(!$filters) col-sm-offset-1 @endif">
-                    @include('content.shop.by_categories.products.parts.products')
+                @include('content.shop.by_categories.products.parts.products')
 
                 @if(isset($productsPagesLinks))
+                    <div class="col-lg-12">
 
-                    {{ $productsPagesLinks }}
+                        {{ $productsPagesLinks }}
 
-                    <ul class="pagination">
-                        <li>
-                            <a href="{{ $viewAllUrl }}">смотреть все</a>
-                        </li>
-                    </ul>
+                        <ul class="pagination">
+                            <li>
+                                <a href="{{ $viewAllUrl }}">смотреть все</a>
+                            </li>
+                        </ul>
 
+                    </div>
                 @endif
 
             </div>

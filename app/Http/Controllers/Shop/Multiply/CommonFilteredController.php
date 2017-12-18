@@ -18,23 +18,6 @@ abstract class CommonFilteredController extends ShopController
     protected $selectedQuality = null;
 
     /**
-     * Create associative array of filtered models.
-     *
-     * @param string $url
-     * @return array
-     */
-    protected function parseUrl(string $url)
-    {
-        $modelsData = [];
-        foreach (explode('/', $url) as $urlPart) {
-            $modelData = explode('=', $urlPart);
-            $modelsData[$modelData[0]] = $modelData[1];
-        }
-        return $modelsData;
-    }
-
-
-    /**
      * Retrieve models.
      *
      * @param string $url
@@ -43,6 +26,8 @@ abstract class CommonFilteredController extends ShopController
     protected function retrieveModels(string $url)
     {
         $modelsData = $this->parseUrl($url);
+
+        $this->checkUrlPartsSequence($modelsData);
 
         foreach (['brand', 'model', 'color', 'quality'] as $model) {
 
@@ -59,6 +44,47 @@ abstract class CommonFilteredController extends ShopController
             $this->selectedCategory = $this->category->withDepth()->whereIn('breadcrumb', explode(',', $modelsData['category']))->get();
         } else {
             $this->selectedCategory = collect();
+        }
+    }
+
+    /**
+     * Create associative array of filtered models.
+     *
+     * @param string $url
+     * @return array
+     */
+    protected function parseUrl(string $url):array
+    {
+        $modelsData = [];
+        foreach (explode('/', $url) as $urlPart) {
+            $modelData = explode('=', $urlPart);
+            $modelsData[$modelData[0]] = $modelData[1];
+        }
+        return $modelsData;
+    }
+
+    /**
+     * Check if the Url parts are in the correct sequence to prevent make doubles of filtered pages.
+     *
+     * @param array $modelsData
+     * @return void;
+     */
+    private function checkUrlPartsSequence(array $modelsData)
+    {
+        $correctSequence = [
+            'brand' => 0,
+            'model' => 1,
+            'category' => 2,
+            'color' => 3,
+            'quality' => 4,
+        ];
+        $currentItem = 0;
+        foreach (array_keys($modelsData) as $urlPart){
+            if ($correctSequence[$urlPart] >= $currentItem){
+                $currentItem = $correctSequence[$urlPart];
+            }else{
+                abort(404);
+            }
         }
     }
 

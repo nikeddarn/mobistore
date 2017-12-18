@@ -5,7 +5,7 @@ namespace App\Models;
 use App\Models\Traits\Translatable;
 use Illuminate\Database\Eloquent\Model;
 
-class Quality extends Model
+class Badge extends Model
 {
     use Translatable;
     /**
@@ -13,7 +13,14 @@ class Quality extends Model
      *
      * @var string
      */
-    protected $table = 'quality';
+    protected $table = 'badges';
+
+    /**
+     * Non auto incrementing primary key.
+     *
+     * @var bool
+     */
+    public $incrementing = false;
 
     /**
      * Indicates if the model should be timestamped.
@@ -28,7 +35,7 @@ class Quality extends Model
      * @var array
      */
     protected $fillable = [
-        'title_en', 'title_ru', 'title_ua', 'breadcrumb',
+        'id', 'title_en', 'title_ru', 'title_ua',
     ];
 
     /**
@@ -37,12 +44,4 @@ class Quality extends Model
      * @var array
      */
     public $translatable = ['title'];
-
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function product()
-    {
-        return $this->hasMany('App\Models\Product', 'quality_id', 'id');
-    }
 }

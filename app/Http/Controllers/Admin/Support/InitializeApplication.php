@@ -7,11 +7,16 @@
 namespace App\Http\Controllers\Admin\Support;
 
 
+use App\Contracts\Currency\CurrenciesInterface;
+use App\Contracts\Shop\Badges\BadgeTypes;
 use App\Contracts\Shop\Invoices\InvoiceTypes;
+use App\Models\Badge;
 use App\Models\Color;
+use App\Models\Currency;
 use App\Models\InvoiceType;
 use App\Models\Quality;
 use App\Models\Role;
+use App\Models\Storage;
 use App\Models\User;
 use App\Models\Vendor;
 use ReflectionClass;
@@ -22,46 +27,59 @@ class InitializeApplication
      * @var Role
      */
     private $role;
+
     /**
      * @var Color
      */
     private $color;
+
     /**
      * @var Quality
      */
     private $quality;
-    /**
-     * @var Vendor
-     */
-    private $vendor;
+
     /**
      * @var User
      */
     private $user;
+
 
     /**
      * @var InvoiceType
      */
     private $invoiceType;
 
+
+    /**
+     * @var Badge
+     */
+    private $badge;
+
+    /**
+     * @var Currency
+     */
+    private $currency;
+
     /**
      * InitializeApplication constructor.
      * @param Role $role
      * @param Color $color
      * @param Quality $quality
-     * @param Vendor $vendor
      * @param User $user
      * @param InvoiceType $invoiceType
+     * @param Badge $badge
+     * @param Currency $currency
      */
-    public function __construct(Role $role, Color $color, Quality $quality, Vendor $vendor, User $user, InvoiceType $invoiceType)
+    public function __construct(Role $role, Color $color, Quality $quality, User $user, InvoiceType $invoiceType, Badge $badge, Currency $currency)
     {
 
         $this->role = $role;
         $this->color = $color;
         $this->quality = $quality;
-        $this->vendor = $vendor;
         $this->user = $user;
         $this->invoiceType = $invoiceType;
+        $this->badge = $badge;
+        $this->currency = $currency;
     }
 
     /**
@@ -77,9 +95,11 @@ class InitializeApplication
 
         $this->quality->insert(require database_path('setup/quality.php'));
 
-        $this->vendor->insert(require database_path('setup/vendors.php'));
-
         $this->insertInvoiceTypes();
+
+        $this->insertBadges();
+
+        $this->insertCurrencies();
 
     }
 
@@ -113,5 +133,33 @@ class InitializeApplication
         }
 
         $this->invoiceType->insert($types);
+    }
+
+    /**
+     * Insert badges.
+     */
+    public function insertBadges()
+    {
+        $badges = require database_path('setup/badges.php');
+
+        foreach ((new ReflectionClass(BadgeTypes::class))->getConstants() as $constantValue) {
+            $this->badge->create(array_merge(['id' => $constantValue], $badges[$constantValue]));
+        }
+    }
+
+    /**
+     * Insert currencies.
+     */
+    private function insertCurrencies()
+    {
+        $types = [];
+
+        foreach ((new ReflectionClass(CurrenciesInterface::class))->getConstants() as $value) {
+            $types[] = [
+                'code' => $value,
+            ];
+        }
+
+        $this->currency->insert($types);
     }
 }

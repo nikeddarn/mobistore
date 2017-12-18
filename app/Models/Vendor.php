@@ -19,6 +19,6 @@ class Vendor extends Model
      * @var array
      */
     protected $fillable = [
-        'id', 'title',
+        'title',
     ];
 }

@@ -228,6 +228,131 @@ select:focus, textarea:focus {
   }
 }
 
+// ******************************* arrowed labels *****************************************************
+.label-arrow {
+  position: relative;
+}
+
+.label-arrow-right {
+  border-top-right-radius:0;
+  border-bottom-right-radius:0;
+  margin-right:10px;
+}
+
+.label-arrow-right:after {
+  left: 100%;
+  top: 50%;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  border-left-color:#999;
+  border-width: 10px;
+  border-bottom-width: 9px;
+  margin-top: -10px;
+
+}
+
+.label-arrow-left {
+  border-top-left-radius:0;
+  border-bottom-left-radius:0;
+  margin-left:10px;
+}
+
+.label-arrow-left:before {
+  right: 100%;
+  top: 50%;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  border-right-color:#999;
+  border-width: 10px;
+  border-bottom-width: 9px;
+  margin-top: -10px;
+
+}
+
+.label-primary.label-arrow:after {
+  border-left-color:$label-primary-bg;
+}
+.label-primary.label-arrow:before {
+  border-right-color:$label-primary-bg;
+}
+.label-primary.banner-left:before,.label-primary.banner-right:after {
+  border-color:$label-primary-bg;
+}
+
+.label-success.label-arrow:after {
+  border-left-color:$label-success-bg;
+}
+.label-success.label-arrow:before {
+  border-right-color:$label-success-bg;
+}
+
+.label-warning.label-arrow:after {
+  border-left-color:$label-warning-bg;
+}
+.label-warning.label-arrow:before {
+  border-right-color:$label-warning-bg;
+}
+
+.label-danger.label-arrow:after {
+  border-left-color:$label-danger-bg;
+}
+.label-danger.label-arrow:before {
+  border-right-color:$label-danger-bg;
+}
+
+.label-info.label-arrow:after {
+  border-left-color:$label-info-bg;
+}
+.label-info.label-arrow:before {
+  border-right-color:$label-info-bg;
+}
+
+.banner-left:before {
+  border: 10px solid #999;
+  border-left: 10px solid transparent !important;
+  border-bottom-width: 9px;
+  left:-18px;
+  position: absolute;
+  top: 0;
+  height:0;
+  content: " ";
+}
+
+.banner-right:after {
+  border: 10px solid #999;
+  border-right: 10px solid transparent !important;
+  border-bottom-width: 9px;
+  right:-18px;
+  position: absolute;
+  top: 0;
+  height:0;
+  content: " ";
+}
+
+h1 .label-arrow-right {
+  margin-right:22px;
+}
+h1 .label-arrow-left {
+  margin-left:22px;
+}
+h1 .label-arrow-right:after, h1 .label-arrow-left:before {
+  border-width: 22px;
+  margin-top: -22px;
+}
+h1 .banner-left:before {
+  border-width: 24px;
+  right:-10px;
+  border-bottom-width:21px;
+}
+
+// ********************************************************************************************************
+
 .list-item-underlined {
   ul li {
     border: none;
@@ -712,6 +837,15 @@ select:focus, textarea:focus {
 
 /****************************************** Products list *************************************************/
 
+.product-price{
+  color: #ef5350;
+}
+
+.row-flex {
+  display: flex;
+  flex-flow: row wrap;
+}
+
 #products-list {
 
   .product-wrapper {
@@ -753,7 +887,6 @@ select:focus, textarea:focus {
   }
 
   .product-title {
-    height: $line-height-computed*3;
     padding: 10px 0;
     position: relative;
     z-index: 1000;
@@ -820,6 +953,56 @@ select:focus, textarea:focus {
       bottom: 0 !important;
     }
   }
+
+  .product-price{
+    margin-bottom: 5px;
+    padding: 0 5px;
+    line-height: 2rem;
+  }
+
+  .product-stock-status{
+    span {
+      width: 100%;
+      display: block;
+      border-radius: 0;
+      font-size: 1.2rem;
+    }
+  }
+
+  .product-badges{
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: table;
+    overflow: visible;
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    vertical-align: inherit;
+    border-width: 0;
+    background-color: transparent;
+    direction: rtl;
+  }
+
+  .badge-label{
+    display: table;
+    margin: 0 -1px 1px 0;
+    text-align: left;
+    opacity: .80;
+    filter: alpha(opacity=80);
+    direction: ltr;
+  }
+
+  .label {
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.25;
+    display: inline-block;
+    height: 20px;
+    border-radius: 0;
+  }
+
 }
 
 //************************************************* filters sidebar **************************************
@@ -900,7 +1083,7 @@ select:focus, textarea:focus {
     vertical-align: middle !important;
   }
 
-  tr td button {
+  tr td button, tr td .label {
     border-radius: 0;
   }
 

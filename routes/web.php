@@ -104,7 +104,7 @@ Route::middleware(['admin'])->group(function () {
 
     Route::get('/setup/watermark', 'Admin\SetupController@watermark');
 
-//    Route::get('/setup/test', 'Admin\SetupController@insertInvoiceTypes');
+    Route::get('/badges', 'Admin\Support\InitializeApplication@insertBadges');
 
 //    Route::post('/setup/confirm', 'Admin\SetupController@confirmSetup');
 

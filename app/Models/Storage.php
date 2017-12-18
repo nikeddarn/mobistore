@@ -25,4 +25,13 @@ class Storage extends Model
         'title_en', 'title_ru', 'title_ua',
     ];
 
+    /**
+     * The attributes that should be selected depends on locale from JSON type field.
+     *
+     * @var array
+     */
+    public $translatable = [
+        'title',
+    ];
+
 }

@@ -4,21 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ProductImage extends Model
+class Currency extends Model
 {
     /**
      * Table name.
      *
      * @var string
      */
-    protected $table = 'product_images';
-
-    /**
-     * Indicates if the model should be timestamped.
-     *
-     * @var bool
-     */
-    public $timestamps = false;
+    protected $table = 'currencies';
 
     /**
      * The attributes that are mass assignable.
@@ -26,6 +19,13 @@ class ProductImage extends Model
      * @var array
      */
     protected $fillable = [
-        'products_id', 'image', 'is_primary',
+        'title', 'code',
     ];
+
+    /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = false;
 }

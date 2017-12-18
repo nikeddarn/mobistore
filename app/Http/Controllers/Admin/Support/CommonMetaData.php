@@ -33,6 +33,8 @@ class CommonMetaData
      */
     public function insertCommonMetadata()
     {
-        $this->metaData->insert(require database_path('setup/meta.php'));
+        foreach (require database_path('setup/meta.php') as $metaData){
+            $this->metaData->create($metaData);
+        }
     }
 }

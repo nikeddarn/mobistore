@@ -1,6 +1,7 @@
 @foreach($modelsBySeries as $series)
-    <div class="col-lg-12">
+    <div class="col-lg-12 container-fluid">
         <h3 class="text-gray text-indent">{{ $series->series }}</h3>
+        <div class="row row-flex">
         @foreach($series->models as $model)
             <div class="col-sm-2 category-thumbnail">
                 <a href="/brand/{{ $model->url }}" class="text-decoration-none">
@@ -15,5 +16,6 @@
                 </a>
             </div>
         @endforeach
+        </div>
     </div>
 @endforeach

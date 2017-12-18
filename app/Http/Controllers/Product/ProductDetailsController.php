@@ -3,15 +3,18 @@
 namespace App\Http\Controllers\Product;
 
 use App\Breadcrumbs\CategoryRouteBreadcrumbsCreator;
+use App\Contracts\Currency\CurrenciesInterface;
 use App\Contracts\Shop\Products\Filters\FilterTypes;
 use App\Http\Controllers\Controller;
+use App\Http\Support\Price\ProductPrice;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Storage as productStorage;
 use Illuminate\Support\Str;
 
-class ProductDetailsController extends Controller implements FilterTypes
+class ProductDetailsController extends Controller implements FilterTypes, CurrenciesInterface
 {
     /**
      * @var Request
@@ -33,12 +36,12 @@ class ProductDetailsController extends Controller implements FilterTypes
     /**
      * @var float
      */
-    private $productPrice;
+    private $price;
 
     /**
      * @var float
      */
-    private $uahProductPrice;
+    private $priceUah;
 
     /**
      * @var Collection
@@ -56,25 +59,40 @@ class ProductDetailsController extends Controller implements FilterTypes
     private $str;
 
     /**
+     * @var ProductPrice
+     */
+    private $productPrice;
+
+    /**
+     * @var productStorage
+     */
+    private $productStorage;
+
+    /**
      * ProductDetailsController constructor.
      * @param Request $request
      * @param Product $product
      * @param CategoryRouteBreadcrumbsCreator $categoryRouteBreadcrumbsCreator
      * @param Str $str
+     * @param ProductPrice $productPrice
+     * @param productStorage $productStorage
      */
-    public function __construct(Request $request, Product $product, CategoryRouteBreadcrumbsCreator $categoryRouteBreadcrumbsCreator, Str $str)
+    public function __construct(Request $request, Product $product, CategoryRouteBreadcrumbsCreator $categoryRouteBreadcrumbsCreator, Str $str, ProductPrice $productPrice, productStorage $productStorage)
     {
         $this->request = $request;
         $this->product = $product;
         $this->categoryRouteBreadcrumbsCreator = $categoryRouteBreadcrumbsCreator;
         $this->str = $str;
+        $this->productPrice = $productPrice;
+        $this->productStorage = $productStorage;
     }
 
     public function index(string $productUrl)
     {
         $this->selectedProduct = $this->retrieveProductData($productUrl);
 
-        $this->productPrice = $this->getProductPrice();
+        $this->price = $this->productPrice->getPrice($this->selectedProduct);
+        $this->priceUah = $this->price * $this->productPrice->getRate(self::USD);
 
         return response(
             view('content.product.product_details.index')
@@ -96,16 +114,29 @@ class ProductDetailsController extends Controller implements FilterTypes
     private function retrieveProductData(string $productUrl)
     {
         return $this->product
+
             ->where('url', $productUrl)
-            ->select(array_merge($this->product->transformAttributesByLocale(['page_title', 'meta_title', 'meta_description', 'meta_keywords', 'summary']), ['id', 'categories_id', 'brands_id', 'colors_id', 'quality_id', 'rating', 'rating_count', 'updated_at']))
+
             ->with('category', 'image', 'color', 'quality')
+
             ->with(['brand' => function ($query) {
                 $query->select(['id', 'title', 'image', 'url']);
             }])
+
             ->with(['deviceModel' => function ($query) {
                 $query->select(['id', 'url', 'title', 'series']);
             }])
+
             ->with('recentComment.user')
+
+            ->with(['storageProduct' => function ($query) {
+                $query->where('stock_quantity', '>', 0);
+            }])
+
+            ->with(['vendorProduct' => function ($query) {
+                $query->where('stock_quantity', '>', 0);
+            }])
+
             ->firstOrFail();
     }
 
@@ -121,13 +152,15 @@ class ProductDetailsController extends Controller implements FilterTypes
             'title' => $this->selectedProduct->page_title,
             'summary' => $this->selectedProduct->summary,
             'id' => $this->selectedProduct->id,
-            'price' => $this->productPrice,
+            'price' => $this->price ? number_format($this->price, 2, '.', ',') : null,
+            'priceUah' => $this->priceUah ? number_format($this->priceUah, 2, '.', ',') : null,
             'quality' => $this->selectedProduct->quality->title,
-            'availability' => $this->getProductAvailability(),
             'brand' => $this->selectedProduct->brand->title,
             'model' => $this->selectedProduct->deviceModel->implode('title', ', '),
             'color' => $this->selectedProduct->color->title,
             'category' => $this->selectedProduct->category->title,
+            'stockStatus' => $this->selectedProduct->storageProduct->count() ? 1 : ($this->selectedProduct->vendorProduct->count() ? 0 : null),
+            'stockLocations' => $this->getStoragesHasProduct($this->selectedProduct),
         ];
 
         if ($this->selectedProduct->rating_count >= config('shop.min_rating_count_to_show')) {
@@ -177,21 +210,14 @@ class ProductDetailsController extends Controller implements FilterTypes
     }
 
     /**
+     * Create array of titles of storages that has product.
      *
-     *
-     * @return int
+     * @param Product $product
+     * @return array
      */
-    private function getProductPrice(): int
+    private function getStoragesHasProduct(Product $product):array
     {
-        return 0;
-    }
-
-    private function getProductAvailability(): array
-    {
-        return [
-            'class' => 'success',
-            'title' => 'На складе'
-        ];
+        return $this->productStorage->whereIn('id', $product->storageProduct->pluck('storages_id')->toArray())->get()->pluck('title')->toArray();
     }
 
     /**
@@ -202,9 +228,9 @@ class ProductDetailsController extends Controller implements FilterTypes
     private function commonMetaData(): array
     {
         $description = $this->selectedProduct->meta_description . '. ';
-        if (isset($this->uahProductPrice)){
-            $description .= $this->str->ucfirst(trans('meta.phrases.buу_for_price', ['price' => $this->uahProductPrice])) . '. ';
-        }else{
+        if (isset($this->priceUah)) {
+            $description .= $this->str->ucfirst(trans('meta.phrases.buу_for_price', ['price' => $this->priceUah])) . '. ';
+        } else {
             $description .= $this->str->ucfirst(trans('meta.phrases.bue')) . '. ';
         }
         $description .= $this->str->ucfirst(trans('meta.phrases.phones')) . '.';

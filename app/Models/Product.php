@@ -111,4 +111,20 @@ class Product extends Model
     {
         return $this->hasMany('App\Models\VendorProduct', 'products_id', 'id');
     }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function storageProduct()
+    {
+        return $this->hasMany('App\Models\StorageProduct', 'products_id', 'id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function productBadge()
+    {
+        return $this->hasMany('App\Models\ProductBadge', 'products_id', 'id');
+    }
 }
