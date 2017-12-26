@@ -81,6 +81,43 @@ h1, h2, h3, h4, h5, h6 {
   text-decoration: none !important;
 }
 
+// ****************************************** Five columns layout ******************************
+
+.col-xs-15,
+.col-sm-15,
+.col-md-15,
+.col-lg-15 {
+  position: relative;
+  min-height: 1px;
+  padding-right: 10px;
+  padding-left: 10px;
+}
+
+.col-xs-15 {
+  width: 20%;
+  float: left;
+}
+
+@media (min-width: 768px) {
+  .col-sm-15 {
+    width: 20%;
+    float: left;
+  }
+}
+
+@media (min-width: 992px) {
+  .col-md-15 {
+    width: 20%;
+    float: left;
+  }
+}
+
+@media (min-width: 1200px) {
+  .col-lg-15 {
+    width: 20%;
+    float: left;
+  }
+}
 
 // ***************************************** Forms *********************************************
 
@@ -234,9 +271,9 @@ select:focus, textarea:focus {
 }
 
 .label-arrow-right {
-  border-top-right-radius:0;
-  border-bottom-right-radius:0;
-  margin-right:10px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  margin-right: 10px;
 }
 
 .label-arrow-right:after {
@@ -247,7 +284,7 @@ select:focus, textarea:focus {
   height: 0;
   width: 0;
   position: absolute;
-  border-left-color:#999;
+  border-left-color: #999;
   border-width: 10px;
   border-bottom-width: 9px;
   margin-top: -10px;
@@ -255,9 +292,9 @@ select:focus, textarea:focus {
 }
 
 .label-arrow-left {
-  border-top-left-radius:0;
-  border-bottom-left-radius:0;
-  margin-left:10px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  margin-left: 10px;
 }
 
 .label-arrow-left:before {
@@ -268,7 +305,7 @@ select:focus, textarea:focus {
   height: 0;
   width: 0;
   position: absolute;
-  border-right-color:#999;
+  border-right-color: #999;
   border-width: 10px;
   border-bottom-width: 9px;
   margin-top: -10px;
@@ -276,51 +313,57 @@ select:focus, textarea:focus {
 }
 
 .label-primary.label-arrow:after {
-  border-left-color:$label-primary-bg;
+  border-left-color: $label-primary-bg;
 }
+
 .label-primary.label-arrow:before {
-  border-right-color:$label-primary-bg;
+  border-right-color: $label-primary-bg;
 }
-.label-primary.banner-left:before,.label-primary.banner-right:after {
-  border-color:$label-primary-bg;
+
+.label-primary.banner-left:before, .label-primary.banner-right:after {
+  border-color: $label-primary-bg;
 }
 
 .label-success.label-arrow:after {
-  border-left-color:$label-success-bg;
+  border-left-color: $label-success-bg;
 }
+
 .label-success.label-arrow:before {
-  border-right-color:$label-success-bg;
+  border-right-color: $label-success-bg;
 }
 
 .label-warning.label-arrow:after {
-  border-left-color:$label-warning-bg;
+  border-left-color: $label-warning-bg;
 }
+
 .label-warning.label-arrow:before {
-  border-right-color:$label-warning-bg;
+  border-right-color: $label-warning-bg;
 }
 
 .label-danger.label-arrow:after {
-  border-left-color:$label-danger-bg;
+  border-left-color: $label-danger-bg;
 }
+
 .label-danger.label-arrow:before {
-  border-right-color:$label-danger-bg;
+  border-right-color: $label-danger-bg;
 }
 
 .label-info.label-arrow:after {
-  border-left-color:$label-info-bg;
+  border-left-color: $label-info-bg;
 }
+
 .label-info.label-arrow:before {
-  border-right-color:$label-info-bg;
+  border-right-color: $label-info-bg;
 }
 
 .banner-left:before {
   border: 10px solid #999;
   border-left: 10px solid transparent !important;
   border-bottom-width: 9px;
-  left:-18px;
+  left: -18px;
   position: absolute;
   top: 0;
-  height:0;
+  height: 0;
   content: " ";
 }
 
@@ -328,27 +371,30 @@ select:focus, textarea:focus {
   border: 10px solid #999;
   border-right: 10px solid transparent !important;
   border-bottom-width: 9px;
-  right:-18px;
+  right: -18px;
   position: absolute;
   top: 0;
-  height:0;
+  height: 0;
   content: " ";
 }
 
 h1 .label-arrow-right {
-  margin-right:22px;
+  margin-right: 22px;
 }
+
 h1 .label-arrow-left {
-  margin-left:22px;
+  margin-left: 22px;
 }
+
 h1 .label-arrow-right:after, h1 .label-arrow-left:before {
   border-width: 22px;
   margin-top: -22px;
 }
+
 h1 .banner-left:before {
   border-width: 24px;
-  right:-10px;
-  border-bottom-width:21px;
+  right: -10px;
+  border-bottom-width: 21px;
 }
 
 // ********************************************************************************************************
@@ -792,38 +838,25 @@ h1 .banner-left:before {
   }
 }
 
-// inner mega menu styled
+ // inner mega menu styles
 .yamm-content {
-  h5 {
-    color: $store-navbar-color;
-    padding: 4px 8px;
-    margin: 0;
-  }
-  a {
-    text-decoration: none;
-  }
-  a:hover h5 {
-    background-color: $store-navbar-bg-color;
-  }
-  nav:first-child {
-    border-bottom: 1px dotted $store-navbar-color;
-    padding-bottom: 2rem;
-    margin-bottom: 4rem;
-  }
+  background-color: white;
 }
 
 /*********************************** Categories , Brands , Models **********************************************/
 
-#children-categories {
+#children-categories, #supported-brands {
   img {
-    height: 150px;
     width: 100%;
+  }
+  .panel-heading {
+    padding: 8px 10px;
   }
 }
 
 #supported-brands {
   img {
-    height: 50px;
+    //height: 50px;
     width: 100%;
   }
 }
@@ -837,7 +870,19 @@ h1 .banner-left:before {
 
 /****************************************** Products list *************************************************/
 
-.product-price{
+.product-favourite i{
+  color: #FFD700;
+}
+
+.product-not-favourite:hover i, .product-not-favourite:active i {
+  color: #FFD700;
+}
+
+.product-favourite:hover i, .product-favourite:active i {
+  color: white;
+}
+
+.product-price {
   color: #ef5350;
 }
 
@@ -846,7 +891,7 @@ h1 .banner-left:before {
   flex-flow: row wrap;
 }
 
-#products-list {
+.products-list {
 
   .product-wrapper {
     margin-bottom: 5px;
@@ -883,7 +928,6 @@ h1 .banner-left:before {
 
   .product-image {
     width: 100%;
-    height: 245px;
   }
 
   .product-title {
@@ -896,6 +940,10 @@ h1 .banner-left:before {
       margin: 0;
     }
 
+  }
+
+  .product-image-wrapper:hover .product-options {
+    bottom: 0;
   }
 
   .product-options {
@@ -915,30 +963,22 @@ h1 .banner-left:before {
     background-color: rgba(0, 0, 0, 0.55);
   }
 
-  a:hover {
-    cursor: pointer;
-    text-decoration: underline;
-  }
-
-  .product-image-wrapper:hover .product-options {
-    bottom: 0;
-  }
-
-  .product-options a {
-    font-size: 18px;
-    font-weight: normal;
-    display: inline-block;
-    padding: 0 4px;
-    color: #fff;
-  }
-
   .product-options {
+
+    a {
+      font-size: 18px;
+      font-weight: normal;
+      display: inline-block;
+      padding: 0 4px;
+      color: #fff;
+    }
+
     a:hover, a:active {
       color: #9E9E9E;
-      i.fa-star-o {
-        color: #FFD700;
-      }
+      cursor: pointer;
+      text-decoration: underline;
     }
+
   }
 
   @media (max-width: 479px) {
@@ -954,22 +994,30 @@ h1 .banner-left:before {
     }
   }
 
-  .product-price{
+  .product-price {
     margin-bottom: 5px;
     padding: 0 5px;
-    line-height: 2rem;
+
+    span:first-child {
+      font-size: 1.8rem;
+      color: $gray;
+    }
+    span:last-child {
+      color: $gray-light;
+    }
   }
 
-  .product-stock-status{
+  .product-stock-status {
     span {
       width: 100%;
       display: block;
       border-radius: 0;
-      font-size: 1.2rem;
+      font-size: 1.4rem;
+      padding: 0 5px;
     }
   }
 
-  .product-badges{
+  .product-badges {
     position: absolute;
     top: 0;
     right: 0;
@@ -985,7 +1033,7 @@ h1 .banner-left:before {
     direction: rtl;
   }
 
-  .badge-label{
+  .badge-label {
     display: table;
     margin: 0 -1px 1px 0;
     text-align: left;
@@ -1044,6 +1092,12 @@ h1 .banner-left:before {
   color: $brand-primary;
   content: "\2714";
   text-align: center;
+}
+
+// ************************************************ Modal ************************************************
+
+#favourite-product-modal{
+  z-index: 10000;
 }
 
 // ************************************** Product Details ************************************************
@@ -1214,7 +1268,7 @@ h1 .banner-left:before {
 
 // ************************************* Mega Menu *****************************************************
 
-#product-path-selection{
+#product-path-selection {
   div {
     padding: 0;
   }
@@ -1223,18 +1277,22 @@ h1 .banner-left:before {
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
   border-bottom-style: none;
 
-  a{
+  a {
     color: #777777;
     display: block;
     padding: 4px 6px;
   }
 
-
-  .product-path-active-link{
+  .product-path-active-link {
     background-color: #e0f2f1;
   }
 }
 
+#product-path-brands{
+  img {
+    height: 40px;
+  }
+}
 
 /* Other*/
 

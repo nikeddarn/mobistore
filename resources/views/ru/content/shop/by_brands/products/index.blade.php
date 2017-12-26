@@ -32,8 +32,7 @@
         @endif
 
         <!-- Products -->
-            <div id="products-list"
-                 class="col-xs-12 col-sm-9 @if(!$filters) col-sm-offset-1 @endif">
+            <div class="products-list col-xs-12 col-sm-9 @if(!$filters) col-sm-offset-1 @endif">
                 @include('content.shop.by_brands.products.parts.products')
 
                 @if(isset($productsPagesLinks))
@@ -62,6 +61,9 @@
         </div>
 
     </div>
+
+    <!-- Modal -->
+    @include('modals.favourite')
 
 @endsection
 
@@ -94,7 +96,51 @@
 @section('scripts')
     <script>
         $(function () {
-            $('[data-toggle="tooltip"]').tooltip()
+
+            // activate tooltips
+            let tooltips = $('[data-toggle="tooltip"]');
+            tooltips.tooltip();
+
+            // add and remove to favourite
+            let favouriteLink = $('.product-favourite, .product-not-favourite');
+            $(favouriteLink).click(function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                let favouriteLink = $(this);
+                $.ajax({
+                    url: this,
+                    success: function (data) {
+                        if (data !== false) {
+                            let dataObject = $.parseJSON(data);
+                            favouriteLink.toggleClass('product-favourite product-not-favourite');
+                            favouriteLink.attr('href', dataObject.hrefReplace);
+                            favouriteLink.attr('title', dataObject.title);
+                            tooltips.tooltip('fixTitle');
+                            showModalWindow(dataObject.message);
+                        }
+                    },
+                    error: function (xhr) {
+                        if (xhr.status === 401){
+                            showModalWindow($.parseJSON(xhr.responseText).error);
+                        }
+                    },
+                    dataType: 'json'
+                });
+
+                function showModalWindow(message) {
+                    let modal = $('#favourite-product-modal');
+                    $(modal).find('.modal-body p').text(message);
+                    modal.modal('show');
+                    let modalTimeout;
+                    modal.on('shown.bs.modal', function () {
+                        clearTimeout(modalTimeout);
+                        modalTimeout = setTimeout(function () {
+                            modal.modal('hide');
+                        }, 3000)
+                    });
+                }
+
+            });
         })
     </script>
 @endsection

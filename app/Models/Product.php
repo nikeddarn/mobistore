@@ -127,4 +127,12 @@ class Product extends Model
     {
         return $this->hasMany('App\Models\ProductBadge', 'products_id', 'id');
     }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function favouriteProduct()
+    {
+        return $this->hasMany('App\Models\FavouriteProduct', 'products_id', 'id');
+    }
 }

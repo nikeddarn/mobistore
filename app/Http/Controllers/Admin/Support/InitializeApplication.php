@@ -9,16 +9,17 @@ namespace App\Http\Controllers\Admin\Support;
 
 use App\Contracts\Currency\CurrenciesInterface;
 use App\Contracts\Shop\Badges\BadgeTypes;
+use App\Contracts\Shop\Delivery\DeliveryStatus;
 use App\Contracts\Shop\Invoices\InvoiceTypes;
+use App\Contracts\Shop\Reclamations\RejectReclamationReasons;
 use App\Models\Badge;
 use App\Models\Color;
 use App\Models\Currency;
 use App\Models\InvoiceType;
 use App\Models\Quality;
+use App\Models\RejectReclamationReason;
 use App\Models\Role;
-use App\Models\Storage;
 use App\Models\User;
-use App\Models\Vendor;
 use ReflectionClass;
 
 class InitializeApplication
@@ -59,6 +60,14 @@ class InitializeApplication
      * @var Currency
      */
     private $currency;
+    /**
+     * @var \App\Models\DeliveryStatus
+     */
+    private $deliveryStatus;
+    /**
+     * @var RejectReclamationReason
+     */
+    private $rejectReclamationReason;
 
     /**
      * InitializeApplication constructor.
@@ -69,8 +78,10 @@ class InitializeApplication
      * @param InvoiceType $invoiceType
      * @param Badge $badge
      * @param Currency $currency
+     * @param \App\Models\DeliveryStatus $deliveryStatus
+     * @param RejectReclamationReason $rejectReclamationReason
      */
-    public function __construct(Role $role, Color $color, Quality $quality, User $user, InvoiceType $invoiceType, Badge $badge, Currency $currency)
+    public function __construct(Role $role, Color $color, Quality $quality, User $user, InvoiceType $invoiceType, Badge $badge, Currency $currency, \App\Models\DeliveryStatus $deliveryStatus, RejectReclamationReason $rejectReclamationReason)
     {
 
         $this->role = $role;
@@ -80,6 +91,8 @@ class InitializeApplication
         $this->invoiceType = $invoiceType;
         $this->badge = $badge;
         $this->currency = $currency;
+        $this->deliveryStatus = $deliveryStatus;
+        $this->rejectReclamationReason = $rejectReclamationReason;
     }
 
     /**
@@ -100,6 +113,10 @@ class InitializeApplication
         $this->insertBadges();
 
         $this->insertCurrencies();
+
+        $this->insertDeliveryStatus();
+
+        $this->insertRejectReclamationReasons();
 
     }
 
@@ -123,16 +140,11 @@ class InitializeApplication
      */
     private function insertInvoiceTypes()
     {
-        $types = [];
+        $types = require database_path('setup/invoice_types.php');
 
-        foreach ((new ReflectionClass(InvoiceTypes::class))->getConstants() as $constant => $value) {
-            $types[] = [
-                'id' => $value,
-                'title' => $constant,
-            ];
+        foreach ((new ReflectionClass(InvoiceTypes::class))->getConstants() as $constantValue) {
+            $this->invoiceType->create(array_merge(['id' => $constantValue], $types[$constantValue]));
         }
-
-        $this->invoiceType->insert($types);
     }
 
     /**
@@ -161,5 +173,29 @@ class InitializeApplication
         }
 
         $this->currency->insert($types);
+    }
+
+    /**
+     * Insert currencies.
+     */
+    private function insertDeliveryStatus()
+    {
+        $statuses = require database_path('setup/delivery_status.php');
+
+        foreach ((new ReflectionClass(DeliveryStatus::class))->getConstants() as $constantValue) {
+            $this->deliveryStatus->create(array_merge(['id' => $constantValue], $statuses[$constantValue]));
+        }
+    }
+
+    /**
+     * Insert currencies.
+     */
+    private function insertRejectReclamationReasons()
+    {
+        $reasons = require database_path('setup/reject_reclamation_reasons.php');
+
+        foreach ((new ReflectionClass(RejectReclamationReasons::class))->getConstants() as $constantValue) {
+            $this->rejectReclamationReason->create(array_merge(['id' => $constantValue], $reasons[$constantValue]));
+        }
     }
 }

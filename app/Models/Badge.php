@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Badge extends Model
 {
     use Translatable;
+
     /**
      * Table name.
      *

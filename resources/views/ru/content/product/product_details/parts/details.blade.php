@@ -78,11 +78,19 @@
                 <td></td>
                 <td>
                     <button class="btn btn-primary m-b-2" type="submit">
-                        <i class="fa fa-shopping-cart"> Добавить в корзину</i>
+                        <i class="fa fa-shopping-cart">&nbsp;Добавить в корзину</i>
                     </button>
-                    <button class="btn btn-primary m-b-2" type="submit">
-                        <i class="fa fa-shopping-cart"> Добавить в избранное</i>
-                    </button>
+                    @if($product['isFavourite'])
+                        <button formaction="/favourite/remove/{{ $product['id'] }}"
+                                class="btn btn-primary m-b-2 product-favourite">
+                            <i class="fa fa-star"></i><span>&nbsp;Удалить из избранного</span>
+                        </button>
+                    @else
+                        <button formaction="/favourite/add/{{ $product['id'] }}"
+                                class="btn btn-primary m-b-2 product-not-favourite">
+                            <i class="fa fa-star"></i><span>&nbsp;Добавить в избранное</span>
+                        </button>
+                    @endif
                 </td>
             </tr>
         @endif

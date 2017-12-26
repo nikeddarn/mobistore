@@ -51,7 +51,7 @@ return [
     // exchange rate source timeout
     'exchange_rate_source_timeout' => 500,
 
-    // badges settings. ttl in days
+    // badges settings. ttl in days. 0 for unlimited.
     'badges' => [
         BadgeTypes::NEW => [
             'ttl' => 5,
@@ -62,7 +62,7 @@ return [
             'class' => 'warning'
         ],
         BadgeTypes::ENDING => [
-            'ttl' => 2,
+            'ttl' => 0,
             'class' => 'danger'
         ],
         BadgeTypes::SALE => [

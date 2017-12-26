@@ -5,16 +5,15 @@ namespace App\Models;
 use App\Models\Traits\Translatable;
 use Illuminate\Database\Eloquent\Model;
 
-class InvoiceType extends Model
+class RejectReclamationReason extends Model
 {
     use Translatable;
-
     /**
      * Table name.
      *
      * @var string
      */
-    protected $table = 'invoice_types';
+    protected $table = 'reject_reclamation_reasons';
 
     /**
      * Non auto incrementing primary key.

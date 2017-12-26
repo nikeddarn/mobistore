@@ -68,7 +68,7 @@ class ExchangeRates implements ExchangeRatesInterface
     {
         $storedCurrencyRate = $storedCurrencyRate = $this->currencyRate->whereHas('currency', function($query) use($currency){
             $query->where('code', $currency);
-        })->where('created_at', '>=', Carbon::today())->first();
+        })->where('created_at', '>=', Carbon::today())->orderByDesc('created_at')->first();
 
         return $storedCurrencyRate && $storedCurrencyRate->created_at->addHours(config('shop.exchange_rate_ttl')) >= Carbon::now() ? $storedCurrencyRate->rate : null;
     }

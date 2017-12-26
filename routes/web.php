@@ -135,3 +135,13 @@ Route::get('/product/{url}', 'Product\ProductDetailsController@index');
 Route::post('/comment/product', 'Comment\ProductCommentsController@store');
 
 Route::get('/comment/product/{id}', 'Comment\ProductCommentsController@index');
+
+//******************************************** Favourite Products **********************************
+
+Route::get('/favourite/add/{id}', 'Product\ProductFavouriteController@addToFavourite')->middleware(['auth:web']);
+
+Route::get('/favourite/remove/{id}', 'Product\ProductFavouriteController@removeFromFavourite')->middleware(['auth:web']);
+
+//************************************************ User Basket ****************************************
+
+//Route::get('/basket', 'Basket\BasketController@basketExists');

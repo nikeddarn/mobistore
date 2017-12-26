@@ -21,7 +21,7 @@ trait BrandBreadcrumbs
     {
         $breadcrumbs = [];
 
-        // add 'root' brand breadcrumb from given MetaData model
+        // add 'root' brand breadcrumb from given 'MetaData' model
         if ($brands->count() === 2) {
             $breadcrumbs[] = [
                 'title' => $brands->first()->page_title,
@@ -29,7 +29,7 @@ trait BrandBreadcrumbs
             ];
         }
 
-        // add selected brand breadcrumb
+        // add selected brand breadcrumb from 'Brand' model
         $breadcrumbs[] = [
             'title' => $brands->last()->title,
             'url' => $prefix ? $prefix . '/' . $brands->last()->url : $brands->last()->url,

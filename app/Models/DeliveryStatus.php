@@ -5,16 +5,15 @@ namespace App\Models;
 use App\Models\Traits\Translatable;
 use Illuminate\Database\Eloquent\Model;
 
-class InvoiceType extends Model
+class DeliveryStatus extends Model
 {
     use Translatable;
-
     /**
      * Table name.
      *
      * @var string
      */
-    protected $table = 'invoice_types';
+    protected $table = 'delivery_status';
 
     /**
      * Non auto incrementing primary key.

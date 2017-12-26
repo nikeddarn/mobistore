@@ -26,6 +26,9 @@
         </div>
     </div>
 
+    <!-- Modal -->
+    @include('modals.favourite')
+
 @endsection
 
 @section('meta_data')
@@ -86,24 +89,24 @@
             $('.owl-carousel').owlCarousel({
                 dots: false,
                 nav: true,
-                navText:['<i class="fa fa-angle-left"></i>','<i class="fa fa-angle-right"></i>'],
+                navText: ['<i class="fa fa-angle-left"></i>', '<i class="fa fa-angle-right"></i>'],
                 margin: 5,
-                responsive:{
-                    0:{
-                        items:2,
+                responsive: {
+                    0: {
+                        items: 2,
                     },
-                    768:{
-                        items:3,
+                    768: {
+                        items: 3,
                     },
-                    1200:{
-                        items:4,
+                    1200: {
+                        items: 4,
                     }
                 }
             });
 
             // product main image zoom
             let zoomImage = $('#zoom-image');
-            let activateZoom = function activateZoom(zoomImage){
+            let activateZoom = function activateZoom(zoomImage) {
                 zoomImage.ezPlus({
                     zoomWindowOffsetX: 30,
                     zoomWindowWidth: $('#product-description').width(),
@@ -114,8 +117,49 @@
             $('#product-images').find('.owl-carousel a').click(function (event) {
                 event.stopPropagation();
                 event.preventDefault();
-                let newImageSrc =  event.target.getAttribute('src');
+                let newImageSrc = event.target.getAttribute('src');
                 activateZoom(zoomImage.attr('src', newImageSrc).data('zoom-image', newImageSrc));
+            });
+
+            // add and remove to favourite
+            let favouriteLink = $('.product-favourite, .product-not-favourite');
+            $(favouriteLink).click(function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                let favouriteLink = $(this);
+                $.ajax({
+                    url: $(this).attr('formaction'),
+                    success: function (data) {
+                        if (data !== false) {
+                            let dataObject = $.parseJSON(data);
+                            favouriteLink.toggleClass('product-favourite product-not-favourite');
+                            favouriteLink.attr('formaction', dataObject.hrefReplace);
+                            $(favouriteLink.children()[1]).text(' ' + dataObject.title);
+                            favouriteLink.blur();
+                            showModalWindow(dataObject.message);
+                        }
+                    },
+                    error: function (xhr) {
+                        if (xhr.status === 401){
+                            showModalWindow($.parseJSON(xhr.responseText).error);
+                        }
+                    },
+                    dataType: 'json'
+                });
+
+                function showModalWindow(message) {
+                    let modal = $('#favourite-product-modal');
+                    $(modal).find('.modal-body p').text(message);
+                    modal.modal('show');
+                    let modalTimeout;
+                    modal.on('shown.bs.modal', function () {
+                        clearTimeout(modalTimeout);
+                        modalTimeout = setTimeout(function () {
+                            modal.modal('hide');
+                        }, 3000)
+                    });
+                }
+
             });
         });
     </script>

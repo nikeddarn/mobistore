@@ -8,6 +8,7 @@ use App\Contracts\Shop\Products\Filters\FilterTypes;
 use App\Http\Controllers\Controller;
 use App\Http\Support\Price\ProductPrice;
 use App\Models\Product;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
@@ -69,6 +70,11 @@ class ProductDetailsController extends Controller implements FilterTypes, Curren
     private $productStorage;
 
     /**
+     * @var User
+     */
+    private $user;
+
+    /**
      * ProductDetailsController constructor.
      * @param Request $request
      * @param Product $product
@@ -85,6 +91,8 @@ class ProductDetailsController extends Controller implements FilterTypes, Curren
         $this->str = $str;
         $this->productPrice = $productPrice;
         $this->productStorage = $productStorage;
+
+        $this->user = auth('web')->user();
     }
 
     public function index(string $productUrl)
@@ -113,7 +121,7 @@ class ProductDetailsController extends Controller implements FilterTypes, Curren
      */
     private function retrieveProductData(string $productUrl)
     {
-        return $this->product
+        $query = $this->product->select()
 
             ->where('url', $productUrl)
 
@@ -135,9 +143,15 @@ class ProductDetailsController extends Controller implements FilterTypes, Curren
 
             ->with(['vendorProduct' => function ($query) {
                 $query->where('stock_quantity', '>', 0);
-            }])
+            }]);
 
-            ->firstOrFail();
+            if ($this->user){
+                $query->with(['favouriteProduct' => function($query){
+                    $query->where('id', $this->user->id);
+                }]);
+            }
+
+            return $query->firstOrFail();
     }
 
     /**
@@ -161,6 +175,7 @@ class ProductDetailsController extends Controller implements FilterTypes, Curren
             'category' => $this->selectedProduct->category->title,
             'stockStatus' => $this->selectedProduct->storageProduct->count() ? 1 : ($this->selectedProduct->vendorProduct->count() ? 0 : null),
             'stockLocations' => $this->getStoragesHasProduct($this->selectedProduct),
+            'isFavourite' => $this->selectedProduct->favouriteProduct->count(),
         ];
 
         if ($this->selectedProduct->rating_count >= config('shop.min_rating_count_to_show')) {

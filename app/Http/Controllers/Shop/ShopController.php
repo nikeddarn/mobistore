@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Shop;
 use App\Contracts\Shop\Products\Filters\FilterTypes;
 use App\Http\Controllers\Admin\Support\Badges\ProductBadges;
 use App\Http\Support\Price\ProductPrice;
+use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Brand;
@@ -115,6 +116,11 @@ abstract class ShopController extends Controller implements FilterTypes
      */
     private $productBadges;
 
+    /**
+     * @var User
+     */
+    private $user;
+
 
     /**
      * CategoryUnfilteredController constructor.
@@ -131,6 +137,7 @@ abstract class ShopController extends Controller implements FilterTypes
      */
     public function __construct(Request $request, MetaData $metaData, Category $category, Brand $brand, DeviceModel $model, Product $product, Quality $quality, Color $color, ProductPrice $productPrice, ProductBadges $productBadges)
     {
+        $this->user = auth('web')->user();
 
         $this->metaData = $metaData;
         $this->category = $category;
@@ -227,7 +234,6 @@ abstract class ShopController extends Controller implements FilterTypes
     {
         $productsData = [
             'products' => $this->formProductData(),
-            'productImagePathPrefix' => Storage::disk('public')->url('images/products/small/'),
             'isPageFirstOrSingle' => !$this->isProductPageSingle && $this->products->currentPage() === 1,
         ];
 
@@ -246,7 +252,11 @@ abstract class ShopController extends Controller implements FilterTypes
     {
         $rate = $this->productPrice->getRate();
 
-        return $this->products->each(function ($product) use ($rate) {
+        $productImagePathPrefix = Storage::disk('public')->url('images/products/small/');
+
+        return $this->products->each(function ($product) use ($rate, $productImagePathPrefix) {
+
+            $product->image = $product->primaryImage ? $productImagePathPrefix . $product->primaryImage->image : null;
 
             $price = $this->productPrice->getPrice($product);
 
@@ -256,6 +266,8 @@ abstract class ShopController extends Controller implements FilterTypes
             $product->stockStatus = $product->storageProduct->count() ? 1 : ($product->vendorProduct->count() ? 0 : null);
 
             $product->badges = $this->productBadges->createBadges($product->productBadge);
+
+            $product->isFavourite = $product->favouriteProduct->count();
         });
 
     }
@@ -317,6 +329,12 @@ abstract class ShopController extends Controller implements FilterTypes
         }]);
 
         $query->with('productBadge.badge');
+
+        if ($this->user){
+            $query->with(['favouriteProduct' => function($query){
+                $query->where('id', $this->user->id);
+            }]);
+        }
 
         return $this->isPaginable ? $query->paginate(config('shop.products_per_page')) : $query->get();
     }

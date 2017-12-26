@@ -20,12 +20,12 @@ $wholesaleRetail_ua = trans('meta.phrases.wholesale_and_retail', [], 'ua');
 $originalCopy_ua = trans('meta.phrases.original_and_copy', [], 'ua');
 
 return [
-    'breadcrumb' => '',
+    'breadcrumb' => 'Spare parts',
     'url' => '',
     'image' => null,
-    'title_en' => 'Spare parts for mobile phones and tablets',
-    'title_ru' => 'Запчасти к мобильным телефонам и планшетам',
-    'title_ua' => 'Запчастини до мобільних телефонів і планшетів',
+    'title_en' => 'Spare parts by category',
+    'title_ru' => 'Запчасти по категориям',
+    'title_ua' => 'Запчастини по категоріям',
     'page_title_en' => 'Spare parts for mobile phones and tablets',
     'page_title_ru' => 'Запчасти к мобильным телефонам и планшетам',
     'page_title_ua' => 'Запчастини до мобільних телефонів і планшетів',

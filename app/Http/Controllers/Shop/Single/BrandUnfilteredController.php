@@ -112,6 +112,7 @@ class BrandUnfilteredController extends CommonUnfilteredController
         return $this->brandRouteBreadcrumbsCreator->createBreadcrumbs(
             [
                 self::CATEGORY => clone $this->selectedCategory,
+                // get 'metaData' model as root brand, merge it with selected brand
                 self::BRAND => $this->metaData->where('url', 'brand')->get()->merge(clone $this->selectedBrand),
                 self::MODEL => $this->selectedModel,
             ]

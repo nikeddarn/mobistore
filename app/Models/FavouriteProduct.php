@@ -2,19 +2,26 @@
 
 namespace App\Models;
 
-use App\Models\Traits\Translatable;
+use App\Models\Traits\CompositeKeys;
 use Illuminate\Database\Eloquent\Model;
 
-class InvoiceType extends Model
+class FavouriteProduct extends Model
 {
-    use Translatable;
+    use CompositeKeys;
 
     /**
      * Table name.
      *
      * @var string
      */
-    protected $table = 'invoice_types';
+    protected $table = 'favourite_products';
+
+    /**
+     * Array of composite primary keys.
+     *
+     * @var array
+     */
+    protected $primaryKey = ['users_id', 'products_id'];
 
     /**
      * Non auto incrementing primary key.
@@ -36,13 +43,6 @@ class InvoiceType extends Model
      * @var array
      */
     protected $fillable = [
-        'id', 'title_en', 'title_ru', 'title_ua',
+        'users_id', 'products_id',
     ];
-
-    /**
-     * The attributes that should be selected depends on locale from JSON type field.
-     *
-     * @var array
-     */
-    public $translatable = ['title'];
 }

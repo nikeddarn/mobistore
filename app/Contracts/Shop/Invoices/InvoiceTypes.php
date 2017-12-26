@@ -11,21 +11,21 @@ interface InvoiceTypes
 {
     const BASKET = 11;
 
-    const VENDOR_PRE_ORDER = 12;
-
-    const DELIVERY = 13;
-
 
     const ORDER = 21;
 
-    const RETURN_ORDER =22;
+    const PRE_ORDER = 22;
+
+    const RETURN_ORDER =23;
 
 
     const RECLAMATION = 31;
 
     const EXCHANGE_RECLAMATION = 32;
 
-    const WRITE_OFF_RECLAMATION = 33;
+    const RETURN_RECLAMATION = 33;
+
+    const WRITE_OFF_RECLAMATION = 34;
 
 
     const PAYMENT = 41;
