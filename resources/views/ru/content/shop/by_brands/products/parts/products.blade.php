@@ -40,7 +40,7 @@
                                 @if($product->stockStatus !== null)
 
                                     <div class="product-options">
-                                        <a href="#" data-toggle="tooltip" title="Добавить в корзину"><i
+                                        <a href="/cart/add/{{ $product->id }}" data-toggle="tooltip" title="Добавить в корзину"><i
                                                     class="fa fa-shopping-cart"></i></a>
 
                                         @if($product->isFavourite)
@@ -69,7 +69,9 @@
 
                         @if($product->price)
                             <div class="product-price">
-                                <span>{{ $product->priceUah }}&nbsp;грн</span>
+                                @if($product->priceUah)
+                                    <span>{{ $product->priceUah }}&nbsp;грн</span>
+                                @endif
                                 <span class="pull-right">${{ $product->price }}</span>
                             </div>
                         @endif

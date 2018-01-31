@@ -6,16 +6,29 @@
 namespace App\Http\Support\Currency;
 
 
-use App\Contracts\Currency\ExchangeRatesInterface;
+use App\Contracts\Currency\ExchangeRateSourceInterface;
 use SimpleXMLElement;
 
-class PrivatBankExchangeRates implements ExchangeRatesInterface
+class PrivatBankExchangeRates implements ExchangeRateSourceInterface
 {
-
+    /**
+     * Url of XML with courses.
+     *
+     * @var string
+     */
     private $url = 'https://api.privatbank.ua/p24api/pubinfo?exchange&coursid=5';
 
+    /**
+     * SimpleXMLElement with courses.
+     *
+     * @var null|SimpleXMLElement
+     */
     private $rates;
 
+    /**
+     * FinanceExchangeRates constructor.
+     * Get courses by Curl.
+     */
     public function __construct()
     {
         $curl = curl_init($this->url);
@@ -31,7 +44,7 @@ class PrivatBankExchangeRates implements ExchangeRatesInterface
     }
 
     /**
-     * Get average rate of given sources.
+     * Get rate of given sources.
      *
      * @param string $currency
      * @return float

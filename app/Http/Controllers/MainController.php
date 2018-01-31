@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DeviceModel;
+use App\Models\Product;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Symfony\Component\HttpFoundation\File\File;
 
 class MainController extends Controller
 {

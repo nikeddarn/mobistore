@@ -13,4 +13,5 @@ return [
     DeliveryStatus::PARTIALLY_ORDERED => ['title_en' => 'Items partially ordered', 'title_ru' => 'Товар частично  заказан', 'title_ua' => 'Товар частково замовлений'],
     DeliveryStatus::SHIPPING => ['title_en' => 'The goods are delivering to the store', 'title_ru' => 'Товар доставляется на склад', 'title_ua' => 'Товар доставляється на склад'],
     DeliveryStatus::CUSTOMER_DELIVERY => ['title_en' => 'Goods is on delivery to the customer', 'title_ru' => 'Товар на доставке клиенту', 'title_ua' => 'Товар на доставці клієнту'],
+    DeliveryStatus::DELIVERED => ['title_en' => 'Goods is delivered to the customer', 'title_ru' => 'Товар доставлен клиенту', 'title_ua' => 'Товар доставлений клієнту'],
 ];

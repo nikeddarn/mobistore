@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Support\Price\ProductPrice;
 use App\Models\Product;
 use App\Models\User;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
@@ -100,7 +101,7 @@ class ProductDetailsController extends Controller implements FilterTypes, Curren
         $this->selectedProduct = $this->retrieveProductData($productUrl);
 
         $this->price = $this->productPrice->getPrice($this->selectedProduct);
-        $this->priceUah = $this->price * $this->productPrice->getRate(self::USD);
+        $this->priceUah = $this->price ? $this->price * $this->productPrice->getRate(self::USD) : null;
 
         return response(
             view('content.product.product_details.index')
@@ -245,6 +246,7 @@ class ProductDetailsController extends Controller implements FilterTypes, Curren
         $description = $this->selectedProduct->meta_description . '. ';
         if (isset($this->priceUah)) {
             $description .= $this->str->ucfirst(trans('meta.phrases.buу_for_price', ['price' => $this->priceUah])) . '. ';
+
         } else {
             $description .= $this->str->ucfirst(trans('meta.phrases.bue')) . '. ';
         }
@@ -263,6 +265,7 @@ class ProductDetailsController extends Controller implements FilterTypes, Curren
      * Get breadcrumbs from session if exists or create breadcrumbs from product properties.
      *
      * @return array
+     * @throws Exception
      */
     private function breadcrumbs(): array
     {

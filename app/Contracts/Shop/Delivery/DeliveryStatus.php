@@ -18,4 +18,6 @@ interface DeliveryStatus
 
     const CUSTOMER_DELIVERY = 5;
 
+    const DELIVERED = 6;
+
 }

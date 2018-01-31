@@ -142,6 +142,6 @@ Route::get('/favourite/add/{id}', 'Product\ProductFavouriteController@addToFavou
 
 Route::get('/favourite/remove/{id}', 'Product\ProductFavouriteController@removeFromFavourite')->middleware(['auth:web']);
 
-//************************************************ User Basket ****************************************
+//************************************************ User Cart ****************************************
 
-//Route::get('/basket', 'Basket\BasketController@basketExists');
+Route::get('/cart/add/{id}', 'Cart\CartController@add');

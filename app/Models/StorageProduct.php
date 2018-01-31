@@ -36,8 +36,7 @@ class StorageProduct extends Model
      * @var array
      */
     protected $fillable = [
-        'storages_id', 'products_id', 'stock_quantity', 'last_price', 'average_price', 'purchased_quantity',
-    ];
+        'storages_id', 'products_id', 'stock_quantity', 'average_incoming_price', 'purchased_quantity', 'average_outgoing_price', 'sold_quantity',];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo

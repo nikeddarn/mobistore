@@ -176,7 +176,7 @@ class InitializeApplication
     }
 
     /**
-     * Insert currencies.
+     * Insert delivery statuses.
      */
     private function insertDeliveryStatus()
     {
@@ -188,7 +188,7 @@ class InitializeApplication
     }
 
     /**
-     * Insert currencies.
+     * Insert reclamation reasons.
      */
     private function insertRejectReclamationReasons()
     {
@@ -198,4 +198,5 @@ class InitializeApplication
             $this->rejectReclamationReason->create(array_merge(['id' => $constantValue], $reasons[$constantValue]));
         }
     }
+
 }

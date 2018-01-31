@@ -9,7 +9,7 @@ namespace App\Contracts\Shop\Invoices;
 
 interface InvoiceTypes
 {
-    const BASKET = 11;
+    const CART = 11;
 
 
     const ORDER = 21;
@@ -31,9 +31,4 @@ interface InvoiceTypes
     const PAYMENT = 41;
 
     const RETURN_PAYMENT = 42;
-
-
-    function getInvoiceType(): int;
-
-    function getTargetInvoiceModel();
 }

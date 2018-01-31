@@ -1,21 +1,34 @@
 <?php
 /**
- * Get rates from Privat Bank.
+ * Get rates from finance.ua.
  */
 
 namespace App\Http\Support\Currency;
 
 
-use App\Contracts\Currency\ExchangeRatesInterface;
+use App\Contracts\Currency\ExchangeRateSourceInterface;
 use SimpleXMLElement;
 
-class FinanceExchangeRates implements ExchangeRatesInterface
+class FinanceExchangeRates implements ExchangeRateSourceInterface
 {
-
+    /**
+     * Url of XML with courses.
+     *
+     * @var string
+     */
     private $url = 'http://resources.finance.ua/ru/public/currency-cash.xml';
 
+    /**
+     * SimpleXMLElement with courses.
+     *
+     * @var null|SimpleXMLElement
+     */
     private $rates;
 
+    /**
+     * FinanceExchangeRates constructor.
+     * Get courses by Curl.
+     */
     public function __construct()
     {
         $curl = curl_init($this->url);

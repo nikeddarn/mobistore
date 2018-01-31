@@ -14,9 +14,9 @@ class AdminMiddleware
      * @param  \Closure $next
      * @return mixed
      */
-    public function handle(Request$request, Closure $next)
+    public function handle(Request $request, Closure $next)
     {
-        $user =$request->user();
+        $user = $request->user();
 
         if(!$user){
             return redirect()->guest(route('admin.login'));

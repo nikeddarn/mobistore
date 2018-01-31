@@ -86,6 +86,7 @@ class CategoryUnfilteredController extends CommonUnfilteredController
      * Define breadcrumbs by categories, brand and model.
      *
      * @return array
+     * @throws \Exception
      */
     protected function createBreadcrumbs():array
     {

@@ -34,4 +34,12 @@ class Storage extends Model
         'title',
     ];
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function storageProduct()
+    {
+        return $this->hasMany('App\Models\StorageProduct', 'storages_id', 'id');
+    }
+
 }

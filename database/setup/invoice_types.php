@@ -8,7 +8,7 @@ use App\Contracts\Shop\Invoices\InvoiceTypes;
 
 return [
 
-    InvoiceTypes::BASKET => ['title_en' => 'User cart', 'title_ru' => 'Корзина пользователя', 'title_ua' => 'Кошик користувача'],
+    InvoiceTypes::CART => ['title_en' => 'User cart', 'title_ru' => 'Корзина пользователя', 'title_ua' => 'Кошик користувача'],
 
     InvoiceTypes::ORDER => ['title_en' => 'User order', 'title_ru' => 'Заказ пользователя', 'title_ua' => 'Замовлення користувача'],
     InvoiceTypes::PRE_ORDER => ['title_en' => 'User pre-order', 'title_ru' => 'Предварительный заказ пользователя', 'title_ua' => 'Попереднє замовлення користувача'],

@@ -42,8 +42,11 @@ return [
     // use vendor product price if product is out of own stock.
     'can_use_vendor_price' => true,
 
-    // primary source of currency exchange rates.
-    'primary_exchange_rate_source' => ExchangeRateSourcesInterface::PB,
+    // sources of currency exchange rates in priority order.
+    'exchange_rate_sources' => [
+        ExchangeRateSourcesInterface::PB,
+        ExchangeRateSourcesInterface::FINANCE,
+    ],
 
     // exchange rate time to live in hours.
     'exchange_rate_ttl' => 4,

@@ -6,9 +6,8 @@ use App\Http\Controllers\Admin\Support\Badges\ProductBadges;
 use App\Http\Support\Price\ProductPrice;
 use App\Models\Brand;
 use App\Models\Category;
-use App\Models\FavouriteProduct;
 use App\Models\Product;
-use App\Models\User;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -111,7 +110,7 @@ class CategoriesComposer
         }
     }
 
-    private function retrieveFavouriteProducts(User $user)
+    private function retrieveFavouriteProducts(Authenticatable $user)
     {
         return $this->product
             ->whereHas('favouriteProduct', function ($query) use ($user) {

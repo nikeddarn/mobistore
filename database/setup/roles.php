@@ -6,4 +6,6 @@
 
 return [
     ['title' => 'root'],
+    ['title' => 'admin'],
+    ['title' => 'manager'],
 ];
