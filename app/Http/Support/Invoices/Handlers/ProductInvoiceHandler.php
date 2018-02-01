@@ -45,9 +45,8 @@ class ProductInvoiceHandler extends InvoiceHandler implements ProductInvoiceHand
      * @param int|null $warranty
      * @return bool
      */
-    public function addProducts(int $productId, float $price, int $quantity, int $warranty = null): bool
+    public function addProducts(int $productId, float $price, int $quantity = 1, int $warranty = null): bool
     {
-
         assert($productId > 0, 'Product id must be positive integer');
         assert($price > 0, 'Product price must be positive float');
         assert($quantity > 0, 'Product quantity must be positive integer');
@@ -74,9 +73,8 @@ class ProductInvoiceHandler extends InvoiceHandler implements ProductInvoiceHand
      * @param int $quantity
      * @return bool
      */
-    public function removeProducts(int $productId, int $quantity): bool
+    public function removeProducts(int $productId, int $quantity = 1): bool
     {
-
         assert($productId > 0, 'Product id must be positive integer');
         assert($quantity > 0, 'Product quantity must be positive integer');
 
@@ -102,7 +100,6 @@ class ProductInvoiceHandler extends InvoiceHandler implements ProductInvoiceHand
      */
     public function deleteProducts(int $productId): bool
     {
-
         assert($productId > 0, 'Product id must be positive integer');
 
         try {
@@ -120,6 +117,42 @@ class ProductInvoiceHandler extends InvoiceHandler implements ProductInvoiceHand
     }
 
     /**
+     * Add product to invoice with given count or set count if product is already in invoice.
+     *
+     * @param int $productId
+     * @param float $price
+     * @param int $quantity
+     * @param int|null $warranty
+     * @return bool
+     */
+    public function setProductsCount(int $productId, float $price, int $quantity = 1, int $warranty = null):bool
+    {
+        assert($productId > 0, 'Product id must be positive integer');
+        assert($price > 0, 'Product price must be positive float');
+        assert($quantity > 0, 'Product quantity must be positive integer');
+        assert($warranty > 0, 'Product warranty must be positive integer');
+
+        try {
+            $this->databaseManager->beginTransaction();
+
+            $invoiceProduct = $this->getInvoiceProduct($productId);
+            $currentProductQuantity = $invoiceProduct ? $invoiceProduct->quantity : 0;
+
+            $addingProductQuantity = $quantity - $currentProductQuantity;
+
+            $subtractingSum = static::addProductsToInvoice($productId, $price, $addingProductQuantity, $warranty);
+
+            $this->databaseManager->commit();
+
+            return (bool)$subtractingSum;
+        } catch (Exception $e) {
+            $this->databaseManager->rollback();
+            return false;
+        }
+
+    }
+
+    /**
      * Add products to invoice by product's id.
      *
      * @param int $productId
@@ -128,7 +161,7 @@ class ProductInvoiceHandler extends InvoiceHandler implements ProductInvoiceHand
      * @param int|null $warranty
      * @return float Sum that was added to invoice.
      */
-    private function addProductsToInvoice(int $productId, float $price, int $quantity = 1, int $warranty = null): float
+    protected function addProductsToInvoice(int $productId, float $price, int $quantity = 1, int $warranty = null): float
     {
         $invoiceProduct = $this->getInvoiceProduct($productId);
 

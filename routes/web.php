@@ -145,3 +145,11 @@ Route::get('/favourite/remove/{id}', 'Product\ProductFavouriteController@removeF
 //************************************************ User Cart ****************************************
 
 Route::get('/cart/add/{id}', 'Cart\CartController@add');
+
+Route::get('/cart/remove/{id}', 'Cart\CartController@remove');
+
+Route::get('/cart/increase/{id}', 'Cart\CartController@increase');
+
+Route::get('/cart/decrease/{id}', 'Cart\CartController@decrease');
+
+Route::post('/cart/add/count', 'Cart\CartController@addCount');

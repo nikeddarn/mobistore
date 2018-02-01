@@ -1,6 +1,6 @@
 <h3 class="product-detail-title text-gray">{{ $product['title'] }}</h3>
 
-<form action="#" method="post">
+<form action="/cart/add/count" method="post">
 
     {{ csrf_field() }}
 

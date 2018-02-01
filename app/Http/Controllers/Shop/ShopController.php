@@ -258,7 +258,7 @@ abstract class ShopController extends Controller implements FilterTypes
 
             $product->image = $product->primaryImage ? $productImagePathPrefix . $product->primaryImage->image : null;
 
-            $price = $this->productPrice->getPrice($product);
+            $price = $this->productPrice->getPriceByProductModel($product);
 
             $product->price = $price ? number_format($price, 2, '.', ',') : null;
             $product->priceUah = $price && $rate ? number_format($price * $rate, 2, '.', ',') : null;

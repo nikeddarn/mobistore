@@ -141,7 +141,7 @@ class CategoriesComposer
 
         return $products->each(function ($product) use ($rate, $productImagePathPrefix) {
 
-            $price = $this->productPrice->getPrice($product);
+            $price = $this->productPrice->getPriceByProductModel($product);
 
             $product->image = $product->primaryImage ? $productImagePathPrefix . $product->primaryImage->image : null;
 

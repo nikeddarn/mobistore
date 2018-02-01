@@ -8,6 +8,7 @@ namespace App\Http\Controllers\Cart;
 
 use App\Http\Support\Invoice\Repository\CartRepository;
 use App\Http\Support\Invoices\Handlers\ProductInvoiceHandler;
+use App\Http\Support\Price\ProductPrice;
 use App\Models\Invoice;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -40,27 +41,40 @@ class CartController extends Controller
     private $invoiceHandler;
 
     /**
+     * @var ProductPrice
+     */
+    private $productPrice;
+
+    /**
      * CartController constructor.
      * @param Request $request
      * @param CartRepository $cartRepository
      * @param ProductInvoiceHandler $invoiceHandler
+     * @param ProductPrice $productPrice
      */
-    public function __construct(Request $request, CartRepository $cartRepository, ProductInvoiceHandler $invoiceHandler)
+    public function __construct(Request $request, CartRepository $cartRepository, ProductInvoiceHandler $invoiceHandler, ProductPrice $productPrice)
     {
         $this->request = $request;
         $this->cartRepository = $cartRepository;
         $this->invoiceHandler = $invoiceHandler;
+        $this->productPrice = $productPrice;
     }
 
-    public function add($productId)
+    public function add(int $productId)
     {
         $userCart = $this->getUserCart();
         $this->invoiceHandler->bindInvoice($userCart);
-        $this->invoiceHandler->addProducts($productId, 23, 1);// ToDo: get price from ProductPrice
+
+        $calculatedProductPrice = $this->productPrice->getPriceByProductId($productId);
+
+        if (!$this->invoiceHandler->isProductPresentInCart($productId)) {
+            $this->invoiceHandler->addProducts($productId, $calculatedProductPrice);
+        }
+
         var_dump($userCart->invoiceProduct);
     }
 
-    public function delete($productId)
+    public function remove(int $productId)
     {
         $userCart = $this->getUserCart();
         $this->invoiceHandler->bindInvoice($userCart);
@@ -68,6 +82,60 @@ class CartController extends Controller
         var_dump($userCart->invoiceProduct);
     }
 
+    /**
+     * Increase count of product by one.
+     *
+     * @param $productId
+     */
+    public function increase(int $productId)
+    {
+        $userCart = $this->getUserCart();
+        $this->invoiceHandler->bindInvoice($userCart);
+
+        $calculatedProductPrice = $this->productPrice->getPriceByProductId($productId);
+
+        $this->invoiceHandler->addProducts($productId, $calculatedProductPrice);
+    }
+
+    /**
+     * Decrease count of product by one.
+     *
+     * @param $productId
+     */
+    public function decrease(int $productId)
+    {
+        $userCart = $this->getUserCart();
+        $this->invoiceHandler->bindInvoice($userCart);
+
+        $this->invoiceHandler->removeProducts($productId);
+    }
+
+    /**
+     * Set product invoice count.
+     */
+    public function addCount()
+    {
+        $this->validate($this->request, [
+            'id' => 'required|integer',
+            'quantity' => 'required|integer',
+        ]);
+
+        $userCart = $this->getUserCart();
+        $this->invoiceHandler->bindInvoice($userCart);
+
+        $productId = $this->request->get('id');
+        $productQuantity = $this->request->get('quantity');
+
+        $calculatedProductPrice = $this->productPrice->getPriceByProductId($productId);
+
+        $this->invoiceHandler->setProductsCount($productId, $calculatedProductPrice, $productQuantity);
+    }
+
+    /**
+     * Retrieve or create user cart.
+     *
+     * @return Invoice
+     */
     private function getUserCart():Invoice
     {
         $userCart = $this->retrieveUserCart();
@@ -79,6 +147,11 @@ class CartController extends Controller
         return $userCart;
     }
 
+    /**
+     * Retrieve user cart.
+     *
+     * @return \Illuminate\Database\Eloquent\Model|null
+     */
     private function retrieveUserCart()
     {
         if (auth('web')->check()){
@@ -91,6 +164,11 @@ class CartController extends Controller
         }
     }
 
+    /**
+     * Create user cart.
+     *
+     * @return Invoice
+     */
     private function createUserCart()
     {
         if (auth('web')->check()){
