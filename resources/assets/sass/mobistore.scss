@@ -81,6 +81,10 @@ h1, h2, h3, h4, h5, h6 {
   text-decoration: none !important;
 }
 
+.display-inline-block {
+  display: inline-block;
+}
+
 // ****************************************** Five columns layout ******************************
 
 .col-xs-15,
@@ -117,6 +121,16 @@ h1, h2, h3, h4, h5, h6 {
     width: 20%;
     float: left;
   }
+}
+
+// ********************************************************* Modal ******************************************
+
+.modal-dialog {
+  margin: 20vh auto 0 auto
+}
+
+.tooltip {
+  position: fixed;
 }
 
 // ***************************************** Forms *********************************************
@@ -407,7 +421,22 @@ h1 .banner-left:before {
   }
 }
 
-/************************ Navbar heights *********************************/
+/************************************************ Navbars *************************************************/
+
+/* All Navbars */
+
+.navbar-nav {
+  margin: 0;
+}
+
+.navbar-nav > li > a, .navbar-nav > li > button {
+  padding-top: 6px;
+  padding-bottom: 6px;
+  line-height: 20px;
+  outline: none !important;
+  border: none !important;
+  text-decoration: none !important;
+}
 
 /* Small Navbar */
 
@@ -425,41 +454,67 @@ h1 .banner-left:before {
     margin: 0 15px;
     padding: 9px 10px !important;
   }
-  @media (min-width: 768px) {
-    .navbar-nav > li > a {
-      padding-top: 6px;
-      padding-bottom: 6px;
-      line-height: 20px;
-    }
-  }
 }
 
 /* Middle navbar*/
 
 .navbar-middle {
+
+  .container {
+    padding: 0;
+  }
+
   .navbar {
     min-height: $navbar-middle-height;
   }
-  .navbar-header {
-    padding: 0 15px;
+
+  ul > li > a, ul > li > button {
     height: $navbar-middle-height;
     line-height: $navbar-middle-height;
+    padding-top: 0;
+    padding-bottom: 0;
   }
-  .navbar-toggle {
-    height: $navbar-middle-height;
-    margin: 0 15px;
-    padding: 9px 10px !important;
-  }
-  @media (min-width: 768px) {
-    .navbar-nav > li > a {
-      padding-top: 10px;
-      padding-bottom: 10px;
-      line-height: 20px;
+
+  @media (max-width: 767px) {
+
+    #store-navbar-collapse {
+      width: 100%;
+      padding: 0;
+      margin: 0;
+      border-top: 1px solid $store-navbar-submenu-border-color !important;
+    }
+
+    #store-navbar-collapse > ul{
+      margin: 8px 0;
+      >li > button{
+        width: 100%;
+        text-align: left;
+      }
+    }
+
+    .navbar-header {
+      margin: 0;
+      padding: 0 15px;
+      height: $navbar-middle-height + 2px;
+      line-height: $navbar-middle-height;
+
+
+      .navbar-toggle {
+        height: $navbar-middle-height - 14px;
+        box-sizing: border-box;
+        margin: 8px 0;
+        padding: 5px 7px;
+      }
+
+      .btn-cart-xs {
+        background-color: $store-navbar-bg-color;
+        height: $navbar-middle-height - 4px;
+        margin: 3px 0;
+      }
+
     }
   }
 }
-
-/************************ Navbar colors *********************************/
 
 /* Top Navbar */
 
@@ -477,23 +532,23 @@ h1 .banner-left:before {
 
       background-color: $store-navbar-bg-color;
 
-      ul > li > a {
+      ul > li > a, ul > li > button {
         color: $store-navbar-color;
       }
-      ul > li > a:hover, ul > li > a:focus {
+      ul > li > a:hover, ul > li > a:focus, ul > li > button:hover, ul > li > button:focus {
         color: $store-navbar-highlight-color;
         background-color: $store-navbar-highlight-bg-color;
       }
 
-      .active > a,
-      .active > a:hover,
-      .active > a:focus {
+      .active > a,.active > button,
+      .active > a:hover,.active > button:hover,
+      .active > a:focus, .active > button:focus {
         color: $store-navbar-highlight-color;
         background-color: $store-navbar-highlight-bg-color;
       }
-      .open > a,
-      .open > a:hover,
-      .open > a:focus {
+      .open > a, .open > button,
+      .open > a:hover, .open > button:hover,
+      .open > a:focus, .open > button:focus {
         color: $store-navbar-highlight-color;
         background-color: $store-navbar-highlight-bg-color;
       }
@@ -513,32 +568,32 @@ h1 .banner-left:before {
     border: none;
     box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
     margin: 0;
-    z-index: 2000;
 
-    ul > li > a {
-      color: $store-navbar-color;
-    }
-
-    ul > li > a:focus {
+    ul > li > a, ul > li > button {
       color: $store-navbar-color;
       background-color: $store-navbar-bg-color;
     }
 
-    ul > li > a:hover {
+    ul > li > a:focus, ul > li > button:hover {
+      color: $store-navbar-color;
+      background-color: $store-navbar-bg-color;
+    }
+
+    ul > li > a:hover, ul > li > button:hover {
       color: $store-navbar-highlight-color;
       background-color: $store-navbar-highlight-bg-color;
     }
 
-    ul > .active > a,
-    ul > .active > a:hover,
-    ul > .active > a:focus {
+    ul > .active > a, ul > .active > button,
+    ul > .active > a:hover, ul > .active > button:hover,
+    ul > .active > a:focus, ul > .active > button:focus {
       color: $store-navbar-highlight-color;
       background-color: $store-navbar-highlight-bg-color;
     }
 
-    ul > .open > a,
-    ul > .open > a:hover,
-    ul > .open > a:focus {
+    ul > .open > a, ul > .open > button,
+    ul > .open > a:hover, ul > .open > button:hover,
+    ul > .open > a:focus, ul > .open > button:focus {
       color: $store-navbar-highlight-color;
       background-color: $store-navbar-highlight-bg-color;
     }
@@ -569,16 +624,9 @@ h1 .banner-left:before {
     color: $store-navbar-color;
   }
 
-  .btn-cart-xs {
-    background-color: $store-navbar-bg-color;
-    height: 34px;
-    padding: 8px 25px;
-    margin-top: 3px;
-  }
-
   // remove gap between menu and mega-menu
   .dropdown-menu {
-    //margin-top: 0;
+    margin-top: 0;
   }
 
   // auto open submenu on hover
@@ -593,14 +641,92 @@ h1 .banner-left:before {
 
 }
 
+/************************************* Mega Menu ************************************/
+
+.yamm {
+
+  // reset positions
+  .nav, .dropup, .dropdown, .collapse {
+    position: static;
+  }
+  .yamm-fullwidth .dropdown-toggle {
+    position: static;
+  }
+
+  // propagate menu position under navbar inner or container
+  .navbar-inner, .container {
+    position: relative;
+  }
+
+  // by default aligns to menu item
+  .dropdown-menu {
+    left: auto;
+    > li {
+      display: block;
+    }
+  }
+  // restore submenu position
+  .dropdown-submenu .dropdown-menu {
+    //left: 100%;
+  }
+
+  .nav.pull-right .dropdown-menu {
+    right: 0;
+  }
+
+  // Content with padding
+  .yamm-content {
+    padding: 20px 30px;
+    //.clearfix(); // acts as a span container
+  }
+
+  // remove dropdown top arrows
+  &.navbar .nav > li > .dropdown-menu:after,
+  &.navbar .nav > li > .dropdown-menu:before {
+    display: none;
+  }
+
+  //  Fullwidth menu
+  .dropdown.yamm-fullwidth .dropdown-menu {
+    width: 100%;
+    left: 40px;
+    right: 0;
+  }
+
+}
+
+@media (max-width: 767px) {
+
+  .yamm {
+    // width auto to avoid overflow navbar
+    .dropdown.yamm-fullwidth .dropdown-menu {
+      width: auto;
+    }
+    // remove horizontal padding
+    .yamm-content {
+      //padding-left: 0;
+      //padding-right: 0;
+    }
+
+    .dropdown-menu > li > ul {
+      display: block;
+    }
+  }
+}
+
+// inner mega menu styles
+.yamm-content {
+  background-color: white;
+}
+
 /************************ Other header styles *********************************/
 
 // Margin user login reference
 
 #top-navbar {
   @media (min-width: 992px) {
-    #top-navbar-collapse ul:first-child {
-      margin-left: 8.33333333%;
+    #top-navbar-collapse > ul > li:last-child {
+      margin-left: 20px;
     }
   }
 }
@@ -614,31 +740,21 @@ h1 .banner-left:before {
   right: 0;
   padding: 0 !important;
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
-  z-index: 3000;
+  z-index: 1000;
 }
 
 /*Small Language Picker */
 
-.navbar-small {
+#header-top-menu-language {
+  .icon-small {
+    height: 11px;
+    margin: 0 5px 0 0;
+    padding: 0;
+    width: 16px;
+  }
 
-  #header-top-menu-language {
-
-    .navbar-nav {
-      margin: 0;
-    }
-
-    .navbar-nav > li > a {
-      padding-top: 6px;
-      padding-bottom: 6px;
-      line-height: 20px;
-    }
-
-    .icon-small {
-      height: 11px;
-      margin: 0 5px 0 0;
-      padding: 0;
-      width: 16px;
-    }
+  .navbar-nav > li > button:hover {
+    background-color: darken($brand-primary, 10%);
   }
 }
 
@@ -688,12 +804,40 @@ h1 .banner-left:before {
     button {
       background-color: $store-navbar-bg-color;
     }
+
     button:hover {
       border: 1px solid $brand-primary;
     }
+
     .dropdown-menu {
       padding: 10px;
     }
+
+    .media-left img {
+      width: 50px;
+    }
+
+    .media-body {
+
+      a {
+        color: $store-navbar-color;
+        display: block;
+      }
+      a:hover {
+        color: darken($headings-color, 13%);
+      }
+    }
+
+    .media-right {
+      a {
+        color: $store-navbar-color;
+      }
+
+      a:hover {
+        color: $product-price;
+      }
+    }
+
   }
 }
 
@@ -768,81 +912,6 @@ h1 .banner-left:before {
   }
 }
 
-/************************************* Mega Menu ************************************/
-
-.yamm {
-
-  // reset positions
-  .nav, .dropup, .dropdown, .collapse {
-    position: static;
-  }
-
-  // propagate menu position under navbar inner or container
-  .navbar-inner, .container {
-    position: relative;
-  }
-
-  // by default aligns to menu item
-  .dropdown-menu {
-    left: auto;
-    > li {
-      display: block;
-    }
-  }
-  // restore submenu position
-  .dropdown-submenu .dropdown-menu {
-    left: 100%;
-  }
-
-  .nav.pull-right .dropdown-menu {
-    right: 0;
-  }
-
-  // Content with padding
-  .yamm-content {
-    padding: 20px 30px;
-    //.clearfix(); // acts as a span container
-  }
-
-  // remove dropdown top arrows
-  &.navbar .nav > li > .dropdown-menu:after,
-  &.navbar .nav > li > .dropdown-menu:before {
-    display: none;
-  }
-
-  //  Fullwidth menu
-  .dropdown.yamm-fullwidth .dropdown-menu {
-    width: 100%;
-    left: 0;
-    right: 0;
-  }
-
-}
-
-@media (max-width: 767px) {
-
-  .yamm {
-    // width auto to avoid overflow navbar
-    .dropdown.yamm-fullwidth .dropdown-menu {
-      width: auto;
-    }
-    // remove horizontal padding
-    .yamm-content {
-      //padding-left: 0;
-      //padding-right: 0;
-    }
-
-    .dropdown-menu > li > ul {
-      display: block;
-    }
-  }
-}
-
- // inner mega menu styles
-.yamm-content {
-  background-color: white;
-}
-
 /*********************************** Categories , Brands , Models **********************************************/
 
 #children-categories, #supported-brands {
@@ -870,7 +939,7 @@ h1 .banner-left:before {
 
 /****************************************** Products list *************************************************/
 
-.product-favourite i{
+.product-favourite i {
   color: #FFD700;
 }
 
@@ -883,7 +952,7 @@ h1 .banner-left:before {
 }
 
 .product-price {
-  color: #ef5350;
+  color: $product-price;
 }
 
 .row-flex {
@@ -933,7 +1002,7 @@ h1 .banner-left:before {
   .product-title {
     padding: 10px 0;
     position: relative;
-    z-index: 1000;
+    z-index: 900;
     background-color: white;
 
     h5 {
@@ -1096,11 +1165,26 @@ h1 .banner-left:before {
 
 // ************************************************ Modal ************************************************
 
-#favourite-product-modal{
+#favourite-product-modal {
   z-index: 10000;
 }
 
 // ************************************** Product Details ************************************************
+
+.product-quantity-wrapper {
+
+  .bootstrap-touchspin .bootstrap-touchspin-prefix {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+  .input-group-addon:first-child {
+    border-right: 0;
+  }
+  .bootstrap-touchspin .input-group-btn-vertical > .btn {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+}
 
 .product-detail-main-image {
   margin-bottom: 10px;
@@ -1141,21 +1225,8 @@ h1 .banner-left:before {
     border-radius: 0;
   }
 
-  .product-detail-quantity {
-
+  .product-quantity-wrapper {
     width: 150px;
-
-    .bootstrap-touchspin .bootstrap-touchspin-prefix {
-      border-top-left-radius: 0;
-      border-bottom-left-radius: 0;
-    }
-    .input-group-addon:first-child {
-      border-right: 0;
-    }
-    .bootstrap-touchspin .input-group-btn-vertical > .btn {
-      border-top-right-radius: 0;
-      border-bottom-right-radius: 0;
-    }
   }
 
   .product-rating {
@@ -1209,13 +1280,6 @@ h1 .banner-left:before {
         padding: 0 1px;
       }
     }
-  }
-}
-
-#product_comments {
-
-  .underlined-title h4 {
-    margin-top: 2rem;
   }
 }
 
@@ -1288,10 +1352,49 @@ h1 .banner-left:before {
   }
 }
 
-#product-path-brands{
+#product-path-brands {
   img {
     height: 40px;
   }
+}
+
+// ******************************************* Product Cart ***************************************************
+
+.cart-product-list {
+
+  .cart-product-image {
+    img {
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      width: 50px;
+    }
+  }
+
+  .cart-product-title {
+    a {
+      display: block;
+      color: $store-navbar-color;
+    }
+  }
+
+  .product-quantity-wrapper {
+    width: 150px;
+
+    input {
+      min-width: 40px;
+    }
+  }
+
+  .cart-product-unit, .cart-product-sub, .cart-product-action {
+    width: 100px;
+  }
+}
+
+.pager > li > a, .pager > li > span {
+  color: $store-navbar-color;
+  border-bottom: 2px solid #d6d8d9;
+  border-radius: 0;
 }
 
 /* Other*/

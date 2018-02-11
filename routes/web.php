@@ -65,10 +65,10 @@ Route::post('/reset', 'Auth\ResetPasswordController@reset');
 // auth middleware with parameter : 'web' (guard name)
 Route::middleware(['auth:web'])->group(function () {
 
-    Route::get('/user', 'Profile\UserProfileController@showUserProfile');
+    Route::get('/profile', 'Profile\UserProfileController@showUserProfile')->name('profile.show');
 
-    Route::get('/user/profile', 'Profile\UserProfileController@showUserProfileForm');
-    Route::post('/user/profile', 'Profile\UserProfileController@saveUserProfile');
+    Route::get('/user/profile/change', 'Profile\UserProfileController@showUserProfileForm');
+    Route::post('/user/profile/set', 'Profile\UserProfileController@saveUserProfile');
 
     Route::get('/user/password', 'Profile\ChangePasswordController@showChangePasswordForm');
     Route::post('/user/password', 'Profile\ChangePasswordController@changePassword');
@@ -132,7 +132,7 @@ Route::get('/product/{url}', 'Product\ProductDetailsController@index');
 
 // ************************ Product Details Page. Comments ************************************
 
-Route::post('/comment/product', 'Comment\ProductCommentsController@store');
+Route::post('/comment/product', 'Comment\ProductCommentsController@store')->name('comment.insert');
 
 Route::get('/comment/product/{id}', 'Comment\ProductCommentsController@index');
 
@@ -144,12 +144,18 @@ Route::get('/favourite/remove/{id}', 'Product\ProductFavouriteController@removeF
 
 //************************************************ User Cart ****************************************
 
+Route::get('/cart', 'Cart\CartController@show')->name('cart.show');
+
 Route::get('/cart/add/{id}', 'Cart\CartController@add');
 
-Route::get('/cart/remove/{id}', 'Cart\CartController@remove');
+Route::get('/cart/remove/{id}', 'Cart\CartController@remove')->name('cart.remove');
 
-Route::get('/cart/increase/{id}', 'Cart\CartController@increase');
+Route::post('/cart/set/count', 'Cart\CartController@setCount')->name('cart.set.count');
 
-Route::get('/cart/decrease/{id}', 'Cart\CartController@decrease');
+//************************************************ Checkout ****************************************
 
-Route::post('/cart/add/count', 'Cart\CartController@addCount');
+Route::post('/checkout', 'Cart\CheckoutController@')->name('checkout.show');
+
+//************************************************ Payment ****************************************
+
+Route::post('/payment', 'Payment\CheckoutController@')->name('payment.show');

@@ -3,7 +3,7 @@
 
 <head>
     <!-- Head section -->
-    @include('heads/admin')
+    @include('heads.admin')
 </head>
 
 <body>

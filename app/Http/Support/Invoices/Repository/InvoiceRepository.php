@@ -85,9 +85,21 @@ class InvoiceRepository implements InvoiceTypes, InvoiceDirections
      * @param int $invoiceId
      * @return void
      */
-    public function delete(int $invoiceId)
+    public function deleteByInvoiceId(int $invoiceId)
     {
         self::getRetrieveQueryByInvoiceId($invoiceId)->delete();
+    }
+
+    /**
+     * Delete invoice.
+     *
+     * @param Invoice $invoice
+     * @return bool|null
+     * @throws \Exception
+     */
+    public function deleteInvoice(Invoice $invoice)
+    {
+        return $invoice->delete();
     }
 
     /**

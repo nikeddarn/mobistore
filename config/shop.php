@@ -12,6 +12,9 @@ return [
     // count of products in product list pages.
     'products_per_page' => 12,
 
+    // count of recent products to show.
+    'recent_products_show' => 12,
+
     // count of categories and subcategories filters (filters creating depth).
     'category_filters_depth' => 2,
 
@@ -48,8 +51,11 @@ return [
         ExchangeRateSourcesInterface::FINANCE,
     ],
 
-    // exchange rate time to live in hours.
+    // exchange rate for product price time to live in hours.
     'exchange_rate_ttl' => 4,
+
+    // invoice exchange rate ttl in hours
+    'invoice_exchange_rate_ttl' => 72,
 
     // exchange rate source timeout
     'exchange_rate_source_timeout' => 500,
@@ -77,4 +83,10 @@ return [
             'class' => 'info'
         ],
     ],
+
+    // cart ttl in days
+   'user_cart_ttl' => 5,
+
+
+
 ];

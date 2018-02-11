@@ -61,6 +61,11 @@ class ProductCommentsController extends Controller implements FilterTypes
         $this->request = $request;
     }
 
+    /**
+     * @param int $productId
+     * @return mixed
+     * @throws \Exception
+     */
     public function index(int $productId)
     {
         $this->selectedProduct = $this->retrieveProductData($productId);
@@ -133,7 +138,7 @@ class ProductCommentsController extends Controller implements FilterTypes
         return [
             'product' => [
                 'id' => $this->selectedProduct->id,
-                'title' => $this->selectedProduct->page_title . '. ' . trans('shop.comments'),
+                'title' => $this->selectedProduct->page_title,
             ],
         ];
     }
@@ -145,13 +150,13 @@ class ProductCommentsController extends Controller implements FilterTypes
      */
     private function commonMetaData(): array
     {
-        $additionalTitlePart = trans('shop.comments');
+        $additionalPhrases = trans('meta.phrases.comments');
 
         return [
             'commonMetaData' => [
-                'title' => $this->selectedProduct->meta_title . '. ' . $additionalTitlePart,
-                'description' => $this->selectedProduct->meta_description . '. ' . $additionalTitlePart,
-                'keywords' => $this->selectedProduct->meta_keywords . ', ' . $additionalTitlePart,
+                'title' => $this->selectedProduct->page_title . '. ' . $additionalPhrases['show'],
+                'description' => $this->selectedProduct->page_title . '. ' . $additionalPhrases['show'] . '. ' . $additionalPhrases['add'],
+                'keywords' => $this->selectedProduct->meta_keywords . ', ' . $additionalPhrases['show'] . ', ' . $additionalPhrases['add'],
             ],
         ];
     }
@@ -160,6 +165,7 @@ class ProductCommentsController extends Controller implements FilterTypes
      * Get breadcrumbs from session if exists or create breadcrumbs from product properties.
      *
      * @return array
+     * @throws \Exception
      */
     private function breadcrumbs(): array
     {
@@ -170,7 +176,7 @@ class ProductCommentsController extends Controller implements FilterTypes
         }
 
         return [
-            'breadcrumbs' => array_merge($baseBreadcrumbs, $this->additionalBreadcrumbs()),
+            'breadcrumbs' => array_merge($baseBreadcrumbs, $this->productBreadcrumb()),
         ];
     }
 
@@ -179,15 +185,12 @@ class ProductCommentsController extends Controller implements FilterTypes
      *
      * @return array
      */
-    private function additionalBreadcrumbs(): array
+    private function productBreadcrumb(): array
     {
         return [
             [
                 'title' => $this->selectedProduct->breadcrumb ? $this->selectedProduct->breadcrumb : $this->selectedProduct->page_title,
                 'url' => '/product/' . $this->selectedProduct->url,
-            ],
-            [
-                'title' => trans('shop.comments'),
             ]
         ];
     }

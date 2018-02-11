@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Http\ViewComposers\CategoriesComposer;
+use App\Http\ViewComposers\CommonComposer;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -15,7 +15,9 @@ class ComposerServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        View::composer('*', CategoriesComposer::class);
+        if (!$this->app->request->ajax()) {
+            View::composer('*', CommonComposer::class);
+        }
     }
 
     /**

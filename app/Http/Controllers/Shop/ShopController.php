@@ -267,7 +267,7 @@ abstract class ShopController extends Controller implements FilterTypes
 
             $product->badges = $this->productBadges->createBadges($product->productBadge);
 
-            $product->isFavourite = $product->favouriteProduct->count();
+            $product->isFavourite = $product->relationLoaded('favouriteProduct') && $product->favouriteProduct->count();
         });
 
     }
@@ -330,8 +330,8 @@ abstract class ShopController extends Controller implements FilterTypes
 
         $query->with('productBadge.badge');
 
-        if ($this->user){
-            $query->with(['favouriteProduct' => function($query){
+        if ($this->user) {
+            $query->with(['favouriteProduct' => function ($query) {
                 $query->where('id', $this->user->id);
             }]);
         }

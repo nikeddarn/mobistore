@@ -59,4 +59,12 @@ class Invoice extends Model
     {
         return $this->hasMany('App\Models\InvoiceAmount', 'invoices_id', 'id');
     }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function currencyRate()
+    {
+        return $this->belongsTo('App\Models\CurrencyRate', 'currency_rates_id', 'id');
+    }
 }

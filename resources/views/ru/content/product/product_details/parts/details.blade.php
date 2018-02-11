@@ -1,6 +1,6 @@
 <h3 class="product-detail-title text-gray">{{ $product['title'] }}</h3>
 
-<form action="/cart/add/count" method="post">
+<form action="{{ route('cart.set.count') }}" method="post">
 
     {{ csrf_field() }}
 
@@ -69,8 +69,8 @@
             <tr>
                 <td>Количество</td>
                 <td>
-                    <div class="product-detail-quantity">
-                        <input id="product-detail-quantity" type="text" value="1" name="quantity">
+                    <div class="product-quantity-wrapper">
+                        <label for="product-detail-quantity"></label><input id="product-detail-quantity" type="text" value="1" name="quantity">
                     </div>
                 </td>
             </tr>
@@ -78,12 +78,12 @@
                 <td></td>
                 <td>
                     <button class="btn btn-primary m-b-2" type="submit">
-                        <i class="fa fa-shopping-cart">&nbsp;Добавить в корзину</i>
+                        <i class="fa fa-shopping-cart"></i> Добавить в корзину
                     </button>
                     @if($product['isFavourite'])
                         <button formaction="/favourite/remove/{{ $product['id'] }}"
                                 class="btn btn-primary m-b-2 product-favourite">
-                            <i class="fa fa-star"></i><span>&nbsp;Удалить из избранного</span>
+                            <i class="fa fa-star"></i> Удалить из избранного
                         </button>
                     @else
                         <button formaction="/favourite/add/{{ $product['id'] }}"

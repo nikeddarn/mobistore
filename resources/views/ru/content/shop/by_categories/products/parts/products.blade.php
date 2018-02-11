@@ -40,7 +40,7 @@
                                 @if($product->stockStatus !== null)
 
                                     <div class="product-options">
-                                        <a href="/cart/add/{{ $product->id }}" data-toggle="tooltip" title="Добавить в корзину"><i
+                                        <a href="/cart/add/{{ $product->id }}" class="add-to-cart" data-toggle="tooltip" title="Добавить в корзину"><i
                                                     class="fa fa-shopping-cart"></i></a>
 
                                         @if($product->isFavourite)

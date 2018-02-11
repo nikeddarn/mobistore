@@ -18,14 +18,14 @@ interface InvoiceHandlerInterface
     /**
      * Get whole invoice sum.
      *
-     * @return float
+     * @return float|null
      */
-    public function getInvoiceSum():float;
+    public function getInvoiceSum();
 
     /**
      * Get invoice title.
      *
      * @return string
      */
-    public function getInvoiceType():string;
+    public function getInvoiceType(): string;
 }

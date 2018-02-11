@@ -1,7 +1,7 @@
-@if(!empty($comments['comments']))
+@if($comments->count())
 
     @foreach($comments as $comment)
-        <div class="media">
+        <div class="media m-b-4">
             <div class="media-left">
 
                 @if(isset($comment['userImage']))
@@ -35,9 +35,9 @@
         </div>
     @endforeach
 
-    @if($hasMoreComments)
-        <h5 class="m-t-2"><a href="/comment/product/{{ $product['id'] }}">Смотреть все комментарии</a></h5>
-    @endif
+    <h5 class="m-t-2">
+        <a href="/comment/product/{{ $product['id'] }}">Смотреть все комментарии</a>
+    </h5>
 
     <hr>
 
@@ -45,13 +45,13 @@
 
 <h4 class="m-b-2 text-gray">Добавьте ваш отзыв</h4>
 
-<form action="/comment/product" method="post" role="form">
+<form action="{{ route('comment.insert') }}" method="post" role="form">
 
     {{ csrf_field() }}
 
     <input type="hidden" name="product_id" value="{{ $product['id'] }}">
 
-    @if(!$isUserLoggedIn)
+    @if(!auth('web')->check())
         <div class="form-group">
             <label for="product-comment-name">Имя</label>
             <input id="product-comment-name" type="text" class="form-control" placeholder="Имя" name="name"

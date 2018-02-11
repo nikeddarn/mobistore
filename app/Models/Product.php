@@ -101,7 +101,7 @@ class Product extends Model
      */
     public function recentComment()
     {
-        return $this->hasMany('App\Models\ProductComment', 'products_id', 'id')->limit(config('shop.product_details_comment_count') + 1)->orderByDesc('id');
+        return $this->hasMany('App\Models\ProductComment', 'products_id', 'id')->limit(config('shop.product_details_comment_count'))->orderByDesc('id');
     }
 
     /**
@@ -134,5 +134,13 @@ class Product extends Model
     public function favouriteProduct()
     {
         return $this->hasMany('App\Models\FavouriteProduct', 'products_id', 'id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function recentProduct()
+    {
+        return $this->hasMany('App\Models\RecentProduct', 'products_id', 'id');
     }
 }

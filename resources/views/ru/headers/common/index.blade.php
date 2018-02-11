@@ -1,12 +1,12 @@
 <div id="header-common">
 
     <!-- Top Navbar -->
-    @include('headers.common.top_navbar')
+    @include('headers.common.top.index')
 
     <!-- Search Panel -->
-    @include('headers.common.middle')
+    @include('headers.common.middle.index')
 
     <!-- Store Navbar -->
-    @include('menu.store_navbar')
+    @include('headers.common.bottom.index')
 
 </div>

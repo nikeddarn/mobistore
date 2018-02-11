@@ -5,20 +5,21 @@
     <!-- Breadcrumbs -->
     @include('content.product.product_comments.parts.breadcrumbs')
 
-    <div class="container m-t-2">
+    <div class="container">
         <div id="product_comments" class="row">
 
-            <div class="col-lg-12 m-b-4">
-                <div class="underlined-title">
-                    <h4 class="page-header text-gray">{{ $product['title'] }}</h4>
-                </div>
-            </div>
-
             <div id="review" class="col-sm-8">
+
+                <div class="m-b-4">
+                    <div class="underlined-title">
+                        <h4 class="page-header text-gray">{{ $product['title'] }} <small>Отзывы покупателей</small></h4>
+                    </div>
+                </div>
+
                 @include('content.product.product_comments.parts.comments')
-            </div>
-            <div class="col-sm-8">
+
                 @include('content.product.product_comments.parts.create_comment')
+
             </div>
 
         </div>

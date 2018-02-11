@@ -10,7 +10,7 @@
 
 return [
     'title' => [
-
+        'shopping_cart' => 'Магазин ' . config('app.name') . ' - корзина пользователя'
     ],
 
     'description' => [
@@ -27,5 +27,9 @@ return [
         'original_and_copy' => 'оригинальные и копии',
         'buу_for_price' => 'купить в магазине ' . config('app.name') . ' по цене :price гривень',
         'phones' => config('shop.phones'),
+        'comments' => [
+            'show' => 'Комментарии пользователей',
+            'add' => 'Добавить комментарий'
+        ],
     ],
 ];

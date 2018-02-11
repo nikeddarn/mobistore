@@ -8,10 +8,10 @@ use App\Contracts\Shop\Products\Filters\FilterTypes;
 use App\Http\Controllers\Controller;
 use App\Http\Support\Price\ProductPrice;
 use App\Models\Product;
+use App\Models\RecentProduct;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Storage as productStorage;
 use Illuminate\Support\Str;
@@ -46,11 +46,6 @@ class ProductDetailsController extends Controller implements FilterTypes, Curren
     private $priceUah;
 
     /**
-     * @var Collection
-     */
-    private $comments;
-
-    /**
      * @var CategoryRouteBreadcrumbsCreator
      */
     private $categoryRouteBreadcrumbsCreator;
@@ -74,6 +69,10 @@ class ProductDetailsController extends Controller implements FilterTypes, Curren
      * @var User
      */
     private $user;
+    /**
+     * @var RecentProduct
+     */
+    private $recentProduct;
 
     /**
      * ProductDetailsController constructor.
@@ -83,8 +82,9 @@ class ProductDetailsController extends Controller implements FilterTypes, Curren
      * @param Str $str
      * @param ProductPrice $productPrice
      * @param productStorage $productStorage
+     * @param RecentProduct $recentProduct
      */
-    public function __construct(Request $request, Product $product, CategoryRouteBreadcrumbsCreator $categoryRouteBreadcrumbsCreator, Str $str, ProductPrice $productPrice, productStorage $productStorage)
+    public function __construct(Request $request, Product $product, CategoryRouteBreadcrumbsCreator $categoryRouteBreadcrumbsCreator, Str $str, ProductPrice $productPrice, productStorage $productStorage, RecentProduct $recentProduct)
     {
         $this->request = $request;
         $this->product = $product;
@@ -94,14 +94,22 @@ class ProductDetailsController extends Controller implements FilterTypes, Curren
         $this->productStorage = $productStorage;
 
         $this->user = auth('web')->user();
+        $this->recentProduct = $recentProduct;
     }
 
+    /**
+     * @param string $productUrl
+     * @return mixed
+     * @throws Exception
+     */
     public function index(string $productUrl)
     {
         $this->selectedProduct = $this->retrieveProductData($productUrl);
 
         $this->price = $this->productPrice->getPriceByProductModel($this->selectedProduct);
         $this->priceUah = $this->price ? $this->price * $this->productPrice->getRate(self::USD) : null;
+
+        $this->updateRecentProducts($this->selectedProduct->id);
 
         return response(
             view('content.product.product_details.index')
@@ -123,36 +131,29 @@ class ProductDetailsController extends Controller implements FilterTypes, Curren
     private function retrieveProductData(string $productUrl)
     {
         $query = $this->product->select()
-
             ->where('url', $productUrl)
-
             ->with('category', 'image', 'color', 'quality')
-
             ->with(['brand' => function ($query) {
                 $query->select(['id', 'title', 'image', 'url']);
             }])
-
             ->with(['deviceModel' => function ($query) {
                 $query->select(['id', 'url', 'title', 'series']);
             }])
-
             ->with('recentComment.user')
-
             ->with(['storageProduct' => function ($query) {
                 $query->where('stock_quantity', '>', 0);
             }])
-
             ->with(['vendorProduct' => function ($query) {
                 $query->where('stock_quantity', '>', 0);
             }]);
 
-            if ($this->user){
-                $query->with(['favouriteProduct' => function($query){
-                    $query->where('id', $this->user->id);
-                }]);
-            }
+        if ($this->user) {
+            $query->with(['favouriteProduct' => function ($query) {
+                $query->where('id', $this->user->id);
+            }]);
+        }
 
-            return $query->firstOrFail();
+        return $query->firstOrFail();
     }
 
     /**
@@ -189,25 +190,21 @@ class ProductDetailsController extends Controller implements FilterTypes, Curren
     }
 
     /**
-     * Retrieve comments and user data.
+     * Retrieve product comments.
+     *
      * @return array
      */
     private function commentsData()
     {
-        $showCommentsCount = config('shop.product_details_comment_count');
-        $this->comments = $this->selectedProduct->recentComment->take($showCommentsCount)->map(function ($item) {
-            return [
-                'comment' => $item->comment,
-                'rating' => $item->rating,
-                'userName' => isset($item->user) ? $item->user->name : $item->name,
-                'userImage' => isset($item->user) ? $item->user->image : null,
-            ];
-        });
-
         return [
-            'comments' => $this->comments,
-            'isUserLoggedIn' => (bool)auth('web')->user(),
-            'hasMoreComments' => $this->selectedProduct->recentComment->count() > $showCommentsCount,
+            'comments' => $this->selectedProduct->recentComment->map(function ($item) {
+                return [
+                    'comment' => $item->comment,
+                    'rating' => $item->rating,
+                    'userName' => isset($item->user) ? $item->user->name : $item->name,
+                    'userImage' => isset($item->user) ? $item->user->image : null,
+                ];
+            })
         ];
     }
 
@@ -231,7 +228,7 @@ class ProductDetailsController extends Controller implements FilterTypes, Curren
      * @param Product $product
      * @return array
      */
-    private function getStoragesHasProduct(Product $product):array
+    private function getStoragesHasProduct(Product $product): array
     {
         return $this->productStorage->whereIn('id', $product->storageProduct->pluck('storages_id')->toArray())->get()->pluck('title')->toArray();
     }
@@ -316,7 +313,6 @@ class ProductDetailsController extends Controller implements FilterTypes, Curren
         return $breadcrumbItems;
     }
 
-
     /**
      * Create response headers.
      *
@@ -327,5 +323,20 @@ class ProductDetailsController extends Controller implements FilterTypes, Curren
         return [
             'Last-Modified' => date('D, d M Y H:i:s T', $this->selectedProduct->updated_at->timestamp),
         ];
+    }
+
+    /**
+     * Add to recent products
+     *
+     * @param int $productId
+     */
+    private function updateRecentProducts(int $productId)
+    {
+        if (auth('web')->check()) {
+            $this->recentProduct->updateOrCreate([
+                'products_id' => $productId,
+                'users_id' => auth('web')->user()->id,
+            ])->touch();
+        }
     }
 }

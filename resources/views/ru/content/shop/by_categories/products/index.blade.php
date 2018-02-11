@@ -106,8 +106,7 @@
             tooltips.tooltip();
 
             // add and remove to favourite
-            let favouriteLink = $('.product-favourite, .product-not-favourite');
-            $(favouriteLink).click(function (event) {
+            $('.product-favourite, .product-not-favourite').click(function (event) {
                 event.preventDefault();
                 event.stopPropagation();
                 let favouriteLink = $(this);
@@ -140,11 +139,12 @@
                         clearTimeout(modalTimeout);
                         modalTimeout = setTimeout(function () {
                             modal.modal('hide');
-                        }, 3000)
+                        }, 4000)
                     });
                 }
 
             });
+
         })
     </script>
 @endsection

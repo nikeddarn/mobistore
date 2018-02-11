@@ -106,7 +106,7 @@ final class CartRepository extends InvoiceRepository
         $query = parent::getRetrieveQueryWithLimit();
         $query = $this->setUserIdConstraint($query, $userId);
 
-        return $query->with('invoiceProduct');
+        return $query->with('invoiceProduct.product.primaryImage')->with('currencyRate');
     }
 
     /**
@@ -120,7 +120,7 @@ final class CartRepository extends InvoiceRepository
         $query = parent::getRetrieveQueryWithLimit();
         $query = $this->setCartCookieConstraint($query, $userCartCookie);
 
-        return $query->with('invoiceProduct');
+        return $query->with('invoiceProduct.product.primaryImage')->with('currencyRate');
     }
 
     /**

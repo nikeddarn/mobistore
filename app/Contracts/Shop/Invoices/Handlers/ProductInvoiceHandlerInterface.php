@@ -17,9 +17,9 @@ interface ProductInvoiceHandlerInterface extends InvoiceHandlerInterface
     /**
      * Get products of invoice.
      *
-     * @return array
+     * @return Collection
      */
-    public function getProducts(): array;
+    public function getProducts(): Collection;
 
     /**
      * Add products to invoice by product's id.

@@ -9,6 +9,7 @@ namespace App\Http\Controllers\Product;
 use App\Models\FavouriteProduct;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use Exception;
 use Illuminate\Http\Request;
 
 class ProductFavouriteController extends Controller
@@ -41,7 +42,6 @@ class ProductFavouriteController extends Controller
         $this->request = $request;
         $this->product = $product;
     }
-
 
     /**
      * Add product in user favourite.
@@ -76,6 +76,7 @@ class ProductFavouriteController extends Controller
      *
      * @param int $productId
      * @return \Illuminate\Http\RedirectResponse
+     * @throws \Exception
      */
     public function removeFromFavourite(int $productId)
     {

@@ -9,6 +9,7 @@ namespace App\Http\Support\Invoices\Handlers;
 use App\Http\Support\Currency\ExchangeRates;
 use App\Models\Invoice;
 use Illuminate\Database\DatabaseManager;
+use Illuminate\Support\Collection;
 
 abstract class InvoiceHandler
 {
@@ -45,22 +46,44 @@ abstract class InvoiceHandler
     }
 
     /**
-     * Set is_committed flag of Invoice model to true.
+     * Is invoice committed ?
+     *
+     * @return bool
      */
-    public function markInvoiceAsCommitted()
+    public function isInvoiceCommitted()
     {
-        $this->invoice->is_committed = true;
-        $this->invoice->save();
+        return (bool)$this->invoice->is_committed;
     }
 
     /**
-     * Get whole invoice sum.
+     * Set is_committed flag of Invoice model to true.
+     *
+     * @return bool
+     */
+    public function markInvoiceAsCommitted(): bool
+    {
+        $this->invoice->is_committed = true;
+        return $this->invoice->save();
+    }
+
+    /**
+     * Get total invoice sum.
+     *
+     * @return float|null
+     */
+    public function getInvoiceSum()
+    {
+        return $this->invoice->invoice_sum;
+    }
+
+    /**
+     * Get total invoice sum in UAH.
      *
      * @return float
      */
-    public function getInvoiceSum(): float
+    public function getInvoiceUahSum(): float
     {
-        return $this->invoice->invoice_sum;
+        return $this->invoice->invoice_sum * $this->invoice->currencyRate->rate;
     }
 
     /**
@@ -68,8 +91,9 @@ abstract class InvoiceHandler
      *
      * @return string
      */
-    public function getInvoiceType():string{
-        if(!$this->invoice->invoiceType){
+    public function getInvoiceType(): string
+    {
+        if (!$this->invoice->invoiceType) {
             $this->invoice->load('invoiceType');
         }
 

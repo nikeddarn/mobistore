@@ -40,23 +40,23 @@ $(document).ready(function () {
     // ------------------------------- Mega Menu ----------------------------------------------------
 
     // Animate mega-menu. Adding class .open on hover to highlighting dropdown toggler.
-    $(storeNavbar).find('li.dropdown').hover(function () {
-        $(this).addClass('open');
-        let megaMenu = $(this).find('.dropdown-menu');
-        let megaMenuTop = parseInt($(megaMenu).css('top'));
-        $(megaMenu).css({'top': (megaMenuTop - 20) + 'px', 'opacity': 0});
-        if ($('#product-path-categories').hasClass('hidden')) {
-            $(megaMenu).stop(true, true).animate({opacity: 1, top: megaMenuTop + 'px'}, 200);
-        } else {
-            let grid = $('.grid');
-            grid.one('layoutComplete', function () {
-                $(megaMenu).stop(true, true).animate({opacity: 1, top: megaMenuTop + 'px'}, 200);
-            });
-            grid.isotope();
-        }
-    }, function () {
-        $(this).removeClass('open').find('.dropdown-menu').stop(true, true).fadeOut(200);
-    });
+    // $(storeNavbar).find('li.dropdown').hover(function () {
+    //     $(this).addClass('open');
+    //     // let megaMenu = $(this).find('.dropdown-menu');
+    //     // let megaMenuTop = parseInt($(megaMenu).css('top'));
+    //     // $(megaMenu).css({'top': (megaMenuTop - 20) + 'px', 'opacity': 0});
+    //     // if ($('#product-path-categories').hasClass('hidden')) {
+    //     //     $(megaMenu).stop(true, true).animate({opacity: 1, top: megaMenuTop + 'px'}, 200);
+    //     // } else {
+    //     //     let grid = $('.grid');
+    //     //     grid.one('layoutComplete', function () {
+    //     //         $(megaMenu).stop(true, true).animate({opacity: 1, top: megaMenuTop + 'px'}, 200);
+    //     //     });
+    //     //     grid.isotope();
+    //     // }
+    // }, function () {
+    //     $(this).removeClass('open').find('.dropdown-menu').stop(true, true).fadeOut(200);
+    // });
 
 
     // prevent to hide mega menu when there was clicked not on link

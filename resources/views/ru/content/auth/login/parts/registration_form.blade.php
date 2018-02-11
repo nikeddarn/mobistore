@@ -6,7 +6,7 @@
         <div class="col-sm-6 form-group{{ $errors->has('name') ? ' has-error' : '' }}">
             <label for="name">Ваше имя</label>
             <div>
-                <input id="name" type="text" class="form-control" name="name" value="{{ old('name') }}" required
+                <input id="name" type="text" class="form-control" name="name" maxlength="64" value="{{ old('name') }}" required
                        autofocus>
                 @if ($errors->has('name'))
                     <span class="help-block">
