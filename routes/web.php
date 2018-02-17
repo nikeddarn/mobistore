@@ -120,11 +120,11 @@ Route::middleware(['admin'])->group(function () {
 /**************************** Shop Pages *********************************************/
 
 // products list by categories
-Route::get('/category/{url?}', 'Shop\Single\CategoryUnfilteredController@index')->where(['url' => '.*']);
+Route::get('/category/{url?}', 'Shop\Single\CategoryUnfilteredController@index')->where(['url' => '.*'])->name('product.category');
 Route::get('/filter/category/{url?}', 'Shop\Multiply\CategoryFilteredController@index')->where(['url' => '.*']);
 
 // products list by brands
-Route::get('/brand/{url?}', 'Shop\Single\BrandUnfilteredController@index')->where(['url' => '.*']);
+Route::get('/brand/{url?}', 'Shop\Single\BrandUnfilteredController@index')->where(['url' => '.*'])->name('product.brand');
 Route::get('/filter/brand/{url?}', 'Shop\Multiply\BrandFilteredController@index')->where(['url' => '.*']);
 
 // product detail page
@@ -138,9 +138,19 @@ Route::get('/comment/product/{id}', 'Comment\ProductCommentsController@index');
 
 //******************************************** Favourite Products **********************************
 
+Route::get('/favourite', 'Product\ProductFavouriteController@show')->middleware(['auth:web'])->name('product.favourite');
+
 Route::get('/favourite/add/{id}', 'Product\ProductFavouriteController@addToFavourite')->middleware(['auth:web']);
 
 Route::get('/favourite/remove/{id}', 'Product\ProductFavouriteController@removeFromFavourite')->middleware(['auth:web']);
+
+//******************************************** Recent Products **********************************
+
+Route::get('/recent', 'Product\ProductRecentController@show')->middleware(['auth:web'])->name('product.recent');
+
+//******************************************** Action Products **********************************
+
+Route::get('/actions', 'Product\ProductActionController@show')->middleware(['auth:web'])->name('product.action');
 
 //************************************************ User Cart ****************************************
 
@@ -154,7 +164,7 @@ Route::post('/cart/set/count', 'Cart\CartController@setCount')->name('cart.set.c
 
 //************************************************ Checkout ****************************************
 
-Route::post('/checkout', 'Cart\CheckoutController@')->name('checkout.show');
+Route::get('/checkout', 'Checkout\CheckoutController@show')->name('checkout.show');
 
 //************************************************ Payment ****************************************
 

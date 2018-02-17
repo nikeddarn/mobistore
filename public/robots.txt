@@ -1,2 +1,7 @@
 User-agent: *
+Disallow: /filter/
 Disallow: /favourite/
+Disallow: /recent/
+Disallow: /cart/
+Disallow: /checkout/
+Disallow: /payment/

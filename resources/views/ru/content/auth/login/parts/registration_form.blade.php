@@ -58,9 +58,10 @@
     </div>
 
     <div class="col-lg-12 form-group">
+        <p>Если вы являетесь оптовым покупателем, отметьте этот чекбокс чтобы получить стартовую оптовую цену. Дальнейшую ценовую политику обсуждайте с менеджерами магазина.</p>
         <div>
             <div class="checkbox">
-                <input id="is_wholesale" type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }}>
+                <input id="is_wholesale" type="checkbox" name="wholesale" {{ old('remember') ? 'checked' : '' }}>
                 <label for="is_wholesale">Я оптовый покупатель</label>
             </div>
         </div>

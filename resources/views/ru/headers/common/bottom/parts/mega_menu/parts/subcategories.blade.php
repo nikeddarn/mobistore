@@ -1,6 +1,6 @@
 <li>
-    <a href="/category/{{ $category->url }}"><h5>{{ $category->title_ru }}</h5></a>
+    <a href="/category/{{ $category->url }}">{{ $category->title_ru }}</a>
 </li>
 @if($category->children)
-    @each('menu.mega_menu.subcategories', $category->children, 'category')
+    @each('headers.common.bottom.parts.mega_menu.subcategories', $category->children, 'category')
 @endif

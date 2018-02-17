@@ -4,21 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class UserCart extends Model
+class UserInvoice extends Model
 {
     /**
      * Table name.
      *
      * @var string
      */
-    protected $table = 'user_carts';
-
-    /**
-     * Primary key.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'invoices_id';
+    protected $table = 'user_invoices';
 
     /**
      * Indicates if the model should be timestamped.

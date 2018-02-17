@@ -4,7 +4,7 @@
 
             @foreach($favouritesList as $product)
 
-                <div class="col-xs-6 col-sm-3 col-md-2 product-wrapper m-b-2">
+                <div class="col-xs-6 col-sm-3 product-wrapper m-b-2">
 
                     <div class="product-thumbnail">
 
@@ -30,7 +30,8 @@
                                 @if($product['stockStatus'] !== null)
 
                                     <div class="product-options">
-                                        <a href="/cart/add/{{ $product['id'] }}" data-toggle="tooltip" title="Добавить в корзину"><i
+                                        <a href="/cart/add/{{ $product['id'] }}" data-toggle="tooltip"
+                                           title="Добавить в корзину"><i
                                                     class="fa fa-shopping-cart"></i></a>
 
                                         @if($product['isFavourite'])
@@ -83,7 +84,12 @@
             @endforeach
         @else
             <div class="col-lg-12">
-                <h4 class="text-gray text-center">Нет продуктов в данной категории</h4>
+                @if(auth('web')->check())
+                    <h4 class="text-gray text-center">Нет продуктов в данной категории</h4>
+                @else
+                    <p class="text-gray">Чтобы воспользоваться фаворитным списком необходимо <a
+                                href="{{ route('login') }}">войти&nbsp;или&nbsp;зарегистрироваться</a></p>
+                @endif
             </div>
         @endif
     </div>

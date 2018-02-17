@@ -29,6 +29,22 @@ class Invoice extends Model
     }
 
     /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function userInvoice()
+    {
+        return $this->hasOne('App\Models\UserInvoice', 'invoices_id', 'id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function vendorInvoice()
+    {
+        return $this->hasOne('App\Models\VendorInvoice', 'invoices_id', 'id');
+    }
+
+    /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function invoiceProduct()

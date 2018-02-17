@@ -74,19 +74,19 @@ return [
             'ttl' => 0,
             'class' => 'danger'
         ],
-        BadgeTypes::SALE => [
+        BadgeTypes::ACTION => [
             'ttl' => 3,
             'class' => 'success'
-        ],
-        BadgeTypes::BEST_SELLER => [
-            'ttl' => 3,
-            'class' => 'info'
         ],
     ],
 
     // cart ttl in days
    'user_cart_ttl' => 5,
 
-
+    // prices
+    'price' => [
+        // starting price group on register wholesale user
+        'start_wholesale_price_group' => 3,
+    ]
 
 ];

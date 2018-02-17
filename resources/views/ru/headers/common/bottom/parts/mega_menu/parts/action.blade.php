@@ -1,8 +1,8 @@
 <div class="container-fluid">
     <div class="row row-flex">
-        @if(!empty($recentList))
+        @if(!empty($actionList))
 
-            @foreach($recentList as $product)
+            @foreach($actionList as $product)
 
                 <div class="col-xs-6 col-sm-3 product-wrapper m-b-2">
 
@@ -83,12 +83,7 @@
             @endforeach
         @else
             <div class="col-lg-12">
-                @if(auth('web')->check())
-                    <h4 class="text-gray text-center">Нет продуктов в данной категории</h4>
-                @else
-                    <p class="text-gray">Чтобы воспользоваться списком недавно просмотренных товаров необходимо <a
-                                href="{{ route('login') }}">войти&nbsp;или&nbsp;зарегистрироваться</a></p>
-                @endif
+                <h4 class="text-gray text-center">Нет продуктов в данной категории</h4>
             </div>
         @endif
     </div>

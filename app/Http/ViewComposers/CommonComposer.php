@@ -2,6 +2,7 @@
 
 namespace App\Http\ViewComposers;
 
+use App\Contracts\Shop\Badges\BadgeTypes;
 use App\Http\Controllers\Admin\Support\Badges\ProductBadges;
 use App\Http\Support\Invoice\Repository\CartRepository;
 use App\Http\Support\Invoices\Handlers\ProductInvoiceHandler;
@@ -17,7 +18,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
-class CommonComposer
+class CommonComposer implements BadgeTypes
 {
     /**
      * @var string
@@ -99,12 +100,14 @@ class CommonComposer
         $view
             ->with('categoriesList', $this->getCategoriesTree())
             ->with('brandsList', $this->getBrands())
-            ->with('favouritesList', $this->getFavourites())
-            ->with('recentList', $this->getRecentProducts())
-            ->with('cartProducts', $this->getCartProducts());
+            ->with('cartProducts', $this->getCartProducts())
+            ->with('actionList', $this->getActionProducts());
 
-        if (auth('web')->check()){
-            $view->with('userData', $this->getUserData());
+        if (auth('web')->check()) {
+            $view
+                ->with('favouritesList', $this->getFavourites())
+                ->with('recentList', $this->getRecentProducts())
+                ->with('userData', $this->getUserData());
         }
     }
 
@@ -137,7 +140,6 @@ class CommonComposer
      */
     private function getFavourites(): array
     {
-        if (auth('web')->check()) {
             $products = $this->getRetrieveProductQuery()
                 ->whereHas('favouriteProduct', function ($query) {
                     $query->where('users_id', auth('web')->user()->id);
@@ -145,9 +147,26 @@ class CommonComposer
                 ->get();
 
             return $this->formProductData($products);
-        } else {
-            return [];
-        }
+    }
+
+    /**
+     * Create action products list.
+     *
+     * @return array
+     */
+    private function getActionProducts(): array
+    {
+            $products = $this->getRetrieveProductQuery()
+                ->whereHas('productBadge', function ($query) {
+                    $query->where([
+                        ['badges_id', '=', self::PRICE_DOWN],
+                        ['updated_at', '>=', Carbon::now()->subDays(config('shop.badges')[self::PRICE_DOWN]['ttl'])],
+                    ])
+                    ->orWhere('badges_id', self::ACTION);
+                })
+                ->get();
+
+            return $this->formProductData($products);
     }
 
     /**
@@ -157,7 +176,6 @@ class CommonComposer
      */
     private function getRecentProducts()
     {
-        if (auth('web')->check()) {
             $products = $this->getRetrieveProductQuery()
                 ->whereHas('recentProduct', function ($query) {
                     $query->where('users_id', auth('web')->user()->id);
@@ -168,9 +186,6 @@ class CommonComposer
                 ->get();
 
             return $this->formProductData($products);
-        } else {
-            return [];
-        }
     }
 
     /**

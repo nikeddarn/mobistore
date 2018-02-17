@@ -4,21 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class UserCart extends Model
+class VendorInvoice extends Model
 {
     /**
      * Table name.
      *
      * @var string
      */
-    protected $table = 'user_carts';
-
-    /**
-     * Primary key.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'invoices_id';
+    protected $table = 'vendor_invoices';
 
     /**
      * Indicates if the model should be timestamped.
@@ -40,5 +33,13 @@ class UserCart extends Model
     public function invoice()
     {
         return $this->belongsTo('App\Models\Invoice', 'invoices_id', 'id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function vendor()
+    {
+        return $this->belongsTo('App\Models\Vendor', 'vendors_id', 'id');
     }
 }

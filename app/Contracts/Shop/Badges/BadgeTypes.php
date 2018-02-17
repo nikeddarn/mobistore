@@ -13,8 +13,6 @@ interface BadgeTypes
 {
     const NEW = 1;
     const PRICE_DOWN = 2;
-    const ENDING = 3;
-    const SALE = 4;
-    const BEST_SELLER = 5;
-
+    const ACTION = 3;
+    const ENDING = 4;
 }

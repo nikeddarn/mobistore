@@ -646,51 +646,24 @@ h1 .banner-left:before {
 .yamm {
 
   // reset positions
-  .nav, .dropup, .dropdown, .collapse {
-    position: static;
-  }
-  .yamm-fullwidth .dropdown-toggle {
+  .nav, .dropdown-toggle {
     position: static;
   }
 
   // propagate menu position under navbar inner or container
-  .navbar-inner, .container {
+  .container {
     position: relative;
-  }
-
-  // by default aligns to menu item
-  .dropdown-menu {
-    left: auto;
-    > li {
-      display: block;
-    }
-  }
-  // restore submenu position
-  .dropdown-submenu .dropdown-menu {
-    //left: 100%;
-  }
-
-  .nav.pull-right .dropdown-menu {
-    right: 0;
   }
 
   // Content with padding
   .yamm-content {
     padding: 20px 30px;
-    //.clearfix(); // acts as a span container
-  }
-
-  // remove dropdown top arrows
-  &.navbar .nav > li > .dropdown-menu:after,
-  &.navbar .nav > li > .dropdown-menu:before {
-    display: none;
   }
 
   //  Fullwidth menu
   .dropdown.yamm-fullwidth .dropdown-menu {
-    width: 100%;
-    left: 40px;
-    right: 0;
+    left: 15px;
+    right: 15px;
   }
 
 }
@@ -702,21 +675,11 @@ h1 .banner-left:before {
     .dropdown.yamm-fullwidth .dropdown-menu {
       width: auto;
     }
-    // remove horizontal padding
-    .yamm-content {
-      //padding-left: 0;
-      //padding-right: 0;
-    }
 
     .dropdown-menu > li > ul {
       display: block;
     }
   }
-}
-
-// inner mega menu styles
-.yamm-content {
-  background-color: white;
 }
 
 /************************ Other header styles *********************************/
@@ -1332,30 +1295,68 @@ h1 .banner-left:before {
 
 // ************************************* Mega Menu *****************************************************
 
-#product-path-selection {
-  div {
-    padding: 0;
+// inner mega menu styles
+.yamm-content {
+
+  background-color: white;
+
+  .scrollable-menu{
+    max-height: 400px;
   }
 
-  background-color: $light-background;
-  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
-  border-bottom-style: none;
+  #product-path-selection{
 
-  a {
-    color: #777777;
-    display: block;
-    padding: 4px 6px;
+    a {
+      display: block;
+      padding: 3px 20px 3px 10px;
+      color: #666;
+      background-color: white !important;
+      height: 30px !important;
+      line-height: 24px !important;
+    }
+
+    a:hover, a.product-path-selected {
+      text-decoration: none;
+      color: #262626 !important;
+      background-color: #eee !important;
+    }
+
+    a::before {
+      font-family: 'fontAwesome', serif;
+      margin-right: 5px;
+      content: '\f105';
+    }
   }
 
-  .product-path-active-link {
-    background-color: #e0f2f1;
-  }
-}
+  #product-path-content {
 
-#product-path-brands {
-  img {
-    height: 40px;
+    #product-path-categories {
+      a.lead {
+        color: $headings-color;
+        font-size: 18px;
+      }
+
+      ul > li > a {
+        color: #666;
+        background-color: white;
+        height: 16px;
+        line-height: 16px;
+      }
+
+      ul > li > a:hover {
+        color: #666;
+        background-color: white;
+      }
+    }
+
+    #product-path-brands {
+      img {
+        height: 40px;
+      }
+    }
+
   }
+
 }
 
 // ******************************************* Product Cart ***************************************************

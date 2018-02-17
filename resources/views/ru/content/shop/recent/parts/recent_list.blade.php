@@ -1,4 +1,4 @@
-<div class="container-fluid">
+<div class="container-fluid products-list">
     <div class="row row-flex">
         @if(!empty($recentList))
 
@@ -86,8 +86,8 @@
                 @if(auth('web')->check())
                     <h4 class="text-gray text-center">Нет продуктов в данной категории</h4>
                 @else
-                    <p class="text-gray">Чтобы воспользоваться списком недавно просмотренных товаров необходимо <a
-                                href="{{ route('login') }}">войти&nbsp;или&nbsp;зарегистрироваться</a></p>
+                    <h4 class="text-gray text-center">Чтобы воспользоваться недавним списком необходимо <a
+                                href="{{ route('login') }}">войти или зарегистрироваться</a></h4>
                 @endif
             </div>
         @endif

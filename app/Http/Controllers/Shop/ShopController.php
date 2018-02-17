@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Shop;
 use App\Contracts\Shop\Products\Filters\FilterTypes;
 use App\Http\Controllers\Admin\Support\Badges\ProductBadges;
 use App\Http\Support\Price\ProductPrice;
-use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Brand;
@@ -117,12 +116,6 @@ abstract class ShopController extends Controller implements FilterTypes
     private $productBadges;
 
     /**
-     * @var User
-     */
-    private $user;
-
-
-    /**
      * CategoryUnfilteredController constructor.
      * @param Request $request
      * @param MetaData $metaData
@@ -137,8 +130,6 @@ abstract class ShopController extends Controller implements FilterTypes
      */
     public function __construct(Request $request, MetaData $metaData, Category $category, Brand $brand, DeviceModel $model, Product $product, Quality $quality, Color $color, ProductPrice $productPrice, ProductBadges $productBadges)
     {
-        $this->user = auth('web')->user();
-
         $this->metaData = $metaData;
         $this->category = $category;
         $this->brand = $brand;
@@ -330,9 +321,9 @@ abstract class ShopController extends Controller implements FilterTypes
 
         $query->with('productBadge.badge');
 
-        if ($this->user) {
+        if (auth('web')->check()) {
             $query->with(['favouriteProduct' => function ($query) {
-                $query->where('id', $this->user->id);
+                $query->where('users_id', auth('web')->user()->id);
             }]);
         }
 

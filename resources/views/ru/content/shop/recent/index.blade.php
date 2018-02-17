@@ -3,17 +3,17 @@
 @section('content')
 
     <!-- Breadcrumbs -->
-    @include('content.shop.favourite.parts.breadcrumbs')
+    @include('content.shop.recent.parts.breadcrumbs')
 
     <div class="container">
 
         <div class="row">
 
-            {{--Favourite List--}}
+            {{--Recent List--}}
             <div class="col-md-9">
-                @include('content.shop.favourite.parts.title')
+                @include('content.shop.recent.parts.title')
 
-                @include('content.shop.favourite.parts.favourite_list')
+                @include('content.shop.recent.parts.recent_list')
             </div>
 
             <div class="col-md-3 hidden-sm hidden-xs">

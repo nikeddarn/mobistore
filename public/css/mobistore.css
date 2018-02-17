@@ -645,46 +645,21 @@ h1 .banner-left:before {
 /************************************* Mega Menu ************************************/
 
 .yamm .nav,
-.yamm .dropup,
-.yamm .dropdown,
-.yamm .collapse {
+.yamm .dropdown-toggle {
   position: static;
 }
 
-.yamm .yamm-fullwidth .dropdown-toggle {
-  position: static;
-}
-
-.yamm .navbar-inner,
 .yamm .container {
   position: relative;
-}
-
-.yamm .dropdown-menu {
-  left: auto;
-}
-
-.yamm .dropdown-menu > li {
-  display: block;
-}
-
-.yamm .nav.pull-right .dropdown-menu {
-  right: 0;
 }
 
 .yamm .yamm-content {
   padding: 20px 30px;
 }
 
-.yamm.navbar .nav > li > .dropdown-menu:after,
-.yamm.navbar .nav > li > .dropdown-menu:before {
-  display: none;
-}
-
 .yamm .dropdown.yamm-fullwidth .dropdown-menu {
-  width: 100%;
-  left: 40px;
-  right: 0;
+  left: 15px;
+  right: 15px;
 }
 
 @media (max-width: 767px) {
@@ -695,10 +670,6 @@ h1 .banner-left:before {
   .yamm .dropdown-menu > li > ul {
     display: block;
   }
-}
-
-.yamm-content {
-  background-color: white;
 }
 
 /************************ Other header styles *********************************/
@@ -1272,28 +1243,54 @@ h1 .banner-left:before {
   border: 1px solid #30A193;
 }
 
-#product-path-selection {
-  background-color: #f9f9f9;
-  -webkit-box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
-          box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
-  border-bottom-style: none;
+.yamm-content {
+  background-color: white;
 }
 
-#product-path-selection div {
-  padding: 0;
+.yamm-content .scrollable-menu {
+  max-height: 400px;
 }
 
-#product-path-selection a {
-  color: #777777;
+.yamm-content #product-path-selection a {
   display: block;
-  padding: 4px 6px;
+  padding: 3px 20px 3px 10px;
+  color: #666;
+  background-color: white !important;
+  height: 30px !important;
+  line-height: 24px !important;
 }
 
-#product-path-selection .product-path-active-link {
-  background-color: #e0f2f1;
+.yamm-content #product-path-selection a:hover,
+.yamm-content #product-path-selection a.product-path-selected {
+  text-decoration: none;
+  color: #262626 !important;
+  background-color: #eee !important;
 }
 
-#product-path-brands img {
+.yamm-content #product-path-selection a::before {
+  font-family: 'fontAwesome', serif;
+  margin-right: 5px;
+  content: '\F105';
+}
+
+.yamm-content #product-path-content #product-path-categories a.lead {
+  color: #317EAC;
+  font-size: 18px;
+}
+
+.yamm-content #product-path-content #product-path-categories ul > li > a {
+  color: #666;
+  background-color: white;
+  height: 16px;
+  line-height: 16px;
+}
+
+.yamm-content #product-path-content #product-path-categories ul > li > a:hover {
+  color: #666;
+  background-color: white;
+}
+
+.yamm-content #product-path-content #product-path-brands img {
   height: 40px;
 }
 
