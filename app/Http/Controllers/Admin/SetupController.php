@@ -11,6 +11,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Currency;
 use App\Models\Storage;
 use App\Models\Vendor;
+use App\Models\VendorProduct;
 
 class SetupController extends Controller
 {
@@ -94,6 +95,36 @@ class SetupController extends Controller
             'setup_message' => $message,
         ]);
     }
+
+//    public function insert()
+//    {
+//        VendorProduct::create([
+//            [
+//                'vendors_id' => 1,
+//                'vendor_product_id' => '22',
+//                'products_id' => 3,
+//                'stock_quantity' => 10,
+//                'delivery_price' => 2,
+//                'offer_price' => 23
+//            ],
+//            [
+//                'vendors_id' => 1,
+//                'vendor_product_id' => '22',
+//                'products_id' => 4,
+//                'stock_quantity' => 10,
+//                'delivery_price' => 2,
+//                'offer_price' => 24
+//            ],
+//            [
+//                'vendors_id' => 1,
+//                'vendor_product_id' => '22',
+//                'products_id' => 5,
+//                'stock_quantity' => 10,
+//                'delivery_price' => 2,
+//                'offer_price' => 27
+//            ],
+//        ]);
+//    }
 
     /**
      * Fill libraries. Create root.

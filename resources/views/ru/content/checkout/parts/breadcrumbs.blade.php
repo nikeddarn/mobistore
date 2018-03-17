@@ -3,7 +3,7 @@
         <ol class="breadcrumb">
             <li><a href="/">Главная</a>
             </li>
-            <li class="active">Корзина</li>
+            <li class="active">Оформление</li>
         </ol>
     </div>
 </div>

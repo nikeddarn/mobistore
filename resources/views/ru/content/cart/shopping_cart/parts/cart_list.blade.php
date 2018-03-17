@@ -1,7 +1,5 @@
 <div class="table-responsive">
 
-    @if(!empty($productsData['products']))
-
         <table class="table table-bordered cart-product-list">
             <thead>
             <tr>
@@ -56,12 +54,6 @@
             </tr>
             </tbody>
         </table>
-
-    @else
-
-        <h4 class="text-gray text-center">Ваша корзина пуста</h4>
-
-    @endif
 
     @include('content.cart.shopping_cart.parts.cart_list_navigation')
 

@@ -15,6 +15,12 @@ return [
     // count of recent products to show.
     'recent_products_show' => 12,
 
+    // count of account items to show.
+    'account_items_show' => 12,
+
+    // count of reclamation items to show.
+    'warranty_items_show' => 12,
+
     // count of categories and subcategories filters (filters creating depth).
     'category_filters_depth' => 2,
 
@@ -26,6 +32,12 @@ return [
 
     // max count of comments that will show on product comments page.
     'product_comments_count' => 30,
+
+    // max user messages per page
+    'user_messages_count' => 12,
+
+    // actual period for unread message
+    'show_unread_message_days' => 7,
 
     // phones of shop.
     'phones' => '&#9742;&nbsp;067-409-16-65, 063-765-74-08',
@@ -81,12 +93,43 @@ return [
     ],
 
     // cart ttl in days
-   'user_cart_ttl' => 5,
+   'user_cart_ttl' => 7,
+
+    // Must recalculate user cart prices every day ?
+    'recalculate_cart_prices' => true,
 
     // prices
     'price' => [
         // starting price group on register wholesale user
         'start_wholesale_price_group' => 3,
-    ]
+    ],
+
+    // deliveries
+    'delivery' => [
+
+        // pre order default delivery days
+        'pre_order' => [
+            'min' => 2,
+            'max' => 5,
+        ],
+
+        // free delivery from user price group
+        'free_delivery_price_group' => 3,
+
+        //min invoice sum for free delivery
+        'free_delivery_invoice_sum' => 20,
+
+        // local delivery price in usd
+        'local_delivery_price' => 2,
+    ],
+
+    // max current day delivery time in hours after midnight
+    'shipment' => [
+        'current_day_delivery_max_time' => [
+            'local' => 9,
+            'post' => 9,
+            'vendor' =>12,
+        ]
+    ],
 
 ];

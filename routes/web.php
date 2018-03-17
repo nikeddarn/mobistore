@@ -65,22 +65,33 @@ Route::post('/reset', 'Auth\ResetPasswordController@reset');
 // auth middleware with parameter : 'web' (guard name)
 Route::middleware(['auth:web'])->group(function () {
 
-    Route::get('/profile', 'Profile\UserProfileController@showUserProfile')->name('profile.show');
+    Route::get('/user/messages', 'User\MessageController@showAllMessages')->name('message.show');
+    Route::get('/user/messages/mark/{id}', 'User\MessageController@markAsRead');
 
-    Route::get('/user/profile/change', 'Profile\UserProfileController@showUserProfileForm');
-    Route::post('/user/profile/set', 'Profile\UserProfileController@saveUserProfile');
+    Route::get('/user/account', 'User\AccountController@show')->name('account.show');
 
-    Route::get('/user/password', 'Profile\ChangePasswordController@showChangePasswordForm');
-    Route::post('/user/password', 'Profile\ChangePasswordController@changePassword');
+    Route::get('/user/delivery', 'User\DeliveryController@show')->name('delivery.show');
 
-    Route::get('/user/settings', 'Profile\SettingsController@showSettingsForm');
-    Route::post('/user/settings', 'Profile\SettingsController@resetSettings');
+    Route::get('/user/warranty', 'User\WarrantyController@show')->name('warranty.show');
 
-    Route::get('/user/communication', 'Communication\MessageController@showMessages');
-    Route::get('/user/account', 'Account\AccountController@showUserAccount');
-    Route::get('/user/order', 'Order\OrderController@showOrders');
-    Route::get('/user/delivery', 'Delivery\DeliveryController@showUserDeliveries');
-    Route::get('/user/warranty', 'Warranty\WarrantyController@showUserWarranties');
+    Route::get('/user/profile', 'User\ProfileController@show')->name('profile.show');
+//
+    Route::get('/user/profile/edit', 'User\ProfileController@showProfileForm')->name('profile.edit');
+
+    Route::post('/user/profile/set', 'User\ProfileController@save')->name('profile.set');
+//
+    Route::get('/user/password', 'User\PasswordController@showChangePasswordForm')->name('password.show');
+
+    Route::post('/user/password/reset', 'User\PasswordController@changePassword')->name('password.reset');
+//
+//    Route::get('/user/settings', 'Profile\SettingsController@showSettingsForm');
+//    Route::post('/user/settings', 'Profile\SettingsController@resetSettings');
+//
+//    Route::get('/user/communication', 'Communication\MessageController@showMessages');
+//    Route::get('/user/account', 'Account\AccountController@showUserAccount');
+//    Route::get('/user/order', 'Order\OrderController@showOrders');
+//    Route::get('/user/delivery', 'Delivery\DeliveryController@showUserDeliveries');
+//    Route::get('/user/warranty', 'Warranty\WarrantyController@showUserWarranties');
 
 });
 
@@ -164,7 +175,9 @@ Route::post('/cart/set/count', 'Cart\CartController@setCount')->name('cart.set.c
 
 //************************************************ Checkout ****************************************
 
-Route::get('/checkout', 'Checkout\CheckoutController@show')->name('checkout.show');
+Route::get('/checkout', 'Checkout\ShowCheckoutController@show')->name('checkout.show');
+
+Route::post('/checkout/confirm', 'Checkout\ConfirmCheckoutController@confirmOrder')->name('checkout.confirm');
 
 //************************************************ Payment ****************************************
 

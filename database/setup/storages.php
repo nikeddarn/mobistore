@@ -1,7 +1,7 @@
 <?php
 
 /**
-* Array of product vendors
+* Array of product storages
 */
 
 return [
@@ -9,6 +9,7 @@ return [
         'title_en' => 'Kyiv',
         'title_ru' => 'Киев',
         'title_ua' => 'Київ',
+        'is_main' => 1,
     ],
 ];
 

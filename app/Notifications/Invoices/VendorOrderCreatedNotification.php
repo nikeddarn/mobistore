@@ -1,0 +1,85 @@
+<?php
+
+namespace App\Notifications\Invoices;
+
+use App\Channels\SmsChannel;
+use App\Contracts\Shop\Roles\UserRolesInterface;
+use App\Messages\SmsMessage;
+use App\Models\Invoice;
+use Illuminate\Bus\Queueable;
+use Illuminate\Notifications\Notification;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\MailMessage;
+
+class VendorOrderCreatedNotification extends Notification
+{
+    use Queueable;
+
+    /**
+     * @var Invoice
+     */
+    private $invoice;
+
+    /**
+     * Create a new notification instance.
+     *
+     * @param Invoice $invoice
+     */
+    public function __construct(Invoice $invoice)
+    {
+        $this->invoice = $invoice;
+    }
+
+    /**
+     * Get the notification's delivery channels.
+     *
+     * @param  mixed  $notifiable
+     * @return array
+     */
+    public function via($notifiable)
+    {
+        return [SmsChannel::class];
+    }
+
+    /**
+     * Get the mail representation of the notification.
+     *
+     * @param  mixed  $notifiable
+     * @return \Illuminate\Notifications\Messages\MailMessage
+     */
+    public function toMail($notifiable)
+    {
+        return (new MailMessage)
+                    ->line('The introduction to the notification.')
+                    ->action('Notification Action', url('/'))
+                    ->line('Thank you for using our application!');
+    }
+
+    /**
+     * Get the array representation of the notification.
+     *
+     * @param  mixed  $notifiable
+     * @return array
+     */
+    public function toArray($notifiable)
+    {
+        return [
+            //
+        ];
+    }
+
+    /**
+     * Get the sms representation of the notification.
+     *
+     * @param  mixed $notifiable
+     * @return SmsMessage
+     */
+    public function toSms($notifiable)
+    {
+        return (new SmsMessage())->setText(trans('messages.manager.' . UserRolesInterface::VENDOR_MANAGER . '.created', [
+            'id' => $this->invoice->id,
+            'sum' => $this->invoice->invoice_sum,
+            'vendor' => $this->invoice->userInvoice->vendorInvoice->vendor->title,
+        ]));
+    }
+}

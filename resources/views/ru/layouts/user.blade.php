@@ -10,17 +10,22 @@
         <div class="row">
 
             <!-- User Sidebar -->
-            <div class="col-sm-4 col-md-3">
+            <div class="col-sm-4 col-md-3 m-t-3">
 
-                <div class="m-t-4">
-                    @include('headers.user.index')
-                    @include('menu.user_control_menu')
+                <div id="user-logotype" class="m-b-2">
+
+                    @if(isset($userImage))
+                        <img src="{{ $userImage }}" alt="Аватар пользователя" class="hidden-xs img-responsive img-circle">
+                    @else
+                        <img src="/images/common/no_user_image.png" alt="Аватар пользователя"
+                             class="hidden-xs img-responsive img-circle">
+                    @endif
+
                 </div>
 
-
-                <div class="m-t-4">
-                    @include('menu.user_profile_menu')
-                </div>
+                <nav class="user-menu">
+                    @yield('user_menu')
+                </nav>
 
             </div>
             <!-- End User Sidebar -->
@@ -28,13 +33,10 @@
             <!-- User Content -->
             <div class="col-sm-8 col-md-9">
 
-                <div class="col-sm-10 col-sm-offset-1">
-                    @yield('user_content')
-                </div>
+                @yield('user_content')
 
             </div>
             <!-- End User Content -->
-
 
         </div>
 

@@ -22,4 +22,6 @@ return [
     InvoiceTypes::PAYMENT => ['title_en' => 'Payment for goods', 'title_ru' => 'Оплата товара', 'title_ua' => 'Оплата товару
 '],
     InvoiceTypes::RETURN_PAYMENT => ['title_en' => 'Refund', 'title_ru' => 'Возврат оплаты', 'title_ua' => 'Повернення оплати'],
+
+    InvoiceTypes::STORAGE_REPLACEMENT => ['title_en' => 'Moving between storages', 'title_ru' => 'Перемещение между складами', 'title_ua' => 'Переміщення між складами'],
 ];

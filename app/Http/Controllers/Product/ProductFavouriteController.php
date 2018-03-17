@@ -214,7 +214,7 @@ class ProductFavouriteController extends Controller
 
         $products->each(function (Product $product) use ($rate, $imageUrlPrefix, &$productsData) {
 
-            $price = $this->productPrice->getPriceByProductModel($product);
+            $price = $this->productPrice->getUserPriceByProductModel($product);
 
             $productsData[] = [
                 'id' => $product->id,

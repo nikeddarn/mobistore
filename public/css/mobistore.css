@@ -86,6 +86,34 @@ h6 {
   display: inline-block;
 }
 
+.border-top-none {
+  border-top: none !important;
+}
+
+.border-bottom-none {
+  border-bottom: none !important;
+}
+
+.border-left-none {
+  border-left: none !important;
+}
+
+.border-right-none {
+  border-right: none !important;
+}
+
+.font-weight-normal {
+  font-weight: normal;
+}
+
+.font-weight-bolder {
+  font-weight: bolder;
+}
+
+.text-italic {
+  font-style: italic;
+}
+
 .col-xs-15,
 .col-sm-15,
 .col-md-15,
@@ -120,6 +148,35 @@ h6 {
     width: 20%;
     float: left;
   }
+}
+
+.panel.panel-horizontal {
+  display: table;
+  width: 100%;
+}
+
+.panel.panel-horizontal > .panel-heading,
+.panel.panel-horizontal > .panel-body,
+.panel.panel-horizontal > .panel-footer {
+  display: table-cell;
+}
+
+.panel.panel-horizontal > .panel-heading,
+.panel.panel-horizontal > .panel-footer {
+  border: 0;
+  vertical-align: middle;
+}
+
+.panel.panel-horizontal > .panel-heading {
+  border-right: 1px solid #ddd;
+  border-top-right-radius: 0;
+  border-bottom-left-radius: 4px;
+}
+
+.panel.panel-horizontal > .panel-footer {
+  border-left: 1px solid #ddd;
+  border-top-left-radius: 0;
+  border-bottom-right-radius: 4px;
 }
 
 .modal-dialog {
@@ -178,25 +235,80 @@ input:active:not([type="radio"]):not([type="checkbox"]) {
   font-weight: bold;
 }
 
-.btn {
-  border-radius: 0;
+.btn,
+button {
+  border-radius: 0 !important;
+  outline: none !important;
+}
+
+.btn:hover,
+.btn:active,
+button:hover,
+button:active {
+  outline: none !important;
 }
 
 select,
 textarea {
+  outline: none !important;
+  -webkit-box-shadow: none !important;
+          box-shadow: none !important;
+  border-radius: 0 !important;
   border: 1px solid #ccc;
-  outline: none;
-  -webkit-box-shadow: none;
-          box-shadow: none;
-  border-radius: 0;
 }
 
 select:focus,
-textarea:focus {
+select:active,
+textarea:focus,
+textarea:active {
   border: 1px solid #30A193 !important;
-  border-radius: 0;
+  border-radius: 0 !important;
   -webkit-box-shadow: none !important;
           box-shadow: none !important;
+}
+
+.pager > li > button {
+  color: #666;
+  border-bottom: 2px solid #d6d8d9;
+  border-radius: 0;
+}
+
+#app .bootstrap-select .dropdown-toggle:focus,
+#app .bootstrap-select .dropdown-toggle:hover,
+#app .bootstrap-select .dropdown-toggle:active,
+#app .bootstrap-select.open .dropdown-toggle:focus,
+#app .bootstrap-select.open .dropdown-toggle:hover,
+#app .bootstrap-select.open .dropdown-toggle:active {
+  outline: none !important;
+  background-color: white !important;
+  -webkit-box-shadow: none !important;
+          box-shadow: none !important;
+}
+
+#app .bootstrap-select ul li a,
+#app .bootstrap-select.open ul li a {
+  color: #666 !important;
+  outline: none !important;
+}
+
+#app .bootstrap-select ul li a:hover,
+#app .bootstrap-select ul li.selected a,
+#app .bootstrap-select.open ul li a:hover,
+#app .bootstrap-select.open ul li.selected a {
+  background-color: #eeeeee !important;
+  color: #333333 !important;
+}
+
+#app .bootstrap-select.open > .btn-default.dropdown-toggle {
+  background-color: white !important;
+  -webkit-box-shadow: none !important;
+          box-shadow: none !important;
+}
+
+#app .bootstrap-select .dropdown-toggle:focus,
+#app .bootstrap-select.open .dropdown-toggle,
+#app .bootstrap-select.open .dropdown-toggle:hover {
+  border-color: #30A193;
 }
 
 @media (min-width: 1200px) {
@@ -280,6 +392,11 @@ textarea:focus {
   50% {
     opacity: 0;
   }
+}
+
+.badge-not-rounded {
+  border-radius: 0;
+  padding: 3px 6px;
 }
 
 .label-arrow {
@@ -1204,6 +1321,10 @@ h1 .banner-left:before {
   color: #fc0;
 }
 
+#myCarousel {
+  height: 400px;
+}
+
 .owl-theme .owl-nav {
   position: absolute;
   top: 1px;
@@ -1327,6 +1448,14 @@ h1 .banner-left:before {
   border-radius: 0;
 }
 
+.pager > li > button {
+  padding: 5px 14px;
+  line-height: 22px;
+  background-color: white;
+  outline: none;
+  color: #777777;
+}
+
 /* Other*/
 
 .img-portfolio {
@@ -1354,6 +1483,56 @@ header.carousel .fill {
   height: 100%;
   background-position: center;
   background-size: cover;
+}
+
+.user-menu .divider {
+  height: 1px;
+  margin: 9px 0;
+  overflow: hidden;
+  background-color: #e5e5e5;
+}
+
+.user-invoice-content > td {
+  padding: 0 !important;
+  border-top: none !important;
+}
+
+.user-invoice-content table {
+  margin-top: 30px;
+  margin-bottom: 30px;
+}
+
+.user-invoice-content table td {
+  background-color: whitesmoke;
+}
+
+#userMessages .show-user-invoice-content-toggle {
+  width: 10%;
+}
+
+#userMessages .user-invoice-date {
+  width: 20%;
+}
+
+#userDeliveries .show-user-invoice-content-toggle {
+  width: 10%;
+}
+
+#userAccount .show-user-invoice-content-toggle,
+#userWarranty .show-user-invoice-content-toggle {
+  width: 10%;
+}
+
+#user-account-balance .panel {
+  border-radius: 0;
+}
+
+#user-account-balance .panel-heading {
+  padding: 6px 10px;
+}
+
+#user-account-balance .panel-body {
+  padding: 10px 10px;
 }
 
 /* 404 Page Styles */

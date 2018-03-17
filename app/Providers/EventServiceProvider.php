@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Events\Invoices\UserOrderCreated;
+use App\Events\Invoices\UserPreOrderCreated;
 use App\Listeners\DefineUserPriceGroup;
-use Illuminate\Auth\Events\Authenticated;
+use App\Listeners\Invoices\SendUserOrderInvoiceNotifications;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
@@ -15,8 +17,17 @@ class EventServiceProvider extends ServiceProvider
      * @var array
      */
     protected $listen = [
+
         Registered::class => [
             DefineUserPriceGroup::class . '@onUserRegister',
+        ],
+
+        UserOrderCreated::class => [
+            SendUserOrderInvoiceNotifications::class,
+        ],
+
+        UserPreOrderCreated::class => [
+            SendUserOrderInvoiceNotifications::class,
         ],
     ];
 

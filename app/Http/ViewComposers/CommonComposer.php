@@ -3,22 +3,26 @@
 namespace App\Http\ViewComposers;
 
 use App\Contracts\Shop\Badges\BadgeTypes;
+use App\Contracts\Shop\Invoices\InvoiceDirections;
+use App\Contracts\Shop\Invoices\InvoiceTypes;
 use App\Http\Controllers\Admin\Support\Badges\ProductBadges;
-use App\Http\Support\Invoice\Repository\CartRepository;
-use App\Http\Support\Invoices\Handlers\ProductInvoiceHandler;
+use App\Http\Support\Currency\ExchangeRates;
+use App\Http\Support\Invoices\Fabrics\CartInvoiceFabric;
+use App\Http\Support\Price\DeliveryPrice;
 use App\Http\Support\Price\ProductPrice;
 use App\Models\Brand;
 use App\Models\Category;
-use App\Models\Invoice;
 use App\Models\Product;
+use App\Models\UserInvoice;
 use Carbon\Carbon;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
-class CommonComposer implements BadgeTypes
+class CommonComposer implements BadgeTypes, InvoiceDirections
 {
     /**
      * @var string
@@ -44,6 +48,7 @@ class CommonComposer implements BadgeTypes
      * @var ProductPrice
      */
     private $productPrice;
+
     /**
      * @var ProductBadges
      */
@@ -55,14 +60,28 @@ class CommonComposer implements BadgeTypes
     private $request;
 
     /**
-     * @var CartRepository
+     * @var CartInvoiceFabric
      */
-    private $cartRepository;
+    private $cartInvoiceFabric;
 
     /**
-     * @var ProductInvoiceHandler
+     * @var DeliveryPrice
      */
-    private $invoiceHandler;
+    private $deliveryPrice;
+
+    /**
+     * @var ExchangeRates
+     */
+    private $exchangeRates;
+
+    /**
+     * @var Authenticatable
+     */
+    private $user;
+    /**
+     * @var UserInvoice
+     */
+    private $userInvoice;
 
 
     /**
@@ -73,10 +92,22 @@ class CommonComposer implements BadgeTypes
      * @param Product $product
      * @param ProductPrice $productPrice
      * @param ProductBadges $productBadges
-     * @param CartRepository $cartRepository
-     * @param ProductInvoiceHandler $invoiceHandler
+     * @param CartInvoiceFabric $cartInvoiceFabric
+     * @param DeliveryPrice $deliveryPrice
+     * @param ExchangeRates $exchangeRates
+     * @param UserInvoice $userInvoice
      */
-    public function __construct(Request $request, Category $category, Brand $brand, Product $product, ProductPrice $productPrice, ProductBadges $productBadges, CartRepository $cartRepository, ProductInvoiceHandler $invoiceHandler)
+    public function __construct(
+        Request $request, Category $category,
+        Brand $brand,
+        Product $product,
+        ProductPrice $productPrice,
+        ProductBadges $productBadges,
+        CartInvoiceFabric $cartInvoiceFabric,
+        DeliveryPrice $deliveryPrice,
+        ExchangeRates $exchangeRates,
+        UserInvoice $userInvoice
+    )
     {
         $this->request = $request;
         $this->category = $category;
@@ -84,8 +115,10 @@ class CommonComposer implements BadgeTypes
         $this->product = $product;
         $this->productPrice = $productPrice;
         $this->productBadges = $productBadges;
-        $this->cartRepository = $cartRepository;
-        $this->invoiceHandler = $invoiceHandler;
+        $this->cartInvoiceFabric = $cartInvoiceFabric;
+        $this->deliveryPrice = $deliveryPrice;
+        $this->exchangeRates = $exchangeRates;
+        $this->userInvoice = $userInvoice;
     }
 
     /**
@@ -97,11 +130,14 @@ class CommonComposer implements BadgeTypes
      */
     public function compose(View $view)
     {
+        $this->user = auth('web')->user();
+
         $view
             ->with('categoriesList', $this->getCategoriesTree())
             ->with('brandsList', $this->getBrands())
             ->with('cartProducts', $this->getCartProducts())
-            ->with('actionList', $this->getActionProducts());
+            ->with('actionList', $this->getActionProducts())
+            ->with('featuresData', $this->getFeaturesData());
 
         if (auth('web')->check()) {
             $view
@@ -140,13 +176,13 @@ class CommonComposer implements BadgeTypes
      */
     private function getFavourites(): array
     {
-            $products = $this->getRetrieveProductQuery()
-                ->whereHas('favouriteProduct', function ($query) {
-                    $query->where('users_id', auth('web')->user()->id);
-                })
-                ->get();
+        $products = $this->getRetrieveProductQuery()
+            ->whereHas('favouriteProduct', function ($query) {
+                $query->where('users_id', $this->user->id);
+            })
+            ->get();
 
-            return $this->formProductData($products);
+        return $this->formProductData($products);
     }
 
     /**
@@ -156,17 +192,17 @@ class CommonComposer implements BadgeTypes
      */
     private function getActionProducts(): array
     {
-            $products = $this->getRetrieveProductQuery()
-                ->whereHas('productBadge', function ($query) {
-                    $query->where([
-                        ['badges_id', '=', self::PRICE_DOWN],
-                        ['updated_at', '>=', Carbon::now()->subDays(config('shop.badges')[self::PRICE_DOWN]['ttl'])],
-                    ])
+        $products = $this->getRetrieveProductQuery()
+            ->whereHas('productBadge', function ($query) {
+                $query->where([
+                    ['badges_id', '=', self::PRICE_DOWN],
+                    ['updated_at', '>=', Carbon::now()->subDays(config('shop.badges')[self::PRICE_DOWN]['ttl'])],
+                ])
                     ->orWhere('badges_id', self::ACTION);
-                })
-                ->get();
+            })
+            ->get();
 
-            return $this->formProductData($products);
+        return $this->formProductData($products);
     }
 
     /**
@@ -176,16 +212,16 @@ class CommonComposer implements BadgeTypes
      */
     private function getRecentProducts()
     {
-            $products = $this->getRetrieveProductQuery()
-                ->whereHas('recentProduct', function ($query) {
-                    $query->where('users_id', auth('web')->user()->id);
-                })
-                ->join('recent_products', 'recent_products.products_id', '=', 'products.id')
-                ->orderByDesc('recent_products.updated_at')
-                ->limit(config('shop.recent_products_show'))
-                ->get();
+        $products = $this->getRetrieveProductQuery()
+            ->whereHas('recentProduct', function ($query) {
+                $query->where('users_id', $this->user->id);
+            })
+            ->join('recent_products', 'recent_products.products_id', '=', 'products.id')
+            ->orderByDesc('recent_products.updated_at')
+            ->limit(config('shop.recent_products_show'))
+            ->get();
 
-            return $this->formProductData($products);
+        return $this->formProductData($products);
     }
 
     /**
@@ -222,7 +258,7 @@ class CommonComposer implements BadgeTypes
 
         $products->each(function (Product $product) use ($rate, $imageUrlPrefix, &$productsData) {
 
-            $price = $this->productPrice->getPriceByProductModel($product);
+            $price = $this->productPrice->getUserPriceByProductModel($product);
 
             $productsData[] = [
                 'id' => $product->id,
@@ -248,22 +284,24 @@ class CommonComposer implements BadgeTypes
      */
     private function getCartProducts()
     {
-        $userCart = $this->getUserCart();
-        if ($userCart) {
-            $this->invoiceHandler->bindInvoice($userCart);
+        $cartRepository = $this->cartInvoiceFabric->getRepository();
 
-            if (!$this->invoiceHandler->isInvoiceCommitted() && $userCart->updated_at->timestamp <= Carbon::now()->subDays(config('shop.invoice_exchange_rate_ttl'))->timestamp) {
-                $this->invoiceHandler->updateInvoiceExchangeRate();
+        if ($cartRepository->cartExists()) {
+            $handleableCart = $this->cartInvoiceFabric->getHandler();
+            $handleableCart->bindInvoice($cartRepository->getRetrievedInvoice());
+
+            if (!$handleableCart->isInvoiceCommitted() && $handleableCart->getUpdateTime() < Carbon::today()->subDays(1)) {
+                $handleableCart->updateProductsPrices();
             }
 
             $productImagePathPrefix = Storage::disk('public')->url('images/products/small/');
 
-            $productsCount = $this->invoiceHandler->getProductsCount();
+            $productsCount = $handleableCart->getProductsCount();
 
             return [
-                'productsCount' => $productsCount . '&nbsp;' . trans_choice('shop.products', $this->invoiceHandler->getProductsCount()),
-                'products' => $this->invoiceHandler->getFormattedProducts($productImagePathPrefix),
-                'totalSum' => $this->invoiceHandler->getInvoiceSum(),
+                'productsCount' => $productsCount . '&nbsp;' . trans_choice('shop.products', $productsCount),
+                'products' => $handleableCart->getFormattedProducts($productImagePathPrefix),
+                'totalSum' => $handleableCart->getInvoiceSum(),
             ];
         } else {
             return [];
@@ -271,35 +309,72 @@ class CommonComposer implements BadgeTypes
     }
 
     /**
-     * Retrieve or create user cart.
+     * Get user data.
      *
-     * @return Invoice|\Illuminate\Database\Eloquent\Model|null
-     * @throws \Exception
+     * @return array
      */
-    private function getUserCart()
-    {
-        if (auth('web')->check()) {
-            $user = auth('web')->user();
-            $userCart = $this->cartRepository->getByUserId($user->id);
-        } elseif ($this->request->hasCookie(self::CART_COOKIE_NAME)) {
-            $userCart = $this->cartRepository->getByUserCookie($this->request->cookie(self::CART_COOKIE_NAME));
-        } else {
-            $userCart = null;
-        }
-
-        return ($userCart && $userCart->updated_at->timestamp > Carbon::now()->subDays(config('shop.user_cart_ttl'))->timestamp) ? $userCart : null;
-    }
-
     private function getUserData()
     {
-        $user = auth('web')->user();
+        $userBadges = $this->getUserBadges();
 
         return [
-            'userName' => explode(' ', $user->name)[0],
+            'userName' => explode(' ', $this->user->name)[0],
             'userBadges' => [
-                'count' => 2,
-                'badges' => [],
+                'count' => array_sum($userBadges),
+                'badges' => $userBadges,
             ]
         ];
     }
+
+    /**
+     * Get user badges
+     *
+     * @return array
+     */
+    private function getUserBadges()
+    {
+        $userBadges = [];
+
+        $notifications = $this->user->unreadNotifications()->where('created_at', '>', Carbon::now()->subDays(config('shop.show_unread_message_days')))->count();
+        if ($notifications) {
+            $userBadges['message'] = $notifications;
+        }
+
+        $deliveries = $this->userInvoice
+            ->where([
+                ['users_id', $this->user->id],
+                ['implemented', 0],
+                ['direction', self::INCOMING]
+            ])
+            ->whereHas('invoice', function ($query){
+                $query->whereIn('invoice_types_id', [
+                    InvoiceTypes::ORDER,
+                    InvoiceTypes::PRE_ORDER,
+                    InvoiceTypes::EXCHANGE_RECLAMATION,
+                    InvoiceTypes::RETURN_RECLAMATION,
+                ]);
+            })
+            ->count();
+        if ($deliveries) {
+            $userBadges['delivery'] = $deliveries;
+        }
+
+        return $userBadges;
+    }
+
+    /**
+     * Get features panel data.
+     *
+     * @return array
+     */
+    private function getFeaturesData()
+    {
+        return [
+            'free_delivery_from' => trans('shop.delivery.price.paid', [
+                'sum' => ceil($this->deliveryPrice->getFreeDeliveryMinSum($this->user) * $this->exchangeRates->getRate() / 10) * 10,
+            ]),
+            'payment' => trans('shop.payment.on_delivered'),
+        ];
+    }
+
 }

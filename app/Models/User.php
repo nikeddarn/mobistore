@@ -38,12 +38,27 @@ class User extends Authenticatable
     ];
 
     /**
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     public function role()
     {
-        return $this->belongsTo('App\Models\Role', 'roles_id', 'id');
+        return $this->belongsToMany('App\Models\Role', 'user_roles', 'users_id', 'roles_id' );
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function userRole()
+    {
+        return $this->hasMany('App\Models\UserRole', 'users_id', 'id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function userReclamation()
+    {
+        return $this->hasMany('App\Models\UserReclamation', 'users_id', 'id');
     }
 
     /**
@@ -55,5 +70,15 @@ class User extends Authenticatable
     public function sendPasswordResetNotification($token)
     {
         $this->notify(new ResetPasswordNotification($token));
+    }
+
+    /**
+     * Route notifications for the sms channel.
+     *
+     * @return string
+     */
+    public function routeNotificationForSms()
+    {
+        return $this->phone;
     }
 }

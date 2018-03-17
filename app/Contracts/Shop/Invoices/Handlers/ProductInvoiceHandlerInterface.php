@@ -1,15 +1,10 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: nick
- * Date: 06.01.18
- * Time: 18:52
+ * Methods for handling product invoice.
  */
 
-namespace App\Contracts\Shop\Invoices;
+namespace App\Contracts\Shop\Invoices\Handlers;
 
-
-use App\Contracts\Shop\Invoices\Handlers\InvoiceHandlerInterface;
 use Illuminate\Support\Collection;
 
 interface ProductInvoiceHandlerInterface extends InvoiceHandlerInterface
@@ -19,7 +14,30 @@ interface ProductInvoiceHandlerInterface extends InvoiceHandlerInterface
      *
      * @return Collection
      */
-    public function getProducts(): Collection;
+    public function getInvoiceProducts(): Collection;
+
+    /**
+     * Create array of products data for view.
+     *
+     * @param string|null $imageUrlPrefix
+     * @return array
+     */
+    public function getFormattedProducts(string $imageUrlPrefix = null): array;
+
+    /**
+     * Is product with given id already in cart ?
+     *
+     * @param int $productId
+     * @return bool
+     */
+    public function productExists(int $productId):bool ;
+
+    /**
+     * Get total count of products of invoice
+     *
+     * @return int
+     */
+    public function getProductsCount():int;
 
     /**
      * Add products to invoice by product's id.
@@ -28,24 +46,15 @@ interface ProductInvoiceHandlerInterface extends InvoiceHandlerInterface
      * @param float $price
      * @param int $quantity
      * @param int|null $warranty
-     * @return bool
+     * @return int Added products count.
      */
-    public function addProducts(int $productId, float $price, int $quantity, int $warranty = null): bool;
+    public function appendProducts(int $productId, float $price, int $quantity = 1, int $warranty = null): int ;
 
     /**
-     * Remove products from invoice by product's id.
+     * Remove all products from invoice by product's id.
      *
      * @param int $productId
-     * @param int $quantity
-     * @return bool
+     * @return int Deleted products count.
      */
-    public function removeProducts(int $productId, int $quantity): bool;
-
-    /**
-     * Add collection of products
-     *
-     * @param array $products
-     * @return bool
-     */
-//    public function addProductsCollection(array $products): bool;
+    public function deleteProducts(int $productId): int ;
 }

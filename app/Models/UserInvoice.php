@@ -18,7 +18,7 @@ class UserInvoice extends Model
      *
      * @var bool
      */
-    public $timestamps = false;
+    public $timestamps = true;
 
     /**
      * The attributes that aren't mass assignable.
@@ -33,5 +33,37 @@ class UserInvoice extends Model
     public function invoice()
     {
         return $this->belongsTo('App\Models\Invoice', 'invoices_id', 'id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function userDelivery()
+    {
+        return $this->belongsTo('App\Models\UserDelivery', 'user_deliveries_id', 'id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function deliveryStatus()
+    {
+        return $this->belongsTo('App\Models\DeliveryStatus', 'delivery_status_id', 'id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function deliveryType()
+    {
+        return $this->belongsTo('App\Models\DeliveryType', 'delivery_types_id', 'id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function vendorInvoice()
+    {
+        return $this->belongsTo('App\Models\VendorInvoice', 'vendor_invoices_id', 'id');
     }
 }

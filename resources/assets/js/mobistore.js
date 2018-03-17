@@ -5,7 +5,7 @@ $(document).ready(function () {
     // -------------------------------------- Select Picker ---------------------------------------
 
     // activate selectpicker
-    $('.selectpicker').selectpicker();
+    // $('.selectpicker').selectpicker();
 
     // ---------------------------------------Search Panel -----------------------------------------
 
@@ -40,15 +40,20 @@ $(document).ready(function () {
     // ------------------------------- Mega Menu ----------------------------------------------------
 
     // Animate mega-menu. Adding class .open on hover to highlighting dropdown toggler.
+
     let storeNavbarCollapse = $('#store-navbar-collapse');
     let megaMenu = $(storeNavbarCollapse).find('.dropdown-menu');
     $(storeNavbarCollapse).find('.dropdown-toggle').hover(
         function () {
             $(this).addClass('open');
             $(megaMenu).css({'top': '20px', 'opacity': 0}).stop(true, true).animate({opacity: 1, top: '40px'}, 200);
+
             //align categories with 'isotope' package if it's showing
             if (!$('#product-path-categories').hasClass('hidden')) {
-                $('.grid').isotope();
+                let Isotope = require('isotope-layout');
+                new Isotope( '.grid', {
+                    // layoutMode: ''
+                });
             }
         },
         function () {

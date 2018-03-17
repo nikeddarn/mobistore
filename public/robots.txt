@@ -5,3 +5,4 @@ Disallow: /recent/
 Disallow: /cart/
 Disallow: /checkout/
 Disallow: /payment/
+Disallow: /user/

@@ -106,7 +106,7 @@ class ProductDetailsController extends Controller implements FilterTypes, Curren
     {
         $this->selectedProduct = $this->retrieveProductData($productUrl);
 
-        $this->price = $this->productPrice->getPriceByProductModel($this->selectedProduct);
+        $this->price = $this->productPrice->getUserPriceByProductModel($this->selectedProduct);
         $this->priceUah = $this->price ? $this->price * $this->productPrice->getRate(self::USD) : null;
 
         $this->updateRecentProducts($this->selectedProduct->id);

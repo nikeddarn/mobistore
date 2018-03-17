@@ -6,12 +6,13 @@
 namespace App\Http\Support\Invoices\Handlers;
 
 
-use App\Http\Support\Currency\ExchangeRates;
+use App\Contracts\Shop\Invoices\Handlers\InvoiceHandlerInterface;
+use App\Http\Support\Price\ProductPrice;
 use App\Models\Invoice;
+use Carbon\Carbon;
 use Illuminate\Database\DatabaseManager;
-use Illuminate\Support\Collection;
 
-abstract class InvoiceHandler
+abstract class InvoiceHandler implements InvoiceHandlerInterface
 {
     /**
      * @var Invoice
@@ -19,30 +20,48 @@ abstract class InvoiceHandler
     protected $invoice;
 
     /**
-     * @var ExchangeRates
-     */
-    private $exchangeRates;
-
-    /**
      * @var DatabaseManager
      */
     protected $databaseManager;
 
     /**
+     * @var ProductPrice
+     */
+    protected $productPrice;
+
+    /**
      * InvoiceHandler constructor.
      *
      * @param DatabaseManager $databaseManager
-     * @param ExchangeRates $exchangeRates
+     * @param ProductPrice $productPrice
      */
-    public function __construct(DatabaseManager $databaseManager, ExchangeRates $exchangeRates)
+    public function __construct(DatabaseManager $databaseManager, ProductPrice $productPrice )
     {
-        $this->exchangeRates = $exchangeRates;
         $this->databaseManager = $databaseManager;
+        $this->productPrice = $productPrice;
     }
 
+    /**
+     * Bind given invoice to this handler.
+     *
+     * @param Invoice $invoice
+     * @return $this
+     */
     public function bindInvoice(Invoice $invoice)
     {
         $this->invoice = $invoice;
+
+        return $this;
+    }
+
+    /**
+     * Get invoice id.
+     *
+     * @return int
+     */
+    public function getInvoiceId()
+    {
+        return $this->invoice->id;
     }
 
     /**
@@ -50,9 +69,19 @@ abstract class InvoiceHandler
      *
      * @return bool
      */
-    public function isInvoiceCommitted()
+    public function isInvoiceCommitted(): bool
     {
-        return (bool)$this->invoice->is_committed;
+        return (bool)$this->invoice->implemented;
+    }
+
+    /**
+     * Get invoice last update time.
+     *
+     * @return Carbon
+     */
+    public function getUpdateTime()
+    {
+        return $this->invoice->updated_at;
     }
 
     /**
@@ -62,16 +91,16 @@ abstract class InvoiceHandler
      */
     public function markInvoiceAsCommitted(): bool
     {
-        $this->invoice->is_committed = true;
+        $this->invoice->implemented = true;
         return $this->invoice->save();
     }
 
     /**
      * Get total invoice sum.
      *
-     * @return float|null
+     * @return float
      */
-    public function getInvoiceSum()
+    public function getInvoiceSum():float
     {
         return $this->invoice->invoice_sum;
     }
@@ -83,7 +112,38 @@ abstract class InvoiceHandler
      */
     public function getInvoiceUahSum(): float
     {
-        return $this->invoice->invoice_sum * $this->invoice->currencyRate->rate;
+        return $this->invoice->invoice_sum * $this->invoice->rate;
+    }
+
+    /**
+     * Get total invoice sum.
+     *
+     * @return float
+     */
+    public function getInvoiceDeliverySum():float
+    {
+        return $this->invoice->delivery_sum;
+    }
+
+    /**
+     * Get total invoice sum in UAH.
+     *
+     * @return float
+     */
+    public function getInvoiceDeliveryUahSum(): float
+    {
+        return $this->invoice->delivery_sum * $this->invoice->rate;
+    }
+
+    /**
+     * Set invoice delivery sum.
+     *
+     * @param float $deliverySum
+     */
+    public function setInvoiceDeliverySum(float $deliverySum)
+    {
+        $this->invoice->delivery_sum = $deliverySum;
+        $this->invoice->save();
     }
 
     /**
@@ -107,7 +167,7 @@ abstract class InvoiceHandler
      */
     public function updateInvoiceExchangeRate()
     {
-        $this->invoice->currency_rates_id = $this->exchangeRates->getCurrencyRateModelId();
+        $this->invoice->rate = $this->productPrice->getRate();
         $this->invoice->save();
     }
 

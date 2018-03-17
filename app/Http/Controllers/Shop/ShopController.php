@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Shop;
 use App\Contracts\Shop\Products\Filters\FilterTypes;
 use App\Http\Controllers\Admin\Support\Badges\ProductBadges;
 use App\Http\Support\Price\ProductPrice;
+use App\Http\Support\ProductRepository\StorageProductRepository;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Brand;
@@ -114,6 +115,10 @@ abstract class ShopController extends Controller implements FilterTypes
      * @var ProductBadges
      */
     private $productBadges;
+    /**
+     * @var StorageProductRepository
+     */
+    private $storageProductRepository;
 
     /**
      * CategoryUnfilteredController constructor.
@@ -127,8 +132,21 @@ abstract class ShopController extends Controller implements FilterTypes
      * @param Color $color
      * @param ProductPrice $productPrice
      * @param ProductBadges $productBadges
+     * @param StorageProductRepository $storageProductRepository
      */
-    public function __construct(Request $request, MetaData $metaData, Category $category, Brand $brand, DeviceModel $model, Product $product, Quality $quality, Color $color, ProductPrice $productPrice, ProductBadges $productBadges)
+    public function __construct(
+        Request $request,
+        MetaData $metaData,
+        Category $category,
+        Brand $brand,
+        DeviceModel $model,
+        Product $product,
+        Quality $quality,
+        Color $color,
+        ProductPrice $productPrice,
+        ProductBadges $productBadges,
+    StorageProductRepository $storageProductRepository
+    )
     {
         $this->metaData = $metaData;
         $this->category = $category;
@@ -144,6 +162,7 @@ abstract class ShopController extends Controller implements FilterTypes
         $this->isPaginable = $request->has('view') && $request->get('view') === 'all' ? false : true;
 
         $this->rootCategory = $this->category->withDepth()->whereIsRoot()->first();
+        $this->storageProductRepository = $storageProductRepository;
     }
 
     /**
@@ -249,7 +268,7 @@ abstract class ShopController extends Controller implements FilterTypes
 
             $product->image = $product->primaryImage ? $productImagePathPrefix . $product->primaryImage->image : null;
 
-            $price = $this->productPrice->getPriceByProductModel($product);
+            $price = $this->productPrice->getUserPriceByProductModel($product);
 
             $product->price = $price ? number_format($price, 2, '.', ',') : null;
             $product->priceUah = $price && $rate ? number_format($price * $rate, 2, '.', ',') : null;
@@ -312,7 +331,7 @@ abstract class ShopController extends Controller implements FilterTypes
         $query->with('primaryImage');
 
         $query->with(['storageProduct' => function ($query) {
-            $query->where('stock_quantity', '>', 0);
+            $query->whereRaw('stock_quantity > reserved_quantity');
         }]);
 
         $query->with(['vendorProduct' => function ($query) {

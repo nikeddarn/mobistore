@@ -19,6 +19,14 @@ class Role extends Model
      * @var array
      */
     protected $fillable = [
+        'id',
         'title',
     ];
+
+    /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = false;
 }

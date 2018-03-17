@@ -8,14 +8,18 @@
 
 <body>
 
-<!-- Header -->
-@include('headers.common.index')
+<div id="app">
 
-<!-- Page Content -->
-@yield('content')
+    <!-- Header -->
+    @include('headers.common.index')
 
-<!-- Footer -->
-@include('footers.common')
+    <!-- Page Content -->
+    @yield('content')
+
+    <!-- Footer -->
+    @include('footers.common')
+
+</div>
 
 <!-- Scripts -->
 @yield ('scripts')

@@ -1,18 +1,15 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: nick
- * Date: 08.01.18
- * Time: 13:31
+ * Handler for product invoices that used storage.
  */
 
 namespace App\Http\Support\Invoices\Handlers;
 
+use App\Contracts\Shop\Invoices\InvoiceDirections;
+use App\Models\Storage;
+use App\Models\StorageProduct;
 
-use App\Contracts\Shop\Invoices\ProductInvoiceHandlerInterface;
-use Exception;
-
-class StorageProductInvoiceHandler extends ProductInvoiceHandler implements ProductInvoiceHandlerInterface
+class StorageProductInvoiceHandler extends ProductInvoiceHandler implements InvoiceDirections
 {
     /**
      * Add products to invoice by product's id.
@@ -21,116 +18,83 @@ class StorageProductInvoiceHandler extends ProductInvoiceHandler implements Prod
      * @param float $price
      * @param int $quantity
      * @param int|null $warranty
-     * @return bool
+     * @return int Count of products that was added to invoice or subtracted from invoice.
      */
-    public function addProducts(int $productId, float $price, int $quantity, int $warranty = null): bool{
+    protected function addProductsToInvoice(int $productId, float $price, int $quantity = 1, int $warranty = null): int
+    {
+        $addedCount = parent::addProductsToInvoice($productId, $price, $quantity, $warranty);
 
-        assert(is_int($productId) && $quantity > 0, 'Product id must be positive integer');
-        assert(is_float($price) && $quantity > 0, 'Product price must be positive float');
-        assert(is_int($quantity) && $quantity > 0, 'Product quantity must be positive integer');
-        assert(is_int($warranty) && $quantity > 0, 'Product warranty must be positive integer');
+        $this->reserveProductsOnStorage($productId, $addedCount);
 
-        try{
-            $this->databaseManager->beginTransaction();
+        return $addedCount;
+    }
 
-            $this->decreaseStorageProductStock($productId, $price, $quantity);
-            parent::addProducts($productId, $price, $quantity, $warranty);
+    /**
+     * Delete products from invoice by product's id.
+     *
+     * @param int $productId
+     * @return int Products count that was subtracted from invoice.
+     * @throws \Exception
+     */
+    protected function deleteProductsFromInvoice(int $productId): int
+    {
+        $deletedCount = parent::deleteProductsFromInvoice($productId);
 
-            $this->databaseManager->commit();
-            return true;
-        } catch(Exception $e){
-            $this->databaseManager->rollback();
-            return false;
+        $this->reserveProductsOnStorage($productId, $deletedCount * -1);
+
+        return $deletedCount;
+    }
+
+    /**
+     * Reserve products on outgoing store. If $reservingCount is negative, products will be unreserved by this count.
+     *
+     * @param int $productId
+     * @param int $reservingCount
+     */
+    private function reserveProductsOnStorage(int $productId, int $reservingCount)
+    {
+        $outgoingStorage = $this->getOutgoingStorage();
+
+        if ($outgoingStorage) {
+
+            $storageProduct = $outgoingStorage->storageProduct->keyBy('products_id')->get($productId);
+
+            if (!$storageProduct) {
+                $storageProduct = $this->createStorageProduct($outgoingStorage, $productId);
+                $outgoingStorage->storageProduct->push($storageProduct);
+            }
+
+            $storageProduct->reserved_quantity = max($storageProduct->reserved_quantity + $reservingCount, 0);
+            $storageProduct->save();
         }
     }
 
     /**
-     * Remove products from invoice by product's id.
+     * Get outgoing storage from invoice.
      *
-     * @param int $productId
-     * @param int $quantity
-     * @return bool
+     * @return Storage|null
      */
-    public function removeProducts(int $productId, int $quantity): bool{
+    private function getOutgoingStorage()
+    {
+        $outgoingStorageInvoice = $this->invoice->storageInvoice;
 
-        assert(is_int($productId) && $quantity > 0, 'Product id must be positive integer');
-        assert(is_int($quantity) && $quantity > 0, 'Product quantity must be positive integer');
-
-        try{
-            $this->databaseManager->beginTransaction();
-
-            $this->increaseStorageProductStock($productId, parent::getSubtractingProductPrice($productId), $quantity);
-            parent::removeProducts($productId, $quantity);
-
-            $this->databaseManager->commit();
-            return true;
-        } catch(Exception $e){
-            $this->databaseManager->rollback();
-            return false;
+        if ($outgoingStorageInvoice->direction === self::OUTGOING){
+            return $outgoingStorageInvoice->storage;
+        }else{
+            return null;
         }
     }
 
     /**
-     * Increase count of storage product.
-     * Calculate new average incoming price of product.
-     *
+     * @param Storage $storage
      * @param int $productId
-     * @param float $price
-     * @param int $quantity
-     * @return bool
+     * @return StorageProduct|\Illuminate\Database\Eloquent\Model
      */
-    protected function increaseStorageProductStock(int $productId, float $price, int $quantity = 1):bool 
+    private function createStorageProduct(Storage $storage, int $productId)
     {
-        $storageProduct = $this->invoice->incomingStorage()->storageProduct()->firstOrNew(['products_id' => $productId]);
-
-        $storageProduct->stock_quantity += $quantity;
-
-        $storageProduct->average_incoming_price = $this->calculateAveragePrice($storageProduct->average_incoming_price, $storageProduct->purchased_quantity, $price, $quantity);
-        $storageProduct->purchased_quantity += $quantity;
-        
-        $storageProduct->save();
-        
-        return true;
-    }
-
-    /**
-     * Decrease count of storage product.
-     * Calculate new average incoming price of product.
-     *
-     * @param int $productId
-     * @param float $price
-     * @param int $quantity
-     * @return bool
-     */
-    protected function decreaseStorageProductStock(int $productId, float $price, int $quantity = 1)
-    {
-        $storageProduct = $this->invoice->incomingStorage()->storageProduct()->where('products_id', $productId)->first();
-        
-        if (!$storageProduct || $storageProduct->stock_quantity < $quantity){
-            return false;
-        }
-
-        $storageProduct->stock_quantity -= $quantity;
-
-        $storageProduct->average_outgoing_price = $this->calculateAveragePrice($storageProduct->average_outgoing_price, $storageProduct->sold_quantity, $price, $quantity);
-        $storageProduct->sold_quantity += $quantity;
-        
-        $storageProduct->save();
-
-        return true;
-    }
-
-    /**
-     * Calculate new average price of product.
-     *
-     * @param float $averagePrice
-     * @param int $countedQuantity
-     * @param float $operationPrice
-     * @param int $operationQuantity
-     * @return float
-     */
-    private function calculateAveragePrice(float $averagePrice, int $countedQuantity, float $operationPrice, int $operationQuantity): float
-    {
-        return $countedQuantity ? ($countedQuantity * $averagePrice + $operationQuantity * $operationPrice) / ($countedQuantity + $operationQuantity) : $operationPrice;
+        return $storage->storageProduct()->create([
+            'storages_id' => $storage->id,
+            'products_id' => $productId,
+        ]);
     }
 }

@@ -17,12 +17,4 @@ interface ExchangeRatesInterface extends ExchangeRateSourcesInterface, Currencie
      * @return float
      */
     public function getRate(string $currency): float;
-
-    /**
-     * Get id of actual \App\Models\CurrencyRate.
-     *
-     * @param string $currency
-     * @return int
-     */
-    public function getCurrencyRateModelId(string $currency): int;
 }

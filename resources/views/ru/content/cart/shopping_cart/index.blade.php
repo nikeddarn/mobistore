@@ -12,7 +12,22 @@
             <div class="col-md-9">
                 @include('content.cart.shopping_cart.parts.title')
 
-                @include('content.cart.shopping_cart.parts.cart_list')
+
+
+                @if(!empty($productsData['products']))
+
+                    @if($productsData['cart_price_warning'])
+                        <div class="alert alert-warning" role="alert">Внимание! Цены на продукты в корзине фиксируются на 1
+                            день. Резервирование товаров не осуществляется.<br>Добавьте интересующие вас товары в корзину, затем
+                            оформите заказ.
+                        </div>
+                        @endif
+
+                    @include('content.cart.shopping_cart.parts.cart_list')
+                @else
+                    <h4 class="text-gray text-center">Ваша корзина пуста</h4>
+                @endif
+
             </div>
 
             <div class="col-md-3 hidden-sm hidden-xs">
@@ -57,7 +72,7 @@
 
             // input quantity field creator
             $('.cart-product-quantity')
-                    .TouchSpin({
+                .TouchSpin({
                     verticalbuttons: true,
                     min: 1,
                     prefix: 'qty'

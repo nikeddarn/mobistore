@@ -53,11 +53,27 @@ class Invoice extends Model
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function invoiceReclamation()
+    {
+        return $this->hasMany('App\Models\InvoiceReclamation', 'invoices_id', 'id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     public function storage()
     {
-        return $this->belongsTo('App\Models\Storage', 'storages_id', 'id');
+        return $this->belongsToMany('App\Models\Storage', 'storage_invoices', 'invoices_id', 'storages_id' );
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function vendor()
+    {
+        return $this->belongsToMany('App\Models\Vendor', 'vendor_invoices', 'invoices_id', 'vendors_id' );
     }
 
     /**
@@ -69,18 +85,26 @@ class Invoice extends Model
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function invoiceAmount()
+    public function invoiceStatus()
     {
-        return $this->hasMany('App\Models\InvoiceAmount', 'invoices_id', 'id');
+        return $this->belongsTo('App\Models\InvoiceStatus', 'invoice_status_id', 'id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\hasOne
+     */
+    public function storageInvoice()
+    {
+        return $this->hasOne('App\Models\StorageInvoice', 'invoices_id', 'id');
     }
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function currencyRate()
+    public function shipment()
     {
-        return $this->belongsTo('App\Models\CurrencyRate', 'currency_rates_id', 'id');
+        return $this->belongsTo('App\Models\Shipment', 'shipments_id', 'id');
     }
 }

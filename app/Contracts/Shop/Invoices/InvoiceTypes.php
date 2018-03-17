@@ -31,4 +31,7 @@ interface InvoiceTypes
     const PAYMENT = 41;
 
     const RETURN_PAYMENT = 42;
+
+
+    const STORAGE_REPLACEMENT = 51;
 }

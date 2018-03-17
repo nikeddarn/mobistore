@@ -5,8 +5,8 @@
 
 namespace App\Http\Support\Invoices\Handlers;
 
-
-use App\Contracts\Shop\Invoices\ProductInvoiceHandlerInterface;
+use App\Contracts\Shop\Invoices\Handlers\ProductInvoiceHandlerInterface;
+use App\Http\Support\FormatInvoiceProducts;
 use App\Models\InvoiceProduct;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
@@ -14,12 +14,14 @@ use Illuminate\Support\Collection;
 
 class ProductInvoiceHandler extends InvoiceHandler implements ProductInvoiceHandlerInterface
 {
+    use FormatInvoiceProducts;
+
     /**
      * Get collection of products of invoice.
      *
      * @return Collection
      */
-    public function getProducts(): Collection
+    public function getInvoiceProducts(): Collection
     {
         return $this->invoice->invoiceProduct;
     }
@@ -32,21 +34,7 @@ class ProductInvoiceHandler extends InvoiceHandler implements ProductInvoiceHand
      */
     public function getFormattedProducts(string $imageUrlPrefix = null):array
     {
-        $products = [];
-
-        $this->invoice->invoiceProduct->each(function (InvoiceProduct $invoiceProduct) use ($imageUrlPrefix, &$products) {
-            $products[] = [
-                'id' => $invoiceProduct->product->id,
-                'url' => $invoiceProduct->product->url,
-                'title' => $invoiceProduct->product->page_title,
-                'quantity' => $invoiceProduct->quantity,
-                'price' => number_format($invoiceProduct->price, 2, '.', ','),
-                'total' => number_format($invoiceProduct->quantity * $invoiceProduct->price, 2, '.', ','),
-                'image' => $imageUrlPrefix ? $imageUrlPrefix . ($invoiceProduct->product->primaryImage ? $invoiceProduct->product->primaryImage->image : 'no_image.png') : null,
-            ];
-        });
-
-        return $products;
+        return $this->getFormattedInvoiceProductsData($this->invoice->invoiceProduct, $imageUrlPrefix);
     }
 
     /**
@@ -55,7 +43,7 @@ class ProductInvoiceHandler extends InvoiceHandler implements ProductInvoiceHand
      * @param int $productId
      * @return bool
      */
-    public function isProductPresentInCart(int $productId)
+    public function productExists(int $productId):bool
     {
         assert($productId > 0, 'Product id must be positive integer');
 
@@ -79,15 +67,34 @@ class ProductInvoiceHandler extends InvoiceHandler implements ProductInvoiceHand
     }
 
     /**
+     * Update prices for all products of invoice.
+     *
+     * @return void
+     */
+    public function updateProductsPrices()
+    {
+        $rate = $this->productPrice->getRate();
+
+        if ($rate) {
+            $this->invoice->rate = $rate;
+            $this->invoice->save();
+        }
+
+        $this->invoice->invoiceProduct->each(function (InvoiceProduct $invoiceProduct){
+            $invoiceProduct->price = $this->productPrice->getUserPriceByProductId($invoiceProduct->products_id);
+        });
+    }
+
+    /**
      * Add products to invoice by product's id.
      *
      * @param int $productId
      * @param float $price
      * @param int $quantity
      * @param int|null $warranty
-     * @return bool
+     * @return int Added products count.
      */
-    public function addProducts(int $productId, float $price, int $quantity = 1, int $warranty = null): bool
+    public function appendProducts(int $productId, float $price, int $quantity = 1, int $warranty = null): int
     {
         assert($productId > 0, 'Product id must be positive integer');
         assert($price > 0, 'Product price must be positive float');
@@ -97,39 +104,14 @@ class ProductInvoiceHandler extends InvoiceHandler implements ProductInvoiceHand
         try {
             $this->databaseManager->beginTransaction();
 
-            $addingSum = static::addProductsToInvoice($productId, $price, $quantity, $warranty);
+            $addedCount = static::addProductsToInvoice($productId, $price, $quantity, $warranty);
 
             $this->databaseManager->commit();
 
-            return (bool)$addingSum;
+            return $addedCount;
         } catch (Exception $e) {
             $this->databaseManager->rollback();
-            return false;
-        }
-    }
 
-    /**
-     * Remove products from invoice by product's id.
-     *
-     * @param int $productId
-     * @param int $quantity
-     * @return bool
-     */
-    public function removeProducts(int $productId, int $quantity = 1): bool
-    {
-        assert($productId > 0, 'Product id must be positive integer');
-        assert($quantity > 0, 'Product quantity must be positive integer');
-
-        try {
-            $this->databaseManager->beginTransaction();
-
-            $subtractingSum = static::removeProductsFromInvoice($productId, $quantity);
-
-            $this->databaseManager->commit();
-
-            return (bool)$subtractingSum;
-        } catch (Exception $e) {
-            $this->databaseManager->rollback();
             return false;
         }
     }
@@ -138,60 +120,24 @@ class ProductInvoiceHandler extends InvoiceHandler implements ProductInvoiceHand
      * Remove all products from invoice by product's id.
      *
      * @param int $productId
-     * @return bool
+     * @return int Deleted products count.
      */
-    public function deleteProducts(int $productId): bool
+    public function deleteProducts(int $productId): int
     {
         assert($productId > 0, 'Product id must be positive integer');
 
         try {
             $this->databaseManager->beginTransaction();
 
-            $subtractingSum = static::deleteProductsFromInvoice($productId);
+            $deletedCount = static::deleteProductsFromInvoice($productId);
 
             $this->databaseManager->commit();
 
-            return (bool)$subtractingSum;
+            return $deletedCount;
         } catch (Exception $e) {
             $this->databaseManager->rollback();
             return false;
         }
-    }
-
-    /**
-     * Add product to invoice with given count or set count if product is already in invoice.
-     *
-     * @param int $productId
-     * @param float $price
-     * @param int $quantity
-     * @param int|null $warranty
-     * @return bool
-     */
-    public function setProductsCount(int $productId, float $price, int $quantity = 1, int $warranty = null): bool
-    {
-        assert($productId > 0, 'Product id must be positive integer');
-        assert($price > 0, 'Product price must be positive float');
-        assert($quantity > 0, 'Product quantity must be positive integer');
-        assert($warranty > 0, 'Product warranty must be positive integer');
-
-        try {
-            $this->databaseManager->beginTransaction();
-
-            $invoiceProduct = $this->getInvoiceProduct($productId);
-            $currentProductQuantity = $invoiceProduct ? $invoiceProduct->quantity : 0;
-
-            $addingProductQuantity = $quantity - $currentProductQuantity;
-
-            $subtractingSum = static::addProductsToInvoice($productId, $price, $addingProductQuantity, $warranty);
-
-            $this->databaseManager->commit();
-
-            return (bool)$subtractingSum;
-        } catch (Exception $e) {
-            $this->databaseManager->rollback();
-            return false;
-        }
-
     }
 
     /**
@@ -201,67 +147,34 @@ class ProductInvoiceHandler extends InvoiceHandler implements ProductInvoiceHand
      * @param float $price
      * @param int $quantity
      * @param int|null $warranty
-     * @return float Sum that was added to invoice.
+     * @return int Count of products that was added to invoice or subtracted from invoice.
      */
-    protected function addProductsToInvoice(int $productId, float $price, int $quantity = 1, int $warranty = null): float
+    protected function addProductsToInvoice(int $productId, float $price, int $quantity = 1, int $warranty = null): int
     {
         $invoiceProduct = $this->getInvoiceProduct($productId);
 
         if ($invoiceProduct) {
-            $invoiceProduct->quantity += $quantity;
+            $addedCount = $quantity - $invoiceProduct->quantity;
+            $invoiceProduct->quantity = $quantity;
             $invoiceProduct->save();
         } else {
+            $addedCount = $quantity;
             $this->invoice->invoiceProduct->push($this->createInvoiceProduct($productId, $price, $quantity, $warranty));
         }
 
-        $addingSum = $price * $quantity;
+        parent::increaseInvoiceSum($price * $addedCount);
 
-        parent::increaseInvoiceSum($addingSum);
-
-        return $addingSum;
-
-    }
-
-    /**
-     * Remove products from invoice by product's id.
-     *
-     * @param int $productId
-     * @param int $quantity
-     * @return float Sum that was subtracted from invoice.
-     * @throws Exception
-     */
-    protected function removeProductsFromInvoice(int $productId, int $quantity): float
-    {
-        $invoiceProduct = $this->getInvoiceProduct($productId);
-
-        if (!$invoiceProduct) {
-            return 0;
-        }
-
-        if ($quantity >= $invoiceProduct->quantity) {
-            $subtractingSum = $invoiceProduct->price * $invoiceProduct->quantity;
-
-            $invoiceProduct->delete();
-            $this->invoice->setRelation('invoiceProduct', $this->removeFromInvoiceProductCollectionByProductId($this->invoice->invoiceProduct, $productId));
-        } else {
-            $subtractingSum = $invoiceProduct->price * $quantity;
-            $invoiceProduct->quantity -= $quantity;
-            $invoiceProduct->save();
-        }
-
-        parent::decreaseInvoiceSum($subtractingSum);
-
-        return $subtractingSum;
+        return $addedCount;
     }
 
     /**
      * Delete products from invoice by product's id.
      *
      * @param int $productId
-     * @return float Sum that was subtracted from invoice.
      * @throws Exception
+     * @return int Products count that was subtracted from invoice.
      */
-    protected function deleteProductsFromInvoice(int $productId): float
+    protected function deleteProductsFromInvoice(int $productId): int
     {
         $invoiceProduct = $this->getInvoiceProduct($productId);
 
@@ -270,13 +183,14 @@ class ProductInvoiceHandler extends InvoiceHandler implements ProductInvoiceHand
         }
 
         $subtractingSum = $invoiceProduct->price * $invoiceProduct->quantity;
+        $deletedCount = $invoiceProduct->quantity;
 
         $invoiceProduct->delete();
         $this->invoice->setRelation('invoiceProduct', $this->removeFromInvoiceProductCollectionByProductId($this->invoice->invoiceProduct, $productId));
 
         parent::decreaseInvoiceSum($subtractingSum);
 
-        return $subtractingSum;
+        return $deletedCount;
     }
 
     /**
@@ -285,9 +199,7 @@ class ProductInvoiceHandler extends InvoiceHandler implements ProductInvoiceHand
      */
     private function getInvoiceProduct(int $productId)
     {
-        return $this->invoice->invoiceProduct->first(function (InvoiceProduct $invoiceProduct) use ($productId) {
-            return $invoiceProduct->products_id === $productId;
-        });
+        return $this->invoice->invoiceProduct->keyBy('products_id')->get($productId);
     }
 
     /**

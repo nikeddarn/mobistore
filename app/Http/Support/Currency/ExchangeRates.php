@@ -49,18 +49,6 @@ class ExchangeRates implements ExchangeRatesInterface
     }
 
     /**
-     * Get id of actual \App\Models\CurrencyRate.
-     *
-     * @param string $currency
-     * @return int
-     */
-    public function getCurrencyRateModelId(string $currency = self::USD):int
-    {
-        $currencyRateModel = $this->getCurrencyRateModel($currency);
-        return $currencyRateModel ? $currencyRateModel->id : null;
-    }
-
-    /**
      * Retrieve actual \App\Models\CurrencyRate if exists or define rate, and return stored CurrencyRate.
      *
      * @param string $currency

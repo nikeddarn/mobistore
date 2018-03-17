@@ -35,7 +35,7 @@ class DeliveryStatus extends Model
      * @var array
      */
     protected $fillable = [
-        'id', 'title_en', 'title_ru', 'title_ua',
+        'id', 'title_en', 'title_ru', 'title_ua', 'badge_class',
     ];
 
     /**

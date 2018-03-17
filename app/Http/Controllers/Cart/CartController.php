@@ -6,15 +6,14 @@
 
 namespace App\Http\Controllers\Cart;
 
-use App\Http\Support\Invoice\Repository\CartRepository;
-use App\Http\Support\Invoices\Handlers\ProductInvoiceHandler;
+use App\Contracts\Shop\Invoices\Handlers\ProductInvoiceHandlerInterface;
+use App\Http\Support\Invoices\Fabrics\CartInvoiceFabric;
 use App\Http\Support\Price\ProductPrice;
-use App\Models\Invoice;
 use App\Models\RecentProduct;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,7 +28,7 @@ class CartController extends Controller
     /**
      * @var string
      */
-    const SESSION_REFERRER_NAME = 'cart_referrer';
+    const CART_REFERRER_SESSION_NAME = 'cart_referrer';
 
     /**
      * @var string
@@ -42,39 +41,33 @@ class CartController extends Controller
     private $request;
 
     /**
-     * @var CartRepository
-     */
-    private $cartRepository;
-
-    /**
-     * @var ProductInvoiceHandler
-     */
-    private $invoiceHandler;
-
-    /**
      * @var ProductPrice
      */
     private $productPrice;
+
     /**
      * @var RecentProduct
      */
     private $recentProduct;
 
     /**
+     * @var CartInvoiceFabric
+     */
+    private $cartFabric;
+
+    /**
      * CartController constructor.
      * @param Request $request
-     * @param CartRepository $cartRepository
-     * @param ProductInvoiceHandler $invoiceHandler
+     * @param CartInvoiceFabric $invoiceFabric
      * @param ProductPrice $productPrice
      * @param RecentProduct $recentProduct
      */
-    public function __construct(Request $request, CartRepository $cartRepository, ProductInvoiceHandler $invoiceHandler, ProductPrice $productPrice, RecentProduct $recentProduct)
+    public function __construct(Request $request, CartInvoiceFabric $invoiceFabric, ProductPrice $productPrice, RecentProduct $recentProduct)
     {
         $this->request = $request;
-        $this->cartRepository = $cartRepository;
-        $this->invoiceHandler = $invoiceHandler;
         $this->productPrice = $productPrice;
         $this->recentProduct = $recentProduct;
+        $this->cartFabric = $invoiceFabric;
     }
 
     /**
@@ -85,9 +78,17 @@ class CartController extends Controller
      */
     public function show(): View
     {
-        $this->bindCartToHandler();
+        $handleableCart = $this->getHandleableCart();
 
-        return $this->createResponse();
+        $response =  view('content.cart.shopping_cart.index')
+            ->with($this->commonMetaData());
+
+        if ($handleableCart && $handleableCart->getProductsCount()) {
+            $response->with($this->getInvoiceProducts($handleableCart));
+            $this->request->session()->put('cart_price_warning_shown', true);
+        }
+
+        return $response;
     }
 
     /**
@@ -99,13 +100,14 @@ class CartController extends Controller
      */
     public function add(int $productId): Response
     {
-        $this->bindCartToHandler();
+        $handleableCart = $this->getOrCreateHandleableCart();
+        $calculatedProductPrice = $this->productPrice->getUserPriceByProductId($productId);
 
-        if (!$this->invoiceHandler->isProductPresentInCart($productId)) {
-            $calculatedProductPrice = $this->productPrice->getPriceByProductId($productId);
-            $this->invoiceHandler->addProducts($productId, $calculatedProductPrice);
-            $this->storeReferrer();
+        if (!$handleableCart->productExists($productId) && $calculatedProductPrice) {
+            $handleableCart->appendProducts($productId, $calculatedProductPrice);
         }
+
+        $this->storeReferrer();
 
         $this->updateRecentProducts($productId);
 
@@ -121,9 +123,11 @@ class CartController extends Controller
      */
     public function remove(int $productId): Response
     {
-        $this->bindCartToHandler();
+        $handleableCart = $this->getHandleableCart();
 
-        $this->invoiceHandler->deleteProducts($productId);
+        if ($handleableCart) {
+            $handleableCart->deleteProducts($productId);
+        }
 
         $this->storeReferrer();
 
@@ -145,14 +149,16 @@ class CartController extends Controller
             'quantity' => 'required|integer',
         ]);
 
-        $this->bindCartToHandler();
+        $handleableCart = $this->getOrCreateHandleableCart();
 
         $productId = $this->request->get('id');
         $productQuantity = $this->request->get('quantity');
 
-        $calculatedProductPrice = $this->productPrice->getPriceByProductId($productId);
+        $calculatedProductPrice = $this->productPrice->getUserPriceByProductId($productId);
 
-        $this->invoiceHandler->setProductsCount($productId, $calculatedProductPrice, $productQuantity);
+        if ($handleableCart && $calculatedProductPrice) {
+            $handleableCart->appendProducts($productId, $calculatedProductPrice, $productQuantity);
+        }
 
         $this->storeReferrer();
 
@@ -162,105 +168,75 @@ class CartController extends Controller
     }
 
     /**
-     * Retrieve or make new user cart. Bind it to handler. Update exchange rate if cart is not committed.
+     * Get cart handler with bound user cart that was retrieved or created anew by user's id or cookie.
      *
-     * @return void
+     * @return ProductInvoiceHandlerInterface|null
      * @throws \Exception
      */
-    private function bindCartToHandler()
+    private function getOrCreateHandleableCart()
     {
-        $userCart = $this->getUserCart();
-        $this->invoiceHandler->bindInvoice($userCart);
+        $cartRepository = $this->cartFabric->getRepository();
+        $cartHandler = $this->cartFabric->getHandler();
 
-        if (!$this->invoiceHandler->isInvoiceCommitted() && $userCart->updated_at->timestamp <= Carbon::now()->subDays(config('shop.invoice_exchange_rate_ttl'))->timestamp) {
-            $this->invoiceHandler->updateInvoiceExchangeRate();
-        }
-    }
-
-    /**
-     * Retrieve or create user cart.
-     *
-     * @return Invoice
-     * @throws \Exception
-     */
-    private function getUserCart(): Invoice
-    {
-        $userCart = $this->retrieveUserCart();
-
-        if (!$userCart) {
-            $userCart = $this->createUserCart();
-        }
-
-        if ($userCart->updated_at->timestamp <= Carbon::now()->subDays(config('shop.user_cart_ttl'))->timestamp) {
-            $this->cartRepository->deleteInvoice($userCart);
-            $userCart = $this->createUserCart();
-        }
-
-        return $userCart;
-    }
-
-    /**
-     * Retrieve user cart.
-     *
-     * @return \Illuminate\Database\Eloquent\Model|null
-     */
-    private function retrieveUserCart()
-    {
-        if (auth('web')->check()) {
-            $user = auth('web')->user();
-
-            return $this->cartRepository->getByUserId($user->id);
-        } elseif ($this->request->hasCookie(self::CART_COOKIE_NAME)) {
-            $this->cartCookie = $this->request->cookie(self::CART_COOKIE_NAME);
-
-            return $this->cartRepository->getByUserCookie($this->cartCookie);
+        if ($cartRepository->cartExists()) {
+            if (config('shop.recalculate_cart_prices') && $cartHandler->bindInvoice($cartRepository->getRetrievedInvoice())->getUpdateTime() < Carbon::today()->subDays(1)) {
+                $cartHandler->updateProductsPrices();
+            }
         } else {
+            $cartCreator = $this->cartFabric->getCreator();
+
+            if (auth('web')->check()) {
+                $userCart = $cartCreator->createByUserId(auth('web')->user()->id);
+            } else {
+                $this->cartCookie = str_random(32);
+                $userCart = $cartCreator->createByUserCookie($this->cartCookie);
+            }
+
+            $cartHandler->bindInvoice($userCart);
+        }
+
+        return $cartHandler;
+    }
+
+    /**
+     * Retrieve user cart. update it if needing.
+     *
+     * @return ProductInvoiceHandlerInterface|null
+     */
+    private function getHandleableCart()
+    {
+        $cartRepository = $this->cartFabric->getRepository();
+        $cartHandler = $this->cartFabric->getHandler();
+
+        if ($cartRepository->cartExists()) {
+            if (config('shop.recalculate_cart_prices') && $cartHandler->bindInvoice($cartRepository->getRetrievedInvoice())->getUpdateTime() < Carbon::today()->subDays(1)) {
+                $cartHandler->updateProductsPrices();
+            }
+            return $cartHandler;
+        }else{
             return null;
         }
     }
 
-    /**
-     * Create user cart.
-     *
-     * @return Invoice
-     */
-    private function createUserCart()
-    {
-        if (auth('web')->check()) {
-            return $this->cartRepository->createByUserId(auth('web')->user()->id);
-        } else {
-            $this->cartCookie = str_random(32);
-            return $this->cartRepository->createByUserCookie($this->cartCookie);
-        }
-    }
-
-    /**
-     * Create view with meta data and product data.
-     * @return View
-     */
-    private function createResponse()
-    {
-        return view('content.cart.shopping_cart.index')
-            ->with($this->commonMetaData())
-            ->with($this->getInvoiceProducts());
-    }
 
     /**
      * Create array of cart products data.
      *
+     * @param ProductInvoiceHandlerInterface $handleableCart
      * @return array
      */
-    private function getInvoiceProducts()
+    private function getInvoiceProducts(ProductInvoiceHandlerInterface $handleableCart)
     {
         $productImagePathPrefix = Storage::disk('public')->url('images/products/small/');
 
         return [
             'productsData' => [
-                'products' => $this->invoiceHandler->getFormattedProducts($productImagePathPrefix),
-                'invoice_sum' => number_format($this->invoiceHandler->getInvoiceSum(), 2, '.', ','),
-                'invoice_uah_sum' => number_format($this->invoiceHandler->getInvoiceUahSum(), 2, '.', ','),
+                'products' => $handleableCart->getFormattedProducts($productImagePathPrefix),
+                'invoice_sum' => number_format($handleableCart->getInvoiceSum(), 2, '.', ','),
+                'invoice_uah_sum' => number_format($handleableCart->getInvoiceUahSum(), 2, '.', ','),
                 'back_shopping' => $this->getReferrer(),
                 'checkout_form' => route('checkout.show'),
+                'cart_price_warning' => !$this->request->session()->has('cart_price_warning_shown'),
             ]
         ];
     }
@@ -286,8 +262,14 @@ class CartController extends Controller
      */
     private function createRedirect()
     {
-        $redirect = redirect(route('cart.show'));
+        // redirect to checkout if it's referrer or to show cart otherwise
+        if ($this->request->headers->get('referer') === route('checkout.show')){
+            $redirect = redirect(route('checkout.show'));
+        }else{
+            $redirect = redirect(route('cart.show'));
+        }
 
+        // set cart cookie if exists
         if ($this->cartCookie) {
             $redirect->withCookie(cookie(self::CART_COOKIE_NAME, $this->cartCookie, config('shop.user_cart_ttl') * 1440, '/'));
         }
@@ -302,12 +284,12 @@ class CartController extends Controller
      */
     private function storeReferrer()
     {
-        if ($this->request->session()->has(self::SESSION_REFERRER_NAME)) {
-            $this->request->session()->keep(self::SESSION_REFERRER_NAME);
+        if ($this->request->session()->has(self::CART_REFERRER_SESSION_NAME)) {
+            $this->request->session()->keep(self::CART_REFERRER_SESSION_NAME);
         } else {
             $referrer = $this->request->headers->get('referer');
             if (strpos($referrer, 'cart') === false) {
-                $this->request->session()->flash(self::SESSION_REFERRER_NAME, $referrer);
+                $this->request->session()->flash(self::CART_REFERRER_SESSION_NAME, $referrer);
             }
         }
     }
@@ -319,9 +301,9 @@ class CartController extends Controller
      */
     private function getReferrer()
     {
-        $this->request->session()->keep(self::SESSION_REFERRER_NAME);
+        $this->request->session()->keep(self::CART_REFERRER_SESSION_NAME);
 
-        return $this->request->session()->get(self::SESSION_REFERRER_NAME);
+        return $this->request->session()->get(self::CART_REFERRER_SESSION_NAME);
     }
 
     /**

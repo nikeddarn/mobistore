@@ -85,6 +85,34 @@ h1, h2, h3, h4, h5, h6 {
   display: inline-block;
 }
 
+.border-top-none {
+  border-top: none !important;
+}
+
+.border-bottom-none {
+  border-bottom: none !important;
+}
+
+.border-left-none {
+  border-left: none !important;
+}
+
+.border-right-none {
+  border-right: none !important;
+}
+
+.font-weight-normal {
+  font-weight: normal;
+}
+
+.font-weight-bolder {
+  font-weight: bolder;
+}
+
+.text-italic {
+  font-style: italic;
+}
+
 // ****************************************** Five columns layout ******************************
 
 .col-xs-15,
@@ -121,6 +149,29 @@ h1, h2, h3, h4, h5, h6 {
     width: 20%;
     float: left;
   }
+}
+// -------------------------------------------------Panel Horizontal --------------------------------------------------
+
+.panel.panel-horizontal {
+  display:table;
+  width:100%;
+}
+.panel.panel-horizontal > .panel-heading, .panel.panel-horizontal > .panel-body, .panel.panel-horizontal > .panel-footer {
+  display:table-cell;
+}
+.panel.panel-horizontal > .panel-heading, .panel.panel-horizontal > .panel-footer {
+  border:0;
+  vertical-align: middle;
+}
+.panel.panel-horizontal > .panel-heading {
+  border-right: 1px solid #ddd;
+  border-top-right-radius: 0;
+  border-bottom-left-radius: 4px;
+}
+.panel.panel-horizontal > .panel-footer {
+  border-left: 1px solid #ddd;
+  border-top-left-radius: 0;
+  border-bottom-right-radius: 4px;
 }
 
 // ********************************************************* Modal ******************************************
@@ -179,24 +230,66 @@ input:focus:not([type="radio"]):not([type="checkbox"]), input:active:not([type="
   }
 }
 
-.btn {
-  border-radius: 0;
+.btn, button {
+  border-radius: 0 !important;
+  outline: none !important;
+}
+
+.btn:hover, .btn:active, button:hover, button:active {
+  outline: none !important;
 }
 
 select, textarea {
+  outline: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
   border: 1px solid $input-border;
-  outline: none;
-  box-shadow: none;
-  border-radius: 0;
 }
 
-select:focus, textarea:focus {
+select:focus, select:active, textarea:focus, textarea:active {
   border: 1px solid $brand-primary !important;
-  border-radius: 0;
+  border-radius: 0 !important;
   box-shadow: none !important;
 }
 
-// container
+.pager > li > button {
+  color: #666;
+  border-bottom: 2px solid #d6d8d9;
+  border-radius: 0;
+}
+
+#app .bootstrap-select, #app .bootstrap-select.open {
+
+  .dropdown-toggle:focus, .dropdown-toggle:hover, .dropdown-toggle:active {
+    outline: none !important;
+    background-color: white !important;
+    box-shadow: none !important;
+  }
+
+  ul li a {
+    color: #666 !important;
+    outline: none !important;
+  }
+
+  ul li a:hover, ul li.selected a {
+    background-color: $gray-lighter !important;
+    color: $gray-dark !important;
+  }
+
+}
+
+#app .bootstrap-select.open > .btn-default.dropdown-toggle {
+  background-color: white !important;
+  box-shadow: none !important;
+}
+
+#app {
+  .bootstrap-select .dropdown-toggle:focus, .bootstrap-select.open .dropdown-toggle, .bootstrap-select.open .dropdown-toggle:hover {
+    border-color: $brand-primary;
+  }
+}
+
+//********************************************************** container ***********************************************
 
 @media (min-width: $screen-lg) {
   .container {
@@ -277,6 +370,11 @@ select:focus, textarea:focus {
   50% {
     opacity: 0;
   }
+}
+
+.badge-not-rounded {
+  border-radius: 0;
+  padding: 3px 6px;
 }
 
 // ******************************* arrowed labels *****************************************************
@@ -484,9 +582,9 @@ h1 .banner-left:before {
       border-top: 1px solid $store-navbar-submenu-border-color !important;
     }
 
-    #store-navbar-collapse > ul{
+    #store-navbar-collapse > ul {
       margin: 8px 0;
-      >li > button{
+      > li > button {
         width: 100%;
         text-align: left;
       }
@@ -497,7 +595,6 @@ h1 .banner-left:before {
       padding: 0 15px;
       height: $navbar-middle-height + 2px;
       line-height: $navbar-middle-height;
-
 
       .navbar-toggle {
         height: $navbar-middle-height - 14px;
@@ -540,8 +637,8 @@ h1 .banner-left:before {
         background-color: $store-navbar-highlight-bg-color;
       }
 
-      .active > a,.active > button,
-      .active > a:hover,.active > button:hover,
+      .active > a, .active > button,
+      .active > a:hover, .active > button:hover,
       .active > a:focus, .active > button:focus {
         color: $store-navbar-highlight-color;
         background-color: $store-navbar-highlight-bg-color;
@@ -1253,6 +1350,9 @@ h1 .banner-left:before {
 }
 
 // ******************************** Owl Carousel **************************************************************
+#myCarousel {
+  height: 400px;
+}
 
 .owl-theme .owl-nav {
   position: absolute;
@@ -1300,11 +1400,11 @@ h1 .banner-left:before {
 
   background-color: white;
 
-  .scrollable-menu{
+  .scrollable-menu {
     max-height: 400px;
   }
 
-  #product-path-selection{
+  #product-path-selection {
 
     a {
       display: block;
@@ -1398,6 +1498,16 @@ h1 .banner-left:before {
   border-radius: 0;
 }
 
+// ****************************************************** Checkout **************************************************
+
+.pager > li > button {
+  padding: 5px 14px;
+  line-height: 22px;
+  background-color: white;
+  outline: none;
+  color: $store-navbar-color;
+}
+
 /* Other*/
 
 .img-portfolio {
@@ -1425,6 +1535,67 @@ header.carousel .fill {
   height: 100%;
   background-position: center;
   background-size: cover;
+}
+
+// **************************************************** User Content **********************************************
+
+.user-menu .divider{
+  height: 1px;
+  margin: 9px 0;
+  overflow: hidden;
+  background-color: #e5e5e5;
+}
+
+.user-invoice-content {
+
+  > td {
+    padding: 0 !important;
+    border-top: none !important;
+  }
+  table {
+    margin-top: 30px;
+    margin-bottom: 30px;
+
+    td {
+      background-color: whitesmoke;
+    }
+  }
+}
+
+#userMessages {
+
+  .show-user-invoice-content-toggle {
+    width: 10%;
+  }
+
+  .user-invoice-date {
+    width: 20%;
+  }
+}
+
+#userDeliveries{
+  .show-user-invoice-content-toggle {
+    width: 10%;
+  }
+}
+
+#userAccount, #userWarranty {
+
+  .show-user-invoice-content-toggle {
+    width: 10%;
+  }
+}
+
+#user-account-balance{
+  .panel{
+    border-radius: 0;
+  }
+  .panel-heading{
+    padding: 6px 10px;
+  }
+  .panel-body{
+    padding: 10px 10px;
+  }
 }
 
 /* 404 Page Styles */

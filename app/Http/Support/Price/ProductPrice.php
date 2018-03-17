@@ -37,26 +37,52 @@ class ProductPrice implements CurrenciesInterface
     }
 
     /**
-     * Get product price by product model.
+     * Get user product price by product model.
      *
      * @param Product $product
      * @return float|null
      */
-    public function getPriceByProductModel(Product $product)
+    public function getUserPriceByProductModel(Product $product)
     {
         return $this->defineProductPrice($product);
     }
 
     /**
-     * Get product price by product id.
+     * Get user product price by product id.
      *
      * @param int $productId
      * @return float|null
      */
-    public function getPriceByProductId(int $productId)
+    public function getUserPriceByProductId(int $productId)
     {
         $product = $this->retrieveProductById($productId);
         return $this->defineProductPrice($product);
+    }
+
+    /**
+     * Get vendor product price by product model.
+     *
+     * @param Product $product
+     * @param int $vendorId
+     * @return float|null
+     */
+    public function getVendorPriceByProductModel(Product $product, int $vendorId)
+    {
+        return $this->getVendorPurchasePrice($product, $vendorId);
+    }
+
+    /**
+     * Get vendor product price by product id.
+     *
+     * @param int $productId
+     * @param int $vendorId
+     * @return float|null
+     */
+    public function getVendorPriceByProductId(int $productId, int $vendorId)
+    {
+        $product = $this->retrieveProductById($productId);
+
+        return $this->getVendorPurchasePrice($product, $vendorId);
     }
 
     /**
@@ -99,7 +125,7 @@ class ProductPrice implements CurrenciesInterface
         if ($this->hasStorageProduct($product) || !(config('shop.can_use_vendor_price') && $this->hasVendorProduct($product))) {
             return $product->{'price' . $this->getUserPriceColumn()};
         } else {
-            return $this->getVendorPrice($product);
+            return $this->getVendorSalePrice($product);
         }
     }
 
@@ -127,7 +153,7 @@ class ProductPrice implements CurrenciesInterface
     {
         if (!$product->storageProduct instanceof Collection) {
             $product->load(['storageProduct' => function ($query) {
-                $query->where('stock_quantity', '>', 0);
+                $query->whereRaw('(stock_quantity - reserved_quantity) > 0');
             }]);
         }
 
@@ -157,12 +183,30 @@ class ProductPrice implements CurrenciesInterface
      * @param Product $product
      * @return float|null
      */
-    private function getVendorPrice(Product $product)
+    private function getVendorSalePrice(Product $product)
     {
         $userPriceColumn = $this->getUserPriceColumn();
 
         $minVendorColumnPrice = $product->vendorProduct->min('price' . $userPriceColumn);
 
         return $minVendorColumnPrice ? ($minVendorColumnPrice + $product->delivery_price) : null;
+    }
+
+    /**
+     * Get vendor price.
+     *
+     * @param Product $product
+     * @param int $vendorId
+     * @return float
+     */
+    private function getVendorPurchasePrice(Product $product, int $vendorId):float
+    {
+        if (!$product->vendorProduct instanceof Collection) {
+            $product->load('vendorProduct');
+        }
+
+        $vendorProduct = $product->vendorProduct->where('vendors_id', $vendorId)->first();
+
+        return $vendorProduct->offer_price ? $vendorProduct->offer_price : $vendorProduct->price5;
     }
 }

@@ -194,6 +194,7 @@ return [
          */
         App\Providers\LocalizationServiceProvider::class,
         \App\Providers\ComposerServiceProvider::class,
+        \App\Providers\ChannelServiceProvider::class,
 
         Proengsoft\JsValidation\JsValidationServiceProvider::class,
         Way\Generators\GeneratorsServiceProvider::class,
