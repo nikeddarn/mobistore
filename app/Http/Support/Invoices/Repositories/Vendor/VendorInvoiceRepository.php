@@ -6,21 +6,81 @@
 namespace App\Http\Support\Invoices\Repositories\Vendor;
 
 use App\Http\Support\Invoices\Repositories\InvoiceRepository;
-use App\Contracts\Shop\Invoices\Repositories\OwnerInvoiceRepository;
+use App\Models\Invoice;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 
-class VendorInvoiceRepository extends InvoiceRepository implements OwnerInvoiceRepository
+class VendorInvoiceRepository extends InvoiceRepository
 {
     /**
-     * @param int $ownerId Vendor's id
-     * @param int|null $invoiceType
-     * @param int $limit
+     * @var int
      */
-    public function getLastInvoices(int $ownerId, int $invoiceType = null, $limit = 1)
+    protected $vendorId;
+
+    /**
+     * Get vendor invoices.
+     *
+     * @param  $constraints
+     * @return LengthAwarePaginator|Collection
+     */
+    public function getInvoices(VendorInvoiceConstraints $constraints)
     {
-        parent::buildRetrieveInvoiceQueryWithLimit($limit);
-        $this->setVendorIdConstraint($ownerId);
-        $this->setInvoiceTypeConstraint($invoiceType);
-        static::addRelations();
+        $this->prepareRetrieveInvoicesQuery($constraints);
+
+        if ($constraints->withRelations !== false){
+            static::addRelations();
+        }
+
+        return $constraints->paginate ? $this->retrieveQuery->paginate($constraints->paginate) : $this->retrieveQuery->get();
+    }
+
+    /**
+     * Get query for retrieve vendor invoices.
+     *
+     * @param VendorInvoiceConstraints $constraints
+     * @return Builder
+     */
+    public function getRetrieveInvoicesQuery(VendorInvoiceConstraints $constraints):Builder
+    {
+        $this->prepareRetrieveInvoicesQuery($constraints);
+
+        if ($constraints->withRelations){
+            static::addRelations();
+        }
+
+        return  $this->retrieveQuery;
+    }
+
+    /**
+     * Prepare retrieve invoice query.
+     *
+     * @param VendorInvoiceConstraints $constraints
+     */
+    private function prepareRetrieveInvoicesQuery(VendorInvoiceConstraints $constraints)
+    {
+        $this->vendorId = $constraints->vendorId;
+
+        parent::makeRetrieveInvoiceQuery();
+
+        $this->setVendorIdConstraint($constraints->vendorId);
+
+        if ($constraints->invoiceStatus) {
+            $this->setInvoiceStatusConstraint($constraints->invoiceStatus);
+        }
+
+        if ($constraints->invoiceType) {
+            $this->setInvoiceTypeConstraint($constraints->invoiceType);
+        }
+
+        if ($constraints->invoiceDirection) {
+            $this->setDirectionConstraint($constraints->invoiceDirection);
+        }
+
+        if ($constraints->implementedStatus !== null) {
+            $this->setImplementedConstraint($constraints->implementedStatus);
+        }
     }
 
     /**
@@ -32,7 +92,9 @@ class VendorInvoiceRepository extends InvoiceRepository implements OwnerInvoiceR
     protected function buildRetrieveQueryByInvoiceId(int $invoiceId)
     {
         parent::buildRetrieveQueryByInvoiceId($invoiceId);
+
         $this->setInvoiceHasVendorConstraint();
+
         static::addRelations();
     }
 
@@ -60,14 +122,58 @@ class VendorInvoiceRepository extends InvoiceRepository implements OwnerInvoiceR
     }
 
     /**
+     * Set invoice status constraint.
+     *
+     * @param $invoiceStatus
+     */
+    private function setInvoiceStatusConstraint($invoiceStatus)
+    {
+        $this->retrieveQuery->where('invoice_status_id', $invoiceStatus);
+    }
+
+    /**
      * Set invoice type constraint.
      *
      * @param int $invoiceType
      * @return void
      */
-    private function setInvoiceTypeConstraint(int $invoiceType)
+    private function setInvoiceTypeConstraint($invoiceType)
     {
-        $this->retrieveQuery->where('invoice_types_id', $invoiceType);
+        if (is_array($invoiceType)){
+
+            $this->retrieveQuery->whereIn('invoice_types_id', $invoiceType);
+
+        }elseif(is_int($invoiceType)){
+
+            $this->retrieveQuery->where('invoice_types_id', $invoiceType);
+
+        }
+    }
+
+    /**
+     * Set invoice direction constraint.
+     *
+     * @param string $direction
+     * @return void
+     */
+    private function setDirectionConstraint(string $direction)
+    {
+        $this->retrieveQuery->whereHas('vendorInvoice', function ($query) use($direction) {
+            $query->where('direction', $direction);
+        });
+    }
+
+    /**
+     * Set invoice implemented constraint.
+     *
+     * @param int $implemented
+     * @return void
+     */
+    private function setImplementedConstraint(int $implemented)
+    {
+        $this->retrieveQuery->whereHas('vendorInvoice', function ($query) use($implemented) {
+            $query->where('implemented', (int)$implemented);
+        });
     }
 
     /**
@@ -77,6 +183,18 @@ class VendorInvoiceRepository extends InvoiceRepository implements OwnerInvoiceR
      */
     protected function addRelations()
     {
-        $this->retrieveQuery->with('vendorInvoice');
+        $this->retrieveQuery->with('vendorInvoice', 'invoiceType', 'invoiceStatus');
+    }
+
+    /**
+     * Destroy invoice.
+     *
+     * @param Invoice|Model $invoice
+     * @return bool
+     * @throws \Exception
+     */
+    protected function removeInvoiceData(Invoice $invoice)
+    {
+        return parent::removeInvoiceData($invoice);
     }
 }

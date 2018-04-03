@@ -73,12 +73,14 @@ class UserOrderCreatedNotification extends Notification
      */
     public function toDatabase($notifiable)
     {
+        $plannedArrival = $this->invoice->userInvoice->userDelivery->planned_arrival;
+
         return [
             'title' => trans('messages.invoice.' . $this->invoice->invoice_types_id . '.created.title'),
             'message' => trans('messages.invoice.' . $this->invoice->invoice_types_id . '.created.message', [
                 'id' => $this->invoice->id,
                 'sum' => ($this->invoice->invoice_sum + $this->invoice->delivery_sum) * $this->invoice->rate,
-                'delivery' => $this->invoice->userInvoice->userDelivery->planned_arrival->format('d-m-Y'),
+                'delivery' => $plannedArrival ? $plannedArrival->format('d-m-Y') : trans('shop.delivery.time_undefined'),
             ]),
         ];
     }

@@ -2,10 +2,15 @@
 
 namespace App\Providers;
 
+use App\Events\Invoices\UserOrderCancelled;
+use App\Events\Invoices\UserOrderCollected;
 use App\Events\Invoices\UserOrderCreated;
-use App\Events\Invoices\UserPreOrderCreated;
+use App\Events\Invoices\UserOrderPartiallyCollected;
 use App\Listeners\DefineUserPriceGroup;
-use App\Listeners\Invoices\SendUserOrderInvoiceNotifications;
+use App\Listeners\Invoices\SendUserOrderCancelledNotifications;
+use App\Listeners\Invoices\SendUserOrderCollectedNotifications;
+use App\Listeners\Invoices\SendUserOrderCreatedNotifications;
+use App\Listeners\Invoices\SendUserOrderPartiallyCollectedNotifications;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
@@ -23,12 +28,21 @@ class EventServiceProvider extends ServiceProvider
         ],
 
         UserOrderCreated::class => [
-            SendUserOrderInvoiceNotifications::class,
+            SendUserOrderCreatedNotifications::class,
         ],
 
-        UserPreOrderCreated::class => [
-            SendUserOrderInvoiceNotifications::class,
+        UserOrderCollected::class => [
+            SendUserOrderCollectedNotifications::class,
         ],
+
+        UserOrderCancelled::class => [
+            SendUserOrderCancelledNotifications::class,
+        ],
+
+        UserOrderPartiallyCollected::class => [
+            SendUserOrderPartiallyCollectedNotifications::class,
+        ],
+
     ];
 
     /**

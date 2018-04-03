@@ -25,7 +25,7 @@ class Courier extends Model
      */
     public function courierSchedule()
     {
-        return $this->hasMany('App\Models\CourierSchedule', 'couriers_id', 'id');
+        return $this->hasMany('App\Models\VendorShipmentSchedule', 'couriers_id', 'id');
     }
 
     /**

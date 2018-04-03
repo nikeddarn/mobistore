@@ -62,6 +62,30 @@ class User extends Authenticatable
     }
 
     /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function vendorUser()
+    {
+        return $this->hasMany('App\Models\VendorUser', 'users_id', 'id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function userInvoice()
+    {
+        return $this->hasMany('App\Models\UserInvoice', 'users_id', 'id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function vendor()
+    {
+        return $this->belongsToMany('App\Models\Vendor', 'vendor_users', 'users_id', 'vendors_id' );
+    }
+
+    /**
      * Send the password reset notification.
      *
      * @param  string  $token

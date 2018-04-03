@@ -89,6 +89,7 @@ class SetupController extends Controller
         $message .= $this->products();
 //        $message .= $this->watermark();
         $message .= $this->vendors();
+        $message .= $this->cities();
         $message .= $this->storages();
 
         return view('content.admin.setup.message')->with([
@@ -196,6 +197,18 @@ class SetupController extends Controller
         }
 
         return '<p>Vendors was inserted.</p>';
+    }
+
+    /*
+     * Insert cities.
+     */
+    private function cities()
+    {
+        foreach (require database_path('setup/cities.php') as $city){
+            $this->storage->create($city);
+        }
+
+        return '<p>Cities was inserted.</p>';
     }
 
     /*

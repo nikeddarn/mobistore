@@ -17,12 +17,20 @@ interface ProductInvoiceHandlerInterface extends InvoiceHandlerInterface
     public function getInvoiceProducts(): Collection;
 
     /**
+     * Get array of products count keyed by product id.
+     *
+     * @return array
+     */
+    public function getArrayInvoiceProducts(): array;
+
+    /**
      * Create array of products data for view.
      *
+     * @param Collection $productsId
      * @param string|null $imageUrlPrefix
      * @return array
      */
-    public function getFormattedProducts(string $imageUrlPrefix = null): array;
+    public function getFormattedProducts(Collection $productsId, string $imageUrlPrefix = null): array;
 
     /**
      * Is product with given id already in cart ?
@@ -57,4 +65,13 @@ interface ProductInvoiceHandlerInterface extends InvoiceHandlerInterface
      * @return int Deleted products count.
      */
     public function deleteProducts(int $productId): int ;
+
+    /**
+     * Decrease products count in invoice by product's id.
+     *
+     * @param int $productId
+     * @param int $decreasingQuantity
+     * @return int Deleted products count.
+     */
+    public function decreaseProductCount(int $productId, int $decreasingQuantity): int;
 }

@@ -37,4 +37,12 @@ class Vendor extends Model
     {
         return $this->hasMany('App\Models\VendorUser', 'vendors_id', 'id');
     }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function vendorInvoice()
+    {
+        return $this->hasMany('App\Models\VendorInvoice', 'vendors_id', 'id');
+    }
 }

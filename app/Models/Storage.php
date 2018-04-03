@@ -42,4 +42,12 @@ class Storage extends Model
         return $this->hasMany('App\Models\StorageProduct', 'storages_id', 'id');
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function city()
+    {
+        return $this->belongsTo('App\Models\City', 'cities_id', 'id');
+    }
+
 }

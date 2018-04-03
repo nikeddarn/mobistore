@@ -6,14 +6,14 @@
 namespace App\Http\Support\Invoices\Fabrics;
 
 
-use App\Http\Support\Invoices\Creators\IncomingVendorInvoiceCreator;
+use App\Http\Support\Invoices\Creators\UserInvoiceCreator;
 use App\Http\Support\Invoices\Handlers\StorageProductInvoiceHandler;
-use App\Http\Support\Invoices\Repositories\Vendor\VendorInvoiceRepository;
+use App\Http\Support\Invoices\Repositories\User\UserProductInvoiceRepository;
 
-class VendorIncomingOrderInvoiceFabric
+class UserOrderInvoiceFabric
 {
     /**
-     * @var VendorInvoiceRepository
+     * @var UserProductInvoiceRepository
      */
     private $repository;
 
@@ -23,18 +23,18 @@ class VendorIncomingOrderInvoiceFabric
     private $handler;
 
     /**
-     * @var IncomingVendorInvoiceCreator
+     * @var UserInvoiceCreator
      */
     private $creator;
 
     /**
      * Initialize parts of fabric.
      *
-     * @param VendorInvoiceRepository $repository
+     * @param UserProductInvoiceRepository $repository
      * @param StorageProductInvoiceHandler $handler
-     * @param IncomingVendorInvoiceCreator $creator
+     * @param UserInvoiceCreator $creator
      */
-    public function __construct(VendorInvoiceRepository $repository, StorageProductInvoiceHandler $handler, IncomingVendorInvoiceCreator $creator)
+    public function __construct(UserProductInvoiceRepository $repository, StorageProductInvoiceHandler $handler, UserInvoiceCreator $creator)
     {
         $this->repository = $repository;
         $this->handler = $handler;
@@ -42,9 +42,9 @@ class VendorIncomingOrderInvoiceFabric
     }
 
     /**
-     * Get cart repository.
+     * Get repository.
      *
-     * @return VendorInvoiceRepository
+     * @return UserProductInvoiceRepository
      */
     public function getRepository()
     {
@@ -52,7 +52,7 @@ class VendorIncomingOrderInvoiceFabric
     }
 
     /**
-     * Get cart handler.
+     * Get handler.
      *
      * @return StorageProductInvoiceHandler
      */
@@ -62,9 +62,9 @@ class VendorIncomingOrderInvoiceFabric
     }
 
     /**
-     * Get cart creator.
+     * Get creator.
      *
-     * @return IncomingVendorInvoiceCreator
+     * @return UserInvoiceCreator
      */
     public function getCreator()
     {

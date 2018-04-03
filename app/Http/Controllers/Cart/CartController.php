@@ -62,7 +62,12 @@ class CartController extends Controller
      * @param ProductPrice $productPrice
      * @param RecentProduct $recentProduct
      */
-    public function __construct(Request $request, CartInvoiceFabric $invoiceFabric, ProductPrice $productPrice, RecentProduct $recentProduct)
+    public function __construct(
+        Request $request,
+        CartInvoiceFabric $invoiceFabric,
+        ProductPrice $productPrice,
+        RecentProduct $recentProduct
+    )
     {
         $this->request = $request;
         $this->productPrice = $productPrice;
@@ -80,7 +85,7 @@ class CartController extends Controller
     {
         $handleableCart = $this->getHandleableCart();
 
-        $response =  view('content.cart.shopping_cart.index')
+        $response = view('content.cart.shopping_cart.index')
             ->with($this->commonMetaData());
 
         if ($handleableCart && $handleableCart->getProductsCount()) {
@@ -213,7 +218,7 @@ class CartController extends Controller
                 $cartHandler->updateProductsPrices();
             }
             return $cartHandler;
-        }else{
+        } else {
             return null;
         }
     }
@@ -231,7 +236,7 @@ class CartController extends Controller
 
         return [
             'productsData' => [
-                'products' => $handleableCart->getFormattedProducts($productImagePathPrefix),
+                'products' => $handleableCart->getFormattedProducts($handleableCart->getInvoiceProducts(), $productImagePathPrefix),
                 'invoice_sum' => number_format($handleableCart->getInvoiceSum(), 2, '.', ','),
                 'invoice_uah_sum' => number_format($handleableCart->getInvoiceUahSum(), 2, '.', ','),
                 'back_shopping' => $this->getReferrer(),
@@ -263,9 +268,9 @@ class CartController extends Controller
     private function createRedirect()
     {
         // redirect to checkout if it's referrer or to show cart otherwise
-        if ($this->request->headers->get('referer') === route('checkout.show')){
+        if ($this->request->headers->get('referer') === route('checkout.show')) {
             $redirect = redirect(route('checkout.show'));
-        }else{
+        } else {
             $redirect = redirect(route('cart.show'));
         }
 

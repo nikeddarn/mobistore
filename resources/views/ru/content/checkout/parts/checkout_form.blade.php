@@ -33,6 +33,15 @@
             </select>
         </div>
 
+        <div id="cityDeliverySelect" class="form-group col-sm-6">
+            <label for="postServices">Город курьерской доставки</label>
+            <select id="postServices" class="form-control selectpicker" name="courier_delivery_city" data-style="btn-default">
+                @foreach($deliveryData['cities'] as $cityId => $city)
+                    <option value="{{ $cityId }}">{{ $city }}</option>
+                @endforeach
+            </select>
+        </div>
+
         <div id="postServiceSelect" class="form-group col-sm-6 hidden">
             <label for="postServices">Почтовая служба</label>
             <select id="postServices" class="form-control selectpicker" name="post_service" data-style="btn-default">

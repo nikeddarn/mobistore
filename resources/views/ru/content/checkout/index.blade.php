@@ -85,17 +85,20 @@
             $('#deliveryType').change(function () {
 
                 let postServiceSelect = $('#postServiceSelect');
+                let cityDeliverySelect = $('#cityDeliverySelect');
                 let userOrdersTables = $('.cart-product-list');
 
                 if (parseInt(this.value) === 1) {
                     // courier delivery selected
                     $(postServiceSelect).addClass('hidden');
+                    $(cityDeliverySelect).removeClass('hidden');
                     userOrdersTables.each(function (index) {
                         showCourierDeliveryPrices(this, index);
                     });
 
                 } else if (parseInt(this.value) === 2) {
                     // post delivery selected
+                    $(cityDeliverySelect).addClass('hidden');
                     $(postServiceSelect).removeClass('hidden');
                     userOrdersTables.each(function (index) {
                         showPostDeliveryPrices(this, index);

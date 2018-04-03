@@ -2,14 +2,104 @@
 
 namespace App\Http\Controllers\Checkout;
 
-use App\Http\Support\FormatInvoiceProducts;
+use App\Contracts\Shop\Delivery\DeliveryTypesInterface;
+use App\Contracts\Shop\Invoices\Handlers\ProductInvoiceHandlerInterface;
+use App\Contracts\Shop\Invoices\InvoiceTypes;
+use App\Http\Controllers\Controller;
+use App\Http\Support\Checkout\UserDeliveryRepository;
+use App\Http\Support\Checkout\UserInvoiceProductsSorter;
+use App\Http\Support\Currency\ExchangeRates;
+use App\Http\Support\Invoices\Fabrics\CartInvoiceFabric;
+use App\Http\Support\Price\DeliveryPrice;
+use App\Http\Support\Shipment\LocalShipmentDispatcher;
+use App\Http\Support\Shipment\VendorShipmentDispatcher;
+use Carbon\Carbon;
+use Illuminate\Filesystem\FilesystemManager;
+use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
-class ShowCheckoutController extends CheckoutController
+class ShowCheckoutController extends Controller
 {
-    use FormatInvoiceProducts;
+    /**
+     * @var string
+     */
+    const CART_COOKIE_NAME = 'cart';
+
+    /**
+     * @var string
+     */
+    const CART_REFERRER_SESSION_NAME = 'cart_referrer';
+
+    /**
+     * @var Request
+     */
+    protected $request;
+
+    /**
+     * @var CartInvoiceFabric
+     */
+    protected $cartInvoiceFabric;
+
+    /**
+     * @var UserInvoiceProductsSorter
+     */
+    private $productsSorter;
+
+    /**
+     * @var ExchangeRates
+     */
+    private $exchangeRates;
+
+    /**
+     * @var DeliveryPrice
+     */
+    private $deliveryPrice;
+
+    /**
+     * @var FilesystemManager
+     */
+    private $filesystemManager;
+
+    /**
+     * @var LocalShipmentDispatcher
+     */
+    private $localShipmentDispatcher;
+
+    /**
+     * @var VendorShipmentDispatcher
+     */
+    private $vendorShipmentDispatcher;
+
+    /**
+     * @var UserDeliveryRepository
+     */
+    private $deliveryRepository;
+
+    /**
+     * ShowCheckoutController constructor.
+     * @param Request $request
+     * @param CartInvoiceFabric $cartInvoiceFabric
+     * @param UserInvoiceProductsSorter $productsSorter
+     * @param DeliveryPrice $deliveryPrice
+     * @param ExchangeRates $exchangeRates
+     * @param FilesystemManager $filesystemManager
+     * @param LocalShipmentDispatcher $localShipmentDispatcher
+     * @param VendorShipmentDispatcher $vendorShipmentDispatcher
+     * @param UserDeliveryRepository $deliveryRepository
+     */
+    public function __construct(Request $request, CartInvoiceFabric $cartInvoiceFabric, UserInvoiceProductsSorter $productsSorter, DeliveryPrice $deliveryPrice, ExchangeRates $exchangeRates, FilesystemManager $filesystemManager, LocalShipmentDispatcher $localShipmentDispatcher, VendorShipmentDispatcher $vendorShipmentDispatcher, UserDeliveryRepository $deliveryRepository)
+    {
+        $this->request = $request;
+        $this->cartInvoiceFabric = $cartInvoiceFabric;
+        $this->productsSorter = $productsSorter;
+        $this->exchangeRates = $exchangeRates;
+        $this->deliveryPrice = $deliveryPrice;
+        $this->filesystemManager = $filesystemManager;
+        $this->localShipmentDispatcher = $localShipmentDispatcher;
+        $this->vendorShipmentDispatcher = $vendorShipmentDispatcher;
+        $this->deliveryRepository = $deliveryRepository;
+    }
 
     /**
      * Create order invoices if cart isn't empty.
@@ -19,94 +109,111 @@ class ShowCheckoutController extends CheckoutController
      */
     public function show()
     {
-        $this->cartHandler = $this->getCartHandler();
+        $response = view('content.checkout.index')->with($this->commonMetaData());
 
-        // products in cart doesn't exist. show view with 'no products' message
-        if (!$this->cartHandler) {
-            return view('content.checkout.index')->with($this->commonMetaData());
+        $cartRepository = $this->cartInvoiceFabric->getRepository();
+
+        if ($cartRepository->cartExists()) {
+            // keep cart referrer link
+            $this->request->session()->keep(self::CART_REFERRER_SESSION_NAME);
+
+            // login or register user if user is unauthenticated
+            if (!auth('web')->check()) {
+                return redirect()->guest(route('login'));
+            }
+
+            // get cart handler and bind retrieved cart to it
+            $cartHandler = $this->cartInvoiceFabric->getHandler()->bindInvoice($cartRepository->getRetrievedInvoice());
+
+            // cart is not empty
+            if ($cartHandler->getProductsCount()) {
+                // sort products by invoices types
+                $sortedProducts = $this->productsSorter->sortProductsByOrderType($cartHandler->getInvoiceProducts());
+                // some products is available to order
+                if(isset($sortedProducts[InvoiceTypes::ORDER]) || isset($sortedProducts[InvoiceTypes::PRE_ORDER])) {
+                    // add user invoices data
+                    $response->with([
+                        'productsData' => $this->invoicesData($cartHandler, $sortedProducts),
+                        'deliveryData' => $this->deliveryData(),
+                    ]);
+                }
+                // remove unavailable products from cart
+                if (isset($sortedProducts['unavailable'])){
+                    $this->removeUnavailableProducts($cartHandler, $sortedProducts['unavailable']);
+                }
+            }
         }
 
-        // keep cart referrer link
-        $this->request->session()->keep(self::CART_REFERRER_SESSION_NAME);
-
-        // login or register user if user is unauthenticated
-        if (!auth('web')->check()) {
-            return redirect()->guest(route('login'));
-        }
-
-        return view('content.checkout.index')
-            ->with($this->commonMetaData())
-            ->with($this->deliveryData())
-            ->with($this->invoicesData());
+        return $response;
     }
 
     /**
+     * Prepare orders data for the view.
+     *
+     * @param ProductInvoiceHandlerInterface $cartHandler
+     * @param array $sortedProducts
      * @return array
-     * @throws \Exception
      */
-    private function invoicesData()
+    private function invoicesData(ProductInvoiceHandlerInterface $cartHandler, array $sortedProducts)
     {
         $invoicesData = [];
 
-        $orderProducts = $this->sortProductsByInvoices();
-
         $exchangeRate = $this->exchangeRates->getRate();
-        $productImagePathPrefix = Storage::disk('public')->url('images/products/small/');
-        $calculatedDeliveryPrice = $this->deliveryPrice->getDeliveryPrice(auth('web')->user(), $this->cartHandler->getInvoiceSum());
+        $productImagePathPrefix = $this->filesystemManager->disk('public')->url('images/products/small/');
+        $courierDeliveryPrice = $this->deliveryPrice->calculateDeliveryPrice(auth('web')->user(), $cartHandler->getInvoiceSum(), DeliveryTypesInterface::COURIER);
 
-        // online order invoice data
-        if ($orderProducts[self::ORDER]->count()) {
-            $deliveryDay = $this->localShipmentDispatcher->getPossibleNearestShipmentArrival()->toDateString();
+        if (isset($sortedProducts[InvoiceTypes::ORDER])){
+            $invoiceStorages = $this->productsSorter->getInvoiceStorages($sortedProducts[InvoiceTypes::ORDER]);
 
-            $invoicesData['order'] = $this->getOrderInvoiceData($productImagePathPrefix, $exchangeRate, $orderProducts[self::ORDER], $calculatedDeliveryPrice, $deliveryDay);
+            $invoicesData['order'] = $this->getOrderInvoiceData($cartHandler, $sortedProducts[InvoiceTypes::ORDER], $productImagePathPrefix, $exchangeRate, $courierDeliveryPrice, $this->localShipmentDispatcher->calculateDeliveryDay($invoiceStorages));
         }
 
-        // pre order invoice data
-        if ($orderProducts[self::PRE_ORDER]->count()) {
+        if (isset($sortedProducts[InvoiceTypes::PRE_ORDER])){
+            $invoiceVendors = $this->productsSorter->getInvoiceVendors($sortedProducts[InvoiceTypes::PRE_ORDER]);
 
-            // set free delivery for pre order if online order is present
-            if ($orderProducts[self::ORDER]->count()) {
-                $calculatedDeliveryPrice = 0;
-            }
-            $deliveryDay = $this->vendorShipmentDispatcher->getPossibleNearestShipmentArrival()->toDateString();
-
-            $invoicesData['pre_order'] = $this->getOrderInvoiceData($productImagePathPrefix, $exchangeRate, $orderProducts[self::PRE_ORDER], $calculatedDeliveryPrice, $deliveryDay);
+            $invoicesData['pre_order'] = $this->getOrderInvoiceData($cartHandler, $sortedProducts[InvoiceTypes::PRE_ORDER], $productImagePathPrefix, $exchangeRate, $sortedProducts[InvoiceTypes::ORDER]->count() ? 0 : $courierDeliveryPrice, $this->vendorShipmentDispatcher->calculateDeliveryDay($invoiceVendors));
         }
 
-        return ['productsData' => $invoicesData];
+        return $invoicesData;
     }
 
     /**
      * Create order invoice data.
      *
+     * @param ProductInvoiceHandlerInterface $cartHandler
+     * @param Collection $invoiceProducts
      * @param string $productImagePathPrefix
      * @param float $exchangeRate
-     * @param Collection $orderProducts
      * @param float $deliveryPrice
-     * @param string $deliveryDay
+     * @param Carbon $deliveryDay
      * @return array
      */
-    private function getOrderInvoiceData(string $productImagePathPrefix, float $exchangeRate, Collection $orderProducts, float $deliveryPrice, string $deliveryDay): array
+    private function getOrderInvoiceData(ProductInvoiceHandlerInterface $cartHandler, Collection $invoiceProducts, string $productImagePathPrefix, float $exchangeRate, float $deliveryPrice, Carbon $deliveryDay = null): array
     {
         $uahCurrencySymbol = trans('shop.currency.uah');
         $usdCurrencySymbol = trans('shop.currency.usd');
+        $orderInvoiceSum = $cartHandler->calculateProductsSum($invoiceProducts->pluck('products_id')->toArray());
 
-        $invoiceData = [];
+        return [
+            'products' => $cartHandler->getFormattedProducts($invoiceProducts, $productImagePathPrefix),
+            'invoice_sum' => $usdCurrencySymbol . $this->formatPrice($orderInvoiceSum),
+            'invoice_uah_sum' => $this->formatPrice(ceil($orderInvoiceSum * $exchangeRate)) . '&nbsp;' . $uahCurrencySymbol,
+            'delivery_uah_sum' => $this->formatPrice(ceil($deliveryPrice * $exchangeRate)),
+            'total_uah_sum' =>   $this->formatPrice(ceil(($orderInvoiceSum + $deliveryPrice) * $exchangeRate)),
+            'post_delivery-message' => trans('shop.delivery.price.post'),
+            'delivery_time' => $deliveryDay ? $deliveryDay->format('d-m-Y') : trans('shop.delivery.time_undefined'),
+        ];
+    }
 
-        $invoiceData['products'] = $this->getFormattedInvoiceProductsData($orderProducts, $productImagePathPrefix);
-
-        $orderInvoiceSum = $this->cartHandler->calculateProductsSum($orderProducts->pluck('products_id')->toArray());
-        $invoiceData['invoice_sum'] = $usdCurrencySymbol . number_format($orderInvoiceSum, 2, '.', ',');
-        $invoiceData['invoice_uah_sum'] = number_format(ceil($orderInvoiceSum * $exchangeRate), 2, '.', ',') . '&nbsp;' . $uahCurrencySymbol;
-
-        $invoiceData['delivery_uah_sum'] = number_format(ceil($deliveryPrice * $exchangeRate), 2, '.', ',') . '&nbsp;' . $uahCurrencySymbol;
-        $invoiceData['post_delivery-message'] = trans('shop.delivery.price.post');
-
-        $invoiceData['total_uah_sum'] = number_format(ceil(($orderInvoiceSum + $deliveryPrice) * $exchangeRate), 2, '.', ',') . '&nbsp;' . $uahCurrencySymbol;
-
-        $invoiceData['delivery_time'] = $deliveryDay;
-
-        return $invoiceData;
+    /**
+     * Format invoice prices.
+     *
+     * @param float $sum
+     * @return string
+     */
+    private function formatPrice(float $sum)
+    {
+        return number_format($sum, 2, '.', ',');
     }
 
     /**
@@ -116,31 +223,46 @@ class ShowCheckoutController extends CheckoutController
      */
     private function deliveryData()
     {
-        $deliveryData = [];
-
         $user = auth('web')->user();
 
-        // last delivery data
-        $lastUserInvoiceWithDelivery = $this->userInvoice->where('users_id', $user->id)->orderByDesc('created_at')->has('userDelivery')->with('userDelivery')->first();
-
-        if ($lastUserInvoiceWithDelivery) {
-            $lastUserDelivery = $lastUserInvoiceWithDelivery->userDelivery;
-            $deliveryData['name'] = $lastUserDelivery->name;
-            $deliveryData['phone'] = $lastUserDelivery->phone;
-            $deliveryData['address'] = $lastUserDelivery->address;
-        }else{
-            $deliveryData['name'] = $user->name;
-            $deliveryData['phone'] = $user->phone;
-        }
-
-        // delivery types list
-        $deliveryData['types'] = $this->deliveryType->all()->pluck('title', 'id')->toArray();
-
-        // post services list
-        $deliveryData['posts'] = $this->postService->all()->pluck('title', 'id')->toArray();
+        $lastUserDelivery = $this->deliveryRepository->getLastUserDelivery($user);
 
         return [
-            'deliveryData' => $deliveryData,
+            // last delivery data
+            'name' => $lastUserDelivery ? $lastUserDelivery->name : $user->name,
+            'phone' => $lastUserDelivery ? $lastUserDelivery->phone : $user->phone,
+            'address' => $lastUserDelivery ? $lastUserDelivery->address : null,
+            // form data
+            'types' => $this->deliveryRepository->getDeliveryTypes(),
+            'posts' => $this->deliveryRepository->getPostServices(),
+            'cities' => $this->deliveryRepository->getCitiesHaveStorage(),
         ];
+    }
+
+    /**
+     * Create meta data for the view.
+     *
+     * @return array
+     */
+    protected function commonMetaData(): array
+    {
+        return [
+            'commonMetaData' => [
+                'title' => trans('meta.title.checkout_order'),
+            ],
+        ];
+    }
+
+    /**
+     * Remove unavailable products from cart.
+     *
+     * @param ProductInvoiceHandlerInterface $cartHandler
+     * @param Collection $unavailableProducts
+     */
+    private function removeUnavailableProducts(ProductInvoiceHandlerInterface $cartHandler, Collection $unavailableProducts)
+    {
+        foreach ($unavailableProducts as $product){
+            $cartHandler->decreaseProductCount($product->id, $product->quantity);
+        }
     }
 }

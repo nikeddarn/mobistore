@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class Shipment extends Model
@@ -50,5 +51,38 @@ class Shipment extends Model
     public function postShipment()
     {
         return $this->hasOne('App\Models\PostShipment', 'shipments_id', 'id');
+    }
+
+    /**
+     * Get the planned arrival.
+     *
+     * @param  string  $value
+     * @return string
+     */
+    public function getPlannedArrivalAttribute($value)
+    {
+        return $value ? Carbon::createFromTimestamp($value) : null;
+    }
+
+    /**
+     * Get the planned departure.
+     *
+     * @param  string  $value
+     * @return string
+     */
+    public function getPlannedDepartureAttribute($value)
+    {
+        return $value ? Carbon::createFromTimestamp($value) : null;
+    }
+
+    /**
+     * Get the dispatched timestamp.
+     *
+     * @param  string  $value
+     * @return string
+     */
+    public function getDispatchedAttribute($value)
+    {
+        return $value ? Carbon::createFromTimestamp($value) : null;
     }
 }

@@ -300,7 +300,7 @@ class CommonComposer implements BadgeTypes, InvoiceDirections
 
             return [
                 'productsCount' => $productsCount . '&nbsp;' . trans_choice('shop.products', $productsCount),
-                'products' => $handleableCart->getFormattedProducts($productImagePathPrefix),
+                'products' => $handleableCart->getFormattedProducts($handleableCart->getInvoiceProducts(), $productImagePathPrefix),
                 'totalSum' => $handleableCart->getInvoiceSum(),
             ];
         } else {

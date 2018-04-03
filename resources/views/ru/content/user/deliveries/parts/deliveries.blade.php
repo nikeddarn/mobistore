@@ -19,7 +19,11 @@
                 </td>
                 <td>{{ $delivery->deliveryType->title }}</td>
                 <td class="user-invoice-address">{{ $delivery->userDelivery->address }}</td>
-                <td>{{ $delivery->userDelivery->planned_arrival->format('d-m-Y') }}</td>
+                @if($delivery->userDelivery->planned_arrival)
+                    <td>{{ $delivery->userDelivery->planned_arrival->format('d-m-Y') }}</td>
+                @else
+                    <td>Определяется</td>
+                @endif
                 <td>
                     <span class="badge badge-{{$delivery->deliveryStatus->badge_class}} badge-not-rounded">{{ $delivery->deliveryStatus->title }}</span>
                 </td>

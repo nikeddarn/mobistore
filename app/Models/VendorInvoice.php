@@ -35,4 +35,12 @@ class VendorInvoice extends Model
     {
         return $this->belongsTo('App\Models\Vendor', 'vendors_id', 'id');
     }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function userInvoice()
+    {
+        return $this->hasOne('App\Models\UserInvoice', 'vendor_invoices_id', 'id');
+    }
 }

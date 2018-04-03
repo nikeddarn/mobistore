@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Contracts\Shop\Invoices\InvoiceDirections;
 use Illuminate\Database\Eloquent\Model;
 
 class Invoice extends Model
@@ -63,14 +64,6 @@ class Invoice extends Model
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
-    public function storage()
-    {
-        return $this->belongsToMany('App\Models\Storage', 'storage_invoices', 'invoices_id', 'storages_id' );
-    }
-
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
-     */
     public function vendor()
     {
         return $this->belongsToMany('App\Models\Vendor', 'vendor_invoices', 'invoices_id', 'vendors_id' );
@@ -93,11 +86,35 @@ class Invoice extends Model
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\hasOne
+     * @return \Illuminate\Database\Eloquent\Relations\hasMany
      */
     public function storageInvoice()
     {
-        return $this->hasOne('App\Models\StorageInvoice', 'invoices_id', 'id');
+        return $this->hasMany('App\Models\StorageInvoice', 'invoices_id', 'id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function incomingStorage()
+    {
+        return $this->belongsToMany('App\Models\Storage', 'storage_invoices', 'invoices_id', 'storages_id' )->wherePivot('direction', InvoiceDirections::INCOMING);
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function outgoingStorage()
+    {
+        return $this->belongsToMany('App\Models\Storage', 'storage_invoices', 'invoices_id', 'storages_id' )->wherePivot('direction', InvoiceDirections::OUTGOING);
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function storage()
+    {
+        return $this->belongsToMany('App\Models\Storage', 'storage_invoices', 'invoices_id', 'storages_id' );
     }
 
     /**

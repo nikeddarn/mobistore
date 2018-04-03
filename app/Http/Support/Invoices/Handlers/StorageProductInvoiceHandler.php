@@ -46,6 +46,23 @@ class StorageProductInvoiceHandler extends ProductInvoiceHandler implements Invo
     }
 
     /**
+     * Decrease product count in invoice
+     *
+     * @param int $productId
+     * @param int $decreasingQuantity
+     * @return int
+     * @throws \Exception
+     */
+    protected function decreaseInvoiceProductCount(int $productId, int $decreasingQuantity):int
+    {
+        $deletedCount = parent::decreaseInvoiceProductCount($productId, $decreasingQuantity);
+
+        $this->reserveProductsOnStorage($productId, $deletedCount * -1);
+
+        return $deletedCount;
+    }
+
+    /**
      * Reserve products on outgoing store. If $reservingCount is negative, products will be unreserved by this count.
      *
      * @param int $productId
@@ -53,7 +70,7 @@ class StorageProductInvoiceHandler extends ProductInvoiceHandler implements Invo
      */
     private function reserveProductsOnStorage(int $productId, int $reservingCount)
     {
-        $outgoingStorage = $this->getOutgoingStorage();
+        $outgoingStorage = $this->invoice->outgoingStorage()->first();
 
         if ($outgoingStorage) {
 
@@ -66,22 +83,6 @@ class StorageProductInvoiceHandler extends ProductInvoiceHandler implements Invo
 
             $storageProduct->reserved_quantity = max($storageProduct->reserved_quantity + $reservingCount, 0);
             $storageProduct->save();
-        }
-    }
-
-    /**
-     * Get outgoing storage from invoice.
-     *
-     * @return Storage|null
-     */
-    private function getOutgoingStorage()
-    {
-        $outgoingStorageInvoice = $this->invoice->storageInvoice;
-
-        if ($outgoingStorageInvoice->direction === self::OUTGOING){
-            return $outgoingStorageInvoice->storage;
-        }else{
-            return null;
         }
     }
 

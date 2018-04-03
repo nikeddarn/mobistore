@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware\Auth;
 
+use App\Contracts\Shop\Roles\UserRolesInterface;
 use Closure;
 use Illuminate\Http\Request;
 
@@ -21,9 +22,8 @@ class AdminMiddleware
         if(!$user){
             return redirect()->guest(route('admin.login'));
         }
-
-        if(!$user->userRole->count()){
-            abort(403, 'A user (Id=' . $user->id . ') without a role tried to enter the administrative section.');
+        if(!count(array_intersect($user->role->pluck('id')->toArray(), [UserRolesInterface::ROOT, UserRolesInterface::ADMIN]))){
+            abort(403, 'Forbidden');
         }
 
         return $next($request);

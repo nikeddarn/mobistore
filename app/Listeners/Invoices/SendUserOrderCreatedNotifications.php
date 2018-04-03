@@ -5,7 +5,6 @@ namespace App\Listeners\Invoices;
 use App\Contracts\Shop\Invoices\InvoiceTypes;
 use App\Contracts\Shop\Roles\UserRolesInterface;
 use App\Events\Invoices\UserOrderCreated;
-use App\Events\Invoices\UserPreOrderCreated;
 use App\Models\User;
 use App\Notifications\Invoices\StorageOrderCreatedNotification;
 use App\Notifications\Invoices\UserOrderCreatedNotification;
@@ -13,7 +12,7 @@ use App\Notifications\Invoices\VendorOrderCreatedNotification;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-class SendUserOrderInvoiceNotifications implements UserRolesInterface, InvoiceTypes
+class SendUserOrderCreatedNotifications implements UserRolesInterface, InvoiceTypes
 {
     /**
      * @var User
@@ -33,7 +32,7 @@ class SendUserOrderInvoiceNotifications implements UserRolesInterface, InvoiceTy
     /**
      * Handle the event.
      *
-     * @param  UserOrderCreated|UserPreOrderCreated $event
+     * @param  UserOrderCreated $event
      * @return void
      */
     public function handle($event)

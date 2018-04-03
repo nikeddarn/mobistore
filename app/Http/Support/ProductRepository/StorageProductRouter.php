@@ -5,40 +5,34 @@
 
 namespace App\Http\Support\ProductRepository;
 
-
-use App\Models\Storage;
 use Illuminate\Support\Collection;
 
 class StorageProductRouter
 {
-    /**
-     * @var Storage
-     */
-    private $storage;
 
 
     /**
-     * StorageProductRouter constructor.
+     * Define storage for collecting user order.
      *
-     * @param Storage $storage
-     */
-    public function __construct(Storage $storage)
-    {
-        $this->storage = $storage;
-    }
-
-    /**
-     * Get storage id that will serve given invoice.
-     *
-     * @param Collection $invoiceProducts
+     * @param Collection $possibleStorages
      * @return int
      */
-    public function defineInvoiceStorage(Collection $invoiceProducts):int
+    public function defineCollectingOrderStorage(Collection $possibleStorages): int
     {
-        if ($this->storage->count() === 1){
-            return $this->storage->first()->id;
-        }else{
-            return $this->storage->where('is_main')->first()->id;
+        // select single possible storage
+        if ($possibleStorages->count() === 1) {
+            return $possibleStorages->first()->id;
         }
+
+        // select main storage
+        $mainStorage = $possibleStorages->where('is_main', '=', 1)->first();
+        if ($mainStorage) {
+            return $mainStorage->id;
+        }
+
+        /**
+         * ToDo: Define storage depends on user delivery city
+         */
+        return $possibleStorages->first();
     }
 }

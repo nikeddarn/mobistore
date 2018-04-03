@@ -8,7 +8,7 @@
         @if($userDeliveries->count())
             @include('content.user.deliveries.parts.deliveries')
         @else
-            <p class="text-indent">Нет доставок</p>
+            <h4 class="text-gray text-center">Нет доставок</h4>
         @endif
     </div>
 

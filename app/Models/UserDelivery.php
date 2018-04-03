@@ -29,6 +29,14 @@ class UserDelivery extends Model
     public $timestamps = false;
 
     /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function userInvoice()
+    {
+        return $this->hasOne('App\Models\UserInvoice', 'user_deliveries_id', 'id');
+    }
+
+    /**
      * Get the planned arrival.
      *
      * @param  string  $value
@@ -36,6 +44,6 @@ class UserDelivery extends Model
      */
     public function getPlannedArrivalAttribute($value)
     {
-        return Carbon::createFromFormat('Y-m-d H:i:s', $value);
+        return $value ? Carbon::createFromTimestamp($value) : null;
     }
 }

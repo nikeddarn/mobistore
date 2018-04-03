@@ -6,7 +6,6 @@
 namespace App\Http\Support\Invoices\Handlers;
 
 use App\Contracts\Shop\Invoices\Handlers\ProductInvoiceHandlerInterface;
-use App\Http\Support\FormatInvoiceProducts;
 use App\Models\InvoiceProduct;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
@@ -14,8 +13,6 @@ use Illuminate\Support\Collection;
 
 class ProductInvoiceHandler extends InvoiceHandler implements ProductInvoiceHandlerInterface
 {
-    use FormatInvoiceProducts;
-
     /**
      * Get collection of products of invoice.
      *
@@ -27,14 +24,39 @@ class ProductInvoiceHandler extends InvoiceHandler implements ProductInvoiceHand
     }
 
     /**
+     * Get array of products count keyed by product id.
+     *
+     * @return array
+     */
+    public function getArrayInvoiceProducts(): array
+    {
+        return $this->invoice->invoiceProduct->pluck('quantity', 'products_id')->toArray();
+    }
+
+    /**
      * Create array of products data for view.
      *
+     * @param Collection $invoiceProducts
      * @param string|null $imageUrlPrefix
      * @return array
      */
-    public function getFormattedProducts(string $imageUrlPrefix = null):array
+    public function getFormattedProducts(Collection $invoiceProducts, string $imageUrlPrefix = null):array
     {
-        return $this->getFormattedInvoiceProductsData($this->invoice->invoiceProduct, $imageUrlPrefix);
+        $products = [];
+
+        $invoiceProducts->each(function (InvoiceProduct $invoiceProduct) use ($imageUrlPrefix, &$products) {
+            $products[] = [
+                'id' => $invoiceProduct->product->id,
+                'url' => $invoiceProduct->product->url,
+                'title' => $invoiceProduct->product->page_title,
+                'quantity' => $invoiceProduct->quantity,
+                'price' => number_format($invoiceProduct->price, 2, '.', ','),
+                'total' => number_format($invoiceProduct->price * $invoiceProduct->quantity, 2, '.', ','),
+                'image' => $imageUrlPrefix ? $imageUrlPrefix . ($invoiceProduct->product->primaryImage ? $invoiceProduct->product->primaryImage->image : 'no_image.png') : null,
+            ];
+        });
+
+        return $products;
     }
 
     /**
@@ -57,13 +79,8 @@ class ProductInvoiceHandler extends InvoiceHandler implements ProductInvoiceHand
      */
     public function getProductsCount():int
     {
-        $count = 0;
+        return $this->invoice->invoiceProduct->sum('quantity');
 
-        $this->invoice->invoiceProduct->each(function (InvoiceProduct $invoiceProduct) use (&$count){
-            $count += $invoiceProduct->quantity;
-        });
-
-        return $count;
     }
 
     /**
@@ -141,6 +158,31 @@ class ProductInvoiceHandler extends InvoiceHandler implements ProductInvoiceHand
     }
 
     /**
+     * Decrease products count in invoice by product's id.
+     *
+     * @param int $productId
+     * @param int $decreasingQuantity
+     * @return int Deleted products count.
+     */
+    public function decreaseProductCount(int $productId, int $decreasingQuantity): int
+    {
+        assert($productId > 0, 'Product id must be positive integer');
+
+        try {
+            $this->databaseManager->beginTransaction();
+
+            $deletedCount = static::decreaseInvoiceProductCount($productId, $decreasingQuantity);
+
+            $this->databaseManager->commit();
+
+            return $deletedCount;
+        } catch (Exception $e) {
+            $this->databaseManager->rollback();
+            return false;
+        }
+    }
+
+    /**
      * Add products to invoice by product's id.
      *
      * @param int $productId
@@ -187,6 +229,32 @@ class ProductInvoiceHandler extends InvoiceHandler implements ProductInvoiceHand
 
         $invoiceProduct->delete();
         $this->invoice->setRelation('invoiceProduct', $this->removeFromInvoiceProductCollectionByProductId($this->invoice->invoiceProduct, $productId));
+
+        parent::decreaseInvoiceSum($subtractingSum);
+
+        return $deletedCount;
+    }
+
+    /**
+     * Decrease product count in invoice
+     *
+     * @param int $productId
+     * @param int $decreasingQuantity
+     * @return int
+     */
+    protected function decreaseInvoiceProductCount(int $productId, int $decreasingQuantity):int
+    {
+        $invoiceProduct = $this->getInvoiceProduct($productId);
+
+        if (!$invoiceProduct) {
+            return 0;
+        }
+
+        $deletedCount = min($invoiceProduct->quantity, $decreasingQuantity);
+        $subtractingSum = $invoiceProduct->price * $deletedCount;
+
+        $invoiceProduct->quantity -= $deletedCount;
+        $invoiceProduct->quantity->save();
 
         parent::decreaseInvoiceSum($subtractingSum);
 

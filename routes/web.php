@@ -83,15 +83,6 @@ Route::middleware(['auth:web'])->group(function () {
     Route::get('/user/password', 'User\PasswordController@showChangePasswordForm')->name('password.show');
 
     Route::post('/user/password/reset', 'User\PasswordController@changePassword')->name('password.reset');
-//
-//    Route::get('/user/settings', 'Profile\SettingsController@showSettingsForm');
-//    Route::post('/user/settings', 'Profile\SettingsController@resetSettings');
-//
-//    Route::get('/user/communication', 'Communication\MessageController@showMessages');
-//    Route::get('/user/account', 'Account\AccountController@showUserAccount');
-//    Route::get('/user/order', 'Order\OrderController@showOrders');
-//    Route::get('/user/delivery', 'Delivery\DeliveryController@showUserDeliveries');
-//    Route::get('/user/warranty', 'Warranty\WarrantyController@showUserWarranties');
 
 });
 
@@ -100,7 +91,7 @@ Route::middleware(['auth:web'])->group(function () {
 
 /**
  * ****************************************************************
-* ToDo this routes must be removed after setup completed !!!!!!!!!!!
+ * ToDo this routes must be removed after setup completed !!!!!!!!!!!
  * ****************************************************************
  */
 Route::get('/initialize', 'Admin\SetupController@initialize');
@@ -120,11 +111,28 @@ Route::middleware(['admin'])->group(function () {
 //    Route::post('/setup/confirm', 'Admin\SetupController@confirmSetup');
 
 
-
-
     Route::get('/admin', 'Admin\AdminController@index');
 
     Route::get('/admin/categories', 'Admin\CategoriesController@index');
+
+});
+
+/******************* Vendor Pages *************************************************/
+
+Route::middleware('vendor.user')->group(function () {
+
+    Route::get('/partner', 'Vendor\VendorController@index');
+
+    Route::get('/partner/{vendorId}/account', 'Vendor\VendorAccountController@index')->name('vendor.account');
+
+    Route::get('/partner/{vendorId}/order', 'Vendor\VendorOrderController@index')->name('vendor.order');
+    Route::post('/partner/{vendorId}/order/collect', 'Vendor\VendorOrderController@collect')->name('vendor.order.collect');
+
+    Route::get('/partner/{vendorId}/delivery', 'Vendor\VendorDeliveryController@index')->name('vendor.delivery');
+
+    Route::get('/partner/{vendorId}/warranty', 'Vendor\VendorWarrantyController@index')->name('vendor.warranty');
+
+    Route::get('/partner/{vendorId}/payment', 'Vendor\VendorPaymentController@index')->name('vendor.payment');
 
 });
 

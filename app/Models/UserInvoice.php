@@ -38,6 +38,14 @@ class UserInvoice extends Model
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
+    public function user()
+    {
+        return $this->belongsTo('App\Models\User', 'users_id', 'id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function userDelivery()
     {
         return $this->belongsTo('App\Models\UserDelivery', 'user_deliveries_id', 'id');

@@ -3,6 +3,8 @@
 namespace App\Http;
 
 use App\Http\Middleware\Auth\AdminMiddleware;
+use App\Http\Middleware\Auth\VendorManagerMiddleware;
+use App\Http\Middleware\Auth\VendorUserMiddleware;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
@@ -62,7 +64,8 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
 
 
-        //custom middlewares
+        //custom middleware
         'admin' => AdminMiddleware::class,
+        'vendor.user' => VendorUserMiddleware::class,
     ];
 }

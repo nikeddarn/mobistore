@@ -6,20 +6,21 @@
 namespace App\Http\Support\Invoices\Creators;
 
 use App\Contracts\Shop\Delivery\DeliveryStatusInterface;
+use App\Contracts\Shop\Invoices\InvoiceDirections;
 use App\Models\Invoice;
 use Exception;
 
-class OutgoingUserInvoiceCreator extends InvoiceCreator implements DeliveryStatusInterface
+class UserInvoiceCreator extends InvoiceCreator
 {
     /**
      * @param int $invoiceType
      * @param int $userId
      * @param int $storageId
-     * @param int $deliveryTypeId
+     * @param string $direction
      * @return Invoice
      * @throws Exception
      */
-    public function createInvoice(int $invoiceType, int $userId, int $storageId, int $deliveryTypeId)
+    public function createInvoice(int $invoiceType, int $userId, int $storageId, string $direction)
     {
         try {
             $this->databaseManager->beginTransaction();
@@ -30,16 +31,17 @@ class OutgoingUserInvoiceCreator extends InvoiceCreator implements DeliveryStatu
             $userInvoice = $this->createdInvoice->userInvoice()->create([
                 'invoices_id' => $this->createdInvoice->id,
                 'users_id' => $userId,
-                'direction' => self::INCOMING,
-                'delivery_status_id' => self::PROCESSING,
-                'delivery_types_id' =>$deliveryTypeId,
+                'direction' => $direction,
+                'delivery_status_id' => DeliveryStatusInterface::PROCESSING,
             ]);
 
             // create storage invoice
+            $oppositeDirection = $direction === InvoiceDirections::OUTGOING ? InvoiceDirections::INCOMING : InvoiceDirections::OUTGOING;
+
             $storageInvoice = $this->createdInvoice->storageInvoice()->create([
                 'invoices_id' => $this->createdInvoice->id,
                 'storages_id' => $storageId,
-                'direction' => self::OUTGOING,
+                'direction' => $oppositeDirection,
             ]);
 
             $this->createdInvoice

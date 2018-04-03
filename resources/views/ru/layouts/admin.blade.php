@@ -8,14 +8,18 @@
 
 <body>
 
+<div class="container">
+
 @include('headers.admin.index')
 
-    <!-- Page Content -->
-    @yield('content')
+<!-- Page Content -->
+@yield('content')
 
 
 <!-- Scripts -->
-@yield ('scripts')
+    @yield ('scripts')
+
+</div>
 
 </body>
 

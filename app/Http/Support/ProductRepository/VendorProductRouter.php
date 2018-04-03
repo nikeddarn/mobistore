@@ -33,12 +33,12 @@ class VendorProductRouter
      * @param Collection $invoiceProducts
      * @return int
      */
-    public function defineInvoiceVendor(Collection $invoiceProducts):int
-    {
-        if ($this->vendor->count() === 1){
-            return $this->vendor->first()->id;
-        }else{
-            return $this->vendor->first()->id;
-        }
-    }
+//    public function defineInvoiceVendor(Collection $invoiceProducts):int
+//    {
+//        if ($this->vendor->count() === 1){
+//            return $this->vendor->first()->id;
+//        }else{
+//            return $this->vendor->first()->id;
+//        }
+//    }
 }

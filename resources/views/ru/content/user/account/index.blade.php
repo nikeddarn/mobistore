@@ -11,8 +11,6 @@
     <div class="m-t-3">
         @if($userInvoices->count())
             @include('content.user.account.parts.invoices')
-        @else
-            <p class="text-indent">Нет записей</p>
         @endif
     </div>
 

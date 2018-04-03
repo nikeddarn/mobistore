@@ -7,3 +7,7 @@
   margin-bottom: 5px;
 }
 
+#vendorOrders .product-ordered-quantity {
+  width: 20%;
+}
+

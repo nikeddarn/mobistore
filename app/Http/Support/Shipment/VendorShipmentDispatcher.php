@@ -6,78 +6,115 @@
 namespace App\Http\Support\Shipment;
 
 
-use App\Models\CourierSchedule;
+use App\Models\VendorShipmentSchedule;
 use App\Models\Shipment;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\DatabaseManager;
-use Illuminate\Database\Eloquent\Builder;
 
 class VendorShipmentDispatcher extends ShipmentDispatcher
 {
     /**
-     * @var CourierSchedule
+     * @var VendorShipmentSchedule
      */
-    private $courierSchedule;
-
-    /**
-     * @var int
-     */
-    private $courierId;
+    private $vendorShipmentSchedule;
 
     /**
      * VendorShipmentDispatcher constructor.
      *
      * @param Shipment $shipment
      * @param DatabaseManager $databaseManager
-     * @param CourierSchedule $courierSchedule
+     * @param VendorShipmentSchedule $vendorShipmentSchedule
+     * @param ShipmentCalendar $workCalendar
      */
-    public function __construct(Shipment $shipment, DatabaseManager $databaseManager, CourierSchedule $courierSchedule)
+    public function __construct(Shipment $shipment, DatabaseManager $databaseManager, VendorShipmentSchedule $vendorShipmentSchedule, ShipmentCalendar $workCalendar)
     {
-        parent::__construct($shipment, $databaseManager);
-        $this->courierSchedule = $courierSchedule;
+        parent::__construct($shipment, $databaseManager, $workCalendar);
+        $this->vendorShipmentSchedule = $vendorShipmentSchedule;
+    }
+
+    /**
+     * Get possible arrival date.
+     *
+     * @param array $invoiceVendors
+     * @return Carbon|null
+     */
+    public function calculateDeliveryDay(array $invoiceVendors)
+    {
+        // get max of shipment arrivals by vendors
+        $vendorShipments = $this->buildRetrieveNextShipmentQuery()->whereHas('vendorShipment', function ($query) use ($invoiceVendors) {
+            $query->whereIn('vendors_id', $invoiceVendors);
+        })
+            ->selectRaw('MAX(shipments.planned_arrival) AS planned_arrival')
+            ->groupBy('vendor_shipments.vendors_id')
+            ->get();
+
+        if ($vendorShipments->count() === count($invoiceVendors)) {
+            // all vendors have unclosed shipment
+            return $vendorShipments->max('planned_arrival');
+        } else {
+            // define nearest departure days from vendor shipment schedule
+            $possibleDepartureDate = $this->workCalendar->getNearestVendorWeekDay(config('shop.shipment.current_day_delivery_max_time.vendor'));
+            // define vendor possible shipments
+            $vendorPossibleShipments = $this->vendorShipmentSchedule
+                ->selectRaw('MIN(planned_departure) AS planned_departure')
+                ->groupBy('vendors_id')
+                ->where('planned_departure', '>=', $possibleDepartureDate->toDateString())
+                ->whereIn('vendors_id', $invoiceVendors)
+                ->get();
+
+            if ($vendorPossibleShipments->count() === count($invoiceVendors)) {
+                // all vendors shipments are planned
+                $plannedDeparture = $vendorPossibleShipments->max('planned_departure');
+                // add 1 day for delivery
+                $plannedArrival = Carbon::createFromTimestamp($plannedDeparture)->addDays(1);
+                return $plannedArrival;
+            } else {
+                // arrival date will be defined later
+                return null;
+            }
+        }
     }
 
     /**
      * Get nearest not dispatched shipment or create new shipment.
      *
+     * @param int $vendorId
      * @return Shipment|\Illuminate\Database\Eloquent\Model
-     * @throws Exception
      */
-    public function getOrCreateNextShipment()
+    public function getNextShipment(int $vendorId)
     {
-        try{
-            $this->databaseManager->beginTransaction();
-
-            $shipment = static ::buildRetrieveNextShipmentQuery()->first();
-
-            $this->databaseManager->commit();
-
-            return $shipment ? $shipment : static::buildNextShipment();
-        }catch (Exception $exception){
-            $this->databaseManager->rollBack();
-
-            throw new Exception($exception->getMessage());
-        }
+        return $this->buildRetrieveNextShipmentQuery()->whereHas('vendorShipment', function ($query) use ($vendorId) {
+            $query->where('vendors_id', $vendorId);
+        })->first();
     }
 
     /**
      * Create next shipment. Return shipment date.
      *
+     * @param int $vendorId
+     * @param Carbon $departure
+     * @param Carbon $arrival
+     * @param int $courierId
      * @return Shipment|\Illuminate\Database\Eloquent\Model
      * @throws Exception
      */
-    public function createNextShipment()
+    public function createNextShipment(int $vendorId, Carbon $departure, Carbon $arrival, int $courierId)
     {
-        try{
+        try {
             $this->databaseManager->beginTransaction();
 
-            $shipment = static::buildNextShipment();
+            $shipment = $this->createShipment($departure, $arrival, $courierId);
+
+            $vendorShipment = $shipment->vendorShipment()->create([
+                'vendors_id' => $vendorId,
+            ]);
+            $shipment->setRelation('vendorShipment', $vendorShipment);
 
             $this->databaseManager->commit();
 
             return $shipment;
-        }catch (Exception $exception){
+        } catch (Exception $exception) {
             $this->databaseManager->rollBack();
 
             throw new Exception($exception->getMessage());
@@ -85,73 +122,37 @@ class VendorShipmentDispatcher extends ShipmentDispatcher
     }
 
     /**
-     * Build retrieve query of nearest possibly shipment arrival.
-     *
-     * @return Builder
-     */
-    protected function buildRetrieveNextShipmentQuery():Builder
-    {
-        return parent::buildRetrieveNextShipmentQuery()->has('vendorShipment');
-    }
-
-    /**
-     * Build new shipment.
-     *
-     * @return \Illuminate\Database\Eloquent\Model
-     */
-    protected function buildNextShipment()
-    {
-        $shipment = parent::buildNextShipment();
-        $vendorShipment = $shipment->vendorShipment()->create([
-            'couriers_id' => $this->courierId,
-        ]);
-        $shipment->setRelation('vendorShipment', $vendorShipment);
-        return $shipment;
-    }
-
-    /**
      * Define next possibly shipment departure.
      *
-     * @return Carbon
+     * @param int $vendorId
+     * @return Carbon|null
      */
-    protected function defineDepartureDate(): Carbon
+    protected function defineDepartureDate(int $vendorId)
     {
-        $possibleDay = Carbon::now();
-
-        // add 1 day if current time more than max departure time
-        if ($possibleDay > Carbon::today()->addHours(config('shop.shipment.current_day_delivery_max_time.vendor'))){
-            $possibleDay->addDay();
-        }
-
-        $possibleCourierDay = $this->courierSchedule->whereDay('planned_departure', '>=', $possibleDay->toDateString())->first();
-
-        if ($possibleCourierDay){
-            //set courier
-            $this->courierId = $possibleCourierDay->couriers_id;
-
-            // return date from schedule
-            return $possibleCourierDay->planned_departure;
-        }else{
-
-            // return max pre order offer delivery date
-            return Carbon::now()->addDays(config('shop.delivery.pre_order.max') - 1);
-        }
+        return $this->workCalendar->getNextPlannedVendorDepartureDay($vendorId);
     }
 
 
     /**
      * Define next possibly shipment arrival.
      *
+     * @param int $vendorId
      * @param Carbon $departureDay
-     * @return Carbon
+     * @return Carbon|null
      */
-    protected function defineArrivalDate(Carbon $departureDay = null): Carbon
+    protected function defineArrivalDate(int $vendorId, Carbon $departureDay = null)
     {
-        if (!$departureDay){
-            $departureDay = self::defineDepartureDate();
+        if (!$departureDay) {
+            $departureDay = $this->defineDepartureDate($vendorId);
         }
 
-        // add 1 day for delivery
-        return (clone $departureDay)->addDay();
+        if ($departureDay) {
+            // add 1 day for delivery
+            $arrivalDay = (clone $departureDay)->addDay();
+        } else {
+            $arrivalDay = null;
+        }
+
+        return $arrivalDay;
     }
 }

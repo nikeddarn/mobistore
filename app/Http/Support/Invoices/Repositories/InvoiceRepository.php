@@ -7,10 +7,7 @@ namespace App\Http\Support\Invoices\Repositories;
 
 use App\Contracts\Shop\Invoices\InvoiceDirections;
 use App\Contracts\Shop\Invoices\Repositories\InvoiceRepositoryInterface;
-use App\Http\Support\Currency\ExchangeRates;
 use App\Models\Invoice;
-use App\Models\InvoiceProduct;
-use App\Models\Storage;
 use Exception;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Eloquent\Model;
@@ -18,11 +15,6 @@ use Illuminate\Database\Eloquent\Builder;
 
 class InvoiceRepository implements InvoiceRepositoryInterface, InvoiceDirections
 {
-    /**
-     * @var ExchangeRates
-     */
-    private $exchangeRates;
-
     /**
      * @var Invoice
      */
@@ -41,18 +33,16 @@ class InvoiceRepository implements InvoiceRepositoryInterface, InvoiceDirections
     /**
      * @var DatabaseManager
      */
-    private $databaseManager;
+    protected $databaseManager;
 
     /**
      * Invoice repository constructor.
      *
      * @param Invoice $invoice
-     * @param ExchangeRates $exchangeRates
      * @param DatabaseManager $databaseManager
      */
-    public function __construct(Invoice $invoice, ExchangeRates $exchangeRates, DatabaseManager $databaseManager)
+    public function __construct(Invoice $invoice, DatabaseManager $databaseManager)
     {
-        $this->exchangeRates = $exchangeRates;
         $this->invoice = $invoice;
         $this->databaseManager = $databaseManager;
     }
@@ -106,6 +96,7 @@ class InvoiceRepository implements InvoiceRepositoryInterface, InvoiceDirections
      *
      * @param int $invoiceId
      * @return bool
+     * @throws Exception
      */
     public function deleteByInvoiceId(int $invoiceId)
     {
@@ -136,6 +127,7 @@ class InvoiceRepository implements InvoiceRepositoryInterface, InvoiceDirections
      * Delete invoice that was retrieved by this class.
      *
      * @return bool
+     * @throws Exception
      */
     public function deleteRetrievedInvoice()
     {
@@ -154,18 +146,6 @@ class InvoiceRepository implements InvoiceRepositoryInterface, InvoiceDirections
     {
         $this->makeRetrieveInvoiceQuery();
         $this->setInvoiceIdConstraint($invoiceId);
-    }
-
-    /**
-     * Prepare query to retrieve invoice with limit.
-     *
-     * @param int $limit
-     * @return void
-     */
-    protected function buildRetrieveInvoiceQueryWithLimit(int $limit = 1)
-    {
-        $this->makeRetrieveInvoiceQuery();
-        $this->setCountLimitConstraint($limit);
     }
 
     /**
@@ -190,79 +170,14 @@ class InvoiceRepository implements InvoiceRepositoryInterface, InvoiceDirections
     }
 
     /**
-     * Add limit constraint to invoice query.
-     *
-     * @param int $limit
-     * @return void
-     */
-    private function setCountLimitConstraint(int $limit)
-    {
-        $this->retrieveQuery->limit($limit);
-    }
-
-    /**
      * Remove products reserve from storage. Destroy invoice.
      *
      * @param Invoice|Model $invoice
      * @return bool
+     * @throws Exception
      */
     protected function removeInvoiceData(Invoice $invoice)
     {
-        try {
-            $this->databaseManager->beginTransaction();
-
-            // remove products reserve from storage if exists
-            if ($invoice->invoiceProduct->count()){
-                $this->removeReservedProductsOnStorage($invoice);
-            }
-
-            // delete invoice
-            $invoice->delete();
-
-            $this->databaseManager->commit();
-
-            return true;
-        } catch (Exception $e) {
-            $this->databaseManager->rollback();
-            return false;
-        }
-    }
-
-    /**
-     * Remove reserve for this invoice products from storage.
-     *
-     * @param Invoice $removingInvoice
-     */
-    protected function removeReservedProductsOnStorage(Invoice $removingInvoice)
-    {
-        $outgoingStorage = $this->getOutgoingStorage($removingInvoice);
-
-        if ($outgoingStorage) {
-
-            $storageProducts = $outgoingStorage->storageProduct->keyBy('products_id');
-
-            $removingInvoice->invoiceProduct->each(function (InvoiceProduct $invoiceProduct) use ($storageProducts){
-                $currentStorageProduct = $storageProducts->get($invoiceProduct->products_id);
-                $currentStorageProduct->reserved_quantity = max(($currentStorageProduct->reserved_quantity - $invoiceProduct->quantity), 0);
-                $currentStorageProduct->save();
-            });
-        }
-    }
-
-    /**
-     * Get outgoing storage from invoice.
-     *
-     * @param Invoice $invoice
-     * @return Storage|null
-     */
-    private function getOutgoingStorage(Invoice $invoice)
-    {
-        $outgoingStorageInvoice = $invoice->storageInvoice;
-
-        if ($outgoingStorageInvoice->direction === self::OUTGOING){
-            return $outgoingStorageInvoice->storage;
-        }else{
-            return null;
-        }
+        return (bool)$invoice->delete();
     }
 }

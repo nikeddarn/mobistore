@@ -1,39 +1,45 @@
 <?php
 /**
- * Vendor invoice creator for incoming storage invoices.
+ * Vendor invoice creator for outgoing storage invoices.
  */
 
 namespace App\Http\Support\Invoices\Creators;
 
+use App\Contracts\Shop\Invoices\InvoiceDirections;
 use App\Models\Invoice;
 use Exception;
 
-class IncomingVendorInvoiceCreator extends InvoiceCreator
+class VendorInvoiceCreator extends InvoiceCreator
 {
     /**
      * @param int $invoiceType
      * @param int $vendorId
      * @param int $storageId
+     * @param string $direction
      * @return Invoice
      * @throws Exception
      */
-    public function createInvoice(int $invoiceType, int $vendorId, int $storageId)
+    public function createInvoice(int $invoiceType, int $vendorId, int $storageId, string $direction)
     {
         try {
             $this->databaseManager->beginTransaction();
 
             parent::makeInvoice($invoiceType);
 
+            // create vendor invoice
             $vendorInvoice = $this->createdInvoice->vendorInvoice()->create([
                 'invoices_id' => $this->createdInvoice->id,
                 'vendors_id' => $vendorId,
-                'direction' => self::OUTGOING,
+                'direction' => $direction,
             ]);
+
+            // create storage invoice
+            $oppositeDirection = $direction === InvoiceDirections::OUTGOING ? InvoiceDirections::INCOMING : InvoiceDirections::OUTGOING;
 
             $storageInvoice = $this->createdInvoice->storageInvoice()->create([
                 'invoices_id' => $this->createdInvoice->id,
                 'storages_id' => $storageId,
-                'direction' => self::INCOMING,
+                'direction' => $oppositeDirection,
             ]);
 
             $this->createdInvoice

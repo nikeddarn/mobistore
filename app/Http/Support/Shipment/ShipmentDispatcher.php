@@ -11,12 +11,12 @@ use Carbon\Carbon;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Eloquent\Builder;
 
-class ShipmentDispatcher
+abstract class ShipmentDispatcher
 {
     /**
      * @var Shipment
      */
-    private $shipment;
+    protected $shipment;
 
     /**
      * @var DatabaseManager
@@ -24,35 +24,22 @@ class ShipmentDispatcher
     protected $databaseManager;
 
     /**
+     * @var ShipmentCalendar
+     */
+    protected $workCalendar;
+
+    /**
      * ShipmentDispatcher constructor.
      *
      * @param Shipment $shipment
      * @param DatabaseManager $databaseManager
+     * @param ShipmentCalendar $workCalendar
      */
-    public function __construct(Shipment $shipment, DatabaseManager $databaseManager)
+    public function __construct(Shipment $shipment, DatabaseManager $databaseManager, ShipmentCalendar $workCalendar)
     {
         $this->shipment = $shipment;
         $this->databaseManager = $databaseManager;
-    }
-
-    /**
-     * Get possible arrival date.
-     *
-     * @return Carbon
-     */
-    public function getPossibleNearestShipmentArrival():Carbon
-    {
-        return static::defineArrivalDate();
-    }
-
-    /**
-     * Get nearest not dispatched shipment.
-     *
-     * @return Carbon|Builder|\Illuminate\Database\Eloquent\Model|null
-     */
-    public function getNextShipment()
-    {
-        return static::buildRetrieveNextShipmentQuery()->first();
+        $this->workCalendar = $workCalendar;
     }
 
     /**
@@ -62,31 +49,23 @@ class ShipmentDispatcher
      */
     protected function buildRetrieveNextShipmentQuery()
     {
-        return $this->createRetrieveQuery()->whereNull('dispatched')->orderByDesc('created_at');
+        return $this->shipment->select()->whereNull('dispatched')->orderByDesc('created_at');
     }
 
     /**
-     * Build new shipment.
+     * Create new shipment.
      *
+     * @param Carbon $departure
+     * @param Carbon $arrival
+     * @param int $courierId
      * @return \Illuminate\Database\Eloquent\Model
      */
-    protected function buildNextShipment()
+    protected function createShipment(Carbon $departure, Carbon $arrival, int $courierId)
     {
-        $departureDay = static::defineDepartureDate();
-
         return $this->shipment->create([
-            'planned_departure' => $departureDay->toDateString(),
-            'planned_arrival' => static::defineArrivalDate($departureDay)->toDateString(),
+            'planned_departure' => $departure,
+            'planned_arrival' => $arrival,
+            'couriers_id' => $courierId,
         ]);
-    }
-
-    /**
-     * Create query builder.
-     *
-     * @return Builder
-     */
-    private function createRetrieveQuery():Builder
-    {
-        return $this->shipment->select();
     }
 }
