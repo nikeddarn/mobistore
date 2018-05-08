@@ -126,7 +126,7 @@ Route::middleware('vendor.user')->group(function () {
     Route::get('/partner/{vendorId}/account', 'Vendor\VendorAccountController@index')->name('vendor.account');
 
     Route::get('/partner/{vendorId}/order', 'Vendor\VendorOrderController@index')->name('vendor.order');
-    Route::post('/partner/{vendorId}/order/collect', 'Vendor\VendorOrderController@collect')->name('vendor.order.collect');
+    Route::post('/partner/{vendorId}/order/collect', 'Vendor\VendorCollectOrderController@collect')->name('vendor.order.collect');
 
     Route::get('/partner/{vendorId}/delivery', 'Vendor\VendorDeliveryController@index')->name('vendor.delivery');
 

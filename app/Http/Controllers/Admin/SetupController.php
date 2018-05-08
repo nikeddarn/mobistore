@@ -88,8 +88,8 @@ class SetupController extends Controller
         $message .= $this->commonMetaData();
         $message .= $this->products();
 //        $message .= $this->watermark();
-        $message .= $this->vendors();
         $message .= $this->cities();
+        $message .= $this->vendors();
         $message .= $this->storages();
 
         return view('content.admin.setup.message')->with([

@@ -78,7 +78,7 @@ class InvoiceRepository implements InvoiceRepositoryInterface, InvoiceDirections
      * @param int $invoiceId
      * @return Model
      */
-    public function getByInvoiceId(int $invoiceId): Model
+    public function getByInvoiceId(int $invoiceId):Invoice
     {
         if (isset($this->retrievedInvoice)) {
             return $this->retrievedInvoice;

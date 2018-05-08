@@ -49,7 +49,7 @@ abstract class ShipmentDispatcher
      */
     protected function buildRetrieveNextShipmentQuery()
     {
-        return $this->shipment->select()->whereNull('dispatched')->orderByDesc('created_at');
+        return $this->shipment->whereNull('dispatched');
     }
 
     /**

@@ -35,7 +35,7 @@ class UserOrderCreatedNotification extends Notification
      */
     public function via($notifiable)
     {
-        return ['database'];
+        return config('notifications.' . __class__);
     }
 
     /**

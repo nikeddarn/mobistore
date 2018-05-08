@@ -50,15 +50,15 @@ class ShipmentCalendar
     /**
      * Define next possible week day for vendor delivery.
      *
-     * @param $maxShipmentTime
+     * @param $maxShipmentDispatchingTime
      * @return Carbon
      */
-    public function getNearestVendorWeekDay($maxShipmentTime = null)
+    public function getNearestVendorWeekDay($maxShipmentDispatchingTime = null)
     {
         $possibleDay = Carbon::now();
 
         // add 1 day if current time more than max shipment departure time
-        if ($maxShipmentTime && $possibleDay > Carbon::today()->addHours($maxShipmentTime)) {
+        if ($maxShipmentDispatchingTime && $possibleDay > Carbon::today()->addHours($maxShipmentDispatchingTime)) {
             $possibleDay->addDay();
         }
 

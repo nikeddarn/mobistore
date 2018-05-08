@@ -254,7 +254,7 @@ class ProductInvoiceHandler extends InvoiceHandler implements ProductInvoiceHand
         $subtractingSum = $invoiceProduct->price * $deletedCount;
 
         $invoiceProduct->quantity -= $deletedCount;
-        $invoiceProduct->quantity->save();
+        $invoiceProduct->save();
 
         parent::decreaseInvoiceSum($subtractingSum);
 

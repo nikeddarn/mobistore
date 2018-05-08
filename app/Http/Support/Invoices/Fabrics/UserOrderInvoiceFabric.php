@@ -7,7 +7,7 @@ namespace App\Http\Support\Invoices\Fabrics;
 
 
 use App\Http\Support\Invoices\Creators\UserInvoiceCreator;
-use App\Http\Support\Invoices\Handlers\StorageProductInvoiceHandler;
+use App\Http\Support\Invoices\Handlers\UserStorageProductInvoiceHandler;
 use App\Http\Support\Invoices\Repositories\User\UserProductInvoiceRepository;
 
 class UserOrderInvoiceFabric
@@ -18,7 +18,7 @@ class UserOrderInvoiceFabric
     private $repository;
 
     /**
-     * @var StorageProductInvoiceHandler
+     * @var UserStorageProductInvoiceHandler
      */
     private $handler;
 
@@ -31,10 +31,10 @@ class UserOrderInvoiceFabric
      * Initialize parts of fabric.
      *
      * @param UserProductInvoiceRepository $repository
-     * @param StorageProductInvoiceHandler $handler
+     * @param UserStorageProductInvoiceHandler $handler
      * @param UserInvoiceCreator $creator
      */
-    public function __construct(UserProductInvoiceRepository $repository, StorageProductInvoiceHandler $handler, UserInvoiceCreator $creator)
+    public function __construct(UserProductInvoiceRepository $repository, UserStorageProductInvoiceHandler $handler, UserInvoiceCreator $creator)
     {
         $this->repository = $repository;
         $this->handler = $handler;
@@ -54,7 +54,7 @@ class UserOrderInvoiceFabric
     /**
      * Get handler.
      *
-     * @return StorageProductInvoiceHandler
+     * @return UserStorageProductInvoiceHandler
      */
     public function getHandler()
     {

@@ -4,6 +4,7 @@ namespace App\Http\ViewComposers;
 
 use App\Contracts\Shop\Badges\BadgeTypes;
 use App\Contracts\Shop\Invoices\InvoiceDirections;
+use App\Contracts\Shop\Invoices\InvoiceStatusInterface;
 use App\Contracts\Shop\Invoices\InvoiceTypes;
 use App\Http\Controllers\Admin\Support\Badges\ProductBadges;
 use App\Http\Support\Currency\ExchangeRates;
@@ -290,7 +291,7 @@ class CommonComposer implements BadgeTypes, InvoiceDirections
             $handleableCart = $this->cartInvoiceFabric->getHandler();
             $handleableCart->bindInvoice($cartRepository->getRetrievedInvoice());
 
-            if (!$handleableCart->isInvoiceCommitted() && $handleableCart->getUpdateTime() < Carbon::today()->subDays(1)) {
+            if ($handleableCart->getUpdateTime() < Carbon::today()->subDays(1)) {
                 $handleableCart->updateProductsPrices();
             }
 
@@ -353,6 +354,7 @@ class CommonComposer implements BadgeTypes, InvoiceDirections
                     InvoiceTypes::EXCHANGE_RECLAMATION,
                     InvoiceTypes::RETURN_RECLAMATION,
                 ]);
+                $query->where('invoice_status_id', InvoiceStatusInterface::PROCESSING);
             })
             ->count();
         if ($deliveries) {

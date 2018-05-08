@@ -1,26 +1,17 @@
 <?php
+/**
+ * Show vendor orders with products.
+ */
 
 namespace App\Http\Controllers\Vendor;
 
-use App\Contracts\Shop\Delivery\DeliveryStatusInterface;
 use App\Contracts\Shop\Invoices\InvoiceDirections;
 use App\Contracts\Shop\Invoices\InvoiceStatusInterface;
 use App\Contracts\Shop\Invoices\InvoiceTypes;
-use App\Contracts\Shop\Invoices\Repositories\InvoiceRepositoryConstraintsInterface;
-use App\Events\Invoices\UserOrderCancelled;
-use App\Events\Invoices\UserOrderCollected;
-use App\Events\Invoices\UserOrderPartiallyCollected;
-use App\Http\Support\Invoices\Handlers\StorageProductInvoiceHandler;
-use App\Http\Support\Invoices\Repositories\User\VendorProductInvoiceRepository;
+use App\Http\Support\Invoices\Repositories\Vendor\VendorProductInvoiceRepository;
 use App\Http\Support\Invoices\Repositories\Vendor\VendorInvoiceConstraints;
-use App\Http\Support\Shipment\VendorShipmentDispatcher;
-use App\Models\Invoice;
-use App\Models\InvoiceProduct;
-use App\Models\Shipment;
 use App\Models\Vendor;
 use Exception;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -39,46 +30,19 @@ class VendorOrderController extends Controller
     private $retrievedVendor;
 
     /**
-     * @var Request
-     */
-    private $request;
-
-    /**
      * @var VendorProductInvoiceRepository
      */
     private $invoiceRepository;
 
     /**
-     * @var VendorShipmentDispatcher
-     */
-    private $shipmentDispatcher;
-
-    /**
-     * @var StorageProductInvoiceHandler
-     */
-    private $invoiceHandler;
-
-    /**
      * AccountController constructor.
-     * @param Request $request
      * @param Vendor $vendor
      * @param VendorProductInvoiceRepository $invoiceRepository
-     * @param VendorShipmentDispatcher $shipmentDispatcher
-     * @param StorageProductInvoiceHandler $invoiceHandler
      */
-    public function __construct(
-        Request $request,
-        Vendor $vendor,
-        VendorProductInvoiceRepository $invoiceRepository,
-        VendorShipmentDispatcher $shipmentDispatcher,
-        StorageProductInvoiceHandler $invoiceHandler
-    )
+    public function __construct(Vendor $vendor, VendorProductInvoiceRepository $invoiceRepository)
     {
         $this->vendor = $vendor;
-        $this->request = $request;
         $this->invoiceRepository = $invoiceRepository;
-        $this->shipmentDispatcher = $shipmentDispatcher;
-        $this->invoiceHandler = $invoiceHandler;
     }
 
     /**
@@ -112,157 +76,12 @@ class VendorOrderController extends Controller
             'outgoingOrders' => $this->getOutgoingOrders($retrieveConstraints),
             'outgoingProducts' => $this->getOutgoingProducts($retrieveConstraints),
             'vendorId' => $this->retrievedVendor->id,
+            'vendorTitle' => $this->retrievedVendor->title,
         ]);
     }
 
     /**
-     * Collect invoice, add it to shipment, notify user.
-     *
-     * @throws Exception
-     */
-    public function collect()
-    {
-        $invoice = $this->invoiceRepository->getByInvoiceId($this->request->get('invoice_id'));
-
-        $collectedProduct = $this->request->get('quantity');
-        $collectedProductQuantity = array_sum($this->request->get('quantity'));
-
-        if ($invoice->invoiceProduct->count() === $collectedProductQuantity) {
-            $this->invoiceCollected($invoice);
-        } elseif ($collectedProductQuantity === 0) {
-            $this->invoiceCancelled($invoice);
-        } else {
-            $this->invoicePartiallyCollected($invoice, $collectedProduct);
-        }
-
-        return back();
-    }
-
-    /**
-     * Order fully collected.
-     *
-     * @param Invoice|Model $invoice
-     * @throws Exception
-     */
-    private function invoiceCollected(Invoice $invoice)
-    {
-        // mark as implemented
-        $this->markInvoiceAsImplemented($invoice);
-
-        // add to shipment
-        $shipment = $this->addInvoiceToShipment($invoice);
-
-        // define related user invoice.
-        $userInvoice = $invoice->vendorInvoice->load('userInvoice')->userInvoice;
-
-        if ($userInvoice) {
-            // change related user invoice status if exists
-            $userInvoice->delivery_status_id = DeliveryStatusInterface::COLLECTED;
-            $userInvoice->save();
-
-            // change delivery date
-            $userInvoice->userDelivery->planned_arrival = $shipment->planned_arrival;
-            $userInvoice->userDelivery->save();
-
-            // fire event
-            event(new UserOrderCollected($invoice));
-        }
-    }
-
-    /**
-     * Products don't present on vendor store. Order cancelled.
-     *
-     * @param Invoice|Model $invoice
-     */
-    private function invoiceCancelled(Invoice $invoice)
-    {
-        // delete products from invoice
-        $this->invoiceHandler->bindInvoice($invoice);
-        $invoice->invoiceProduct->each(function (InvoiceProduct $invoiceProduct){
-            $this->invoiceHandler->deleteProducts($invoiceProduct->id);
-        });
-
-        // set invoice status as cancelled
-        $invoice->invoice_status_id = InvoiceStatusInterface::CANCELLED;
-        $invoice->save();
-
-        // fire event
-        event(new UserOrderCancelled($invoice));
-    }
-
-    /**
-     * Some products don't present on vendor store. Partially collected invoice.
-     *
-     * @param Invoice|Model $invoice
-     * @param array $collectedProduct
-     * @throws Exception
-     */
-    private function invoicePartiallyCollected(Invoice $invoice, array $collectedProduct)
-    {
-        // decrease products count in invoice
-        $this->invoiceHandler->bindInvoice($invoice);
-
-        $invoice->invoiceProduct->each(function (InvoiceProduct $invoiceProduct) use ($collectedProduct){
-
-            $orderProductCountDifference = $invoiceProduct->quantity - $collectedProduct[$invoiceProduct->id];
-
-            if ($orderProductCountDifference > 0) {
-                $this->invoiceHandler->decreaseProductCount($invoiceProduct->id, $orderProductCountDifference);
-            }
-        });
-
-        // mark as implemented
-        $this->markInvoiceAsImplemented($invoice);
-
-        // add to shipment
-        $shipment = $this->addInvoiceToShipment($invoice);
-
-        // define related user invoice.
-        $userInvoice = $invoice->vendorInvoice->load('userInvoice')->userInvoice;
-
-        if ($userInvoice) {
-            // change related user invoice status if exists
-            $userInvoice->delivery_status_id = DeliveryStatusInterface::COLLECTED;
-            $userInvoice->save();
-
-            // change delivery date
-            $userInvoice->userDelivery->planned_arrival = $shipment->planned_arrival;
-            $userInvoice->userDelivery->save();
-
-            // fire event
-            event(new UserOrderPartiallyCollected($invoice));
-        }
-    }
-
-    /**
-     * Mark vendor invoice as implemented.
-     *
-     * @param Invoice $invoice
-     */
-    private function markInvoiceAsImplemented(Invoice $invoice)
-    {
-        $invoice->vendorInvoice->implemented = 1;
-        $invoice->vendorInvoice->save();
-    }
-
-    /**
-     * @param Invoice|Model $invoice
-     * @return Shipment
-     * @throws Exception
-     */
-    private function addInvoiceToShipment(Invoice $invoice): Shipment
-    {
-        // add shipment
-        $nearestShipment = $this->shipmentDispatcher->getOrCreateNextShipment();
-
-        $invoice->shipments_id = $nearestShipment->id;
-        $invoice->save();
-
-        return $nearestShipment;
-    }
-
-    /**
-     * Get not collected to shipment vendor orders.
+     * Get not collected vendor orders.
      *
      * @param VendorInvoiceConstraints $constraints
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
@@ -273,7 +92,7 @@ class VendorOrderController extends Controller
     }
 
     /**
-     * Get all not collected order's product
+     * Get all not collected order's products.
      *
      * @param VendorInvoiceConstraints $constraints
      * @return Collection

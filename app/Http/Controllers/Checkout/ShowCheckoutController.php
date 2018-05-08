@@ -129,6 +129,7 @@ class ShowCheckoutController extends Controller
             if ($cartHandler->getProductsCount()) {
                 // sort products by invoices types
                 $sortedProducts = $this->productsSorter->sortProductsByOrderType($cartHandler->getInvoiceProducts());
+
                 // some products is available to order
                 if(isset($sortedProducts[InvoiceTypes::ORDER]) || isset($sortedProducts[InvoiceTypes::PRE_ORDER])) {
                     // add user invoices data
@@ -171,7 +172,7 @@ class ShowCheckoutController extends Controller
         if (isset($sortedProducts[InvoiceTypes::PRE_ORDER])){
             $invoiceVendors = $this->productsSorter->getInvoiceVendors($sortedProducts[InvoiceTypes::PRE_ORDER]);
 
-            $invoicesData['pre_order'] = $this->getOrderInvoiceData($cartHandler, $sortedProducts[InvoiceTypes::PRE_ORDER], $productImagePathPrefix, $exchangeRate, $sortedProducts[InvoiceTypes::ORDER]->count() ? 0 : $courierDeliveryPrice, $this->vendorShipmentDispatcher->calculateDeliveryDay($invoiceVendors));
+            $invoicesData['pre_order'] = $this->getOrderInvoiceData($cartHandler, $sortedProducts[InvoiceTypes::PRE_ORDER], $productImagePathPrefix, $exchangeRate, isset($sortedProducts[InvoiceTypes::ORDER]) ? 0 : $courierDeliveryPrice, $this->vendorShipmentDispatcher->calculateDeliveryDayByVendors($invoiceVendors));
         }
 
         return $invoicesData;

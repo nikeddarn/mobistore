@@ -43,10 +43,10 @@ return [
     'phones' => '&#9742;&nbsp;067-409-16-65, 063-765-74-08',
 
     // large image height.
-    'large_product_image_height' => 245*5,
+    'large_product_image_height' => 245 * 5,
 
     // thumbnail image height.
-    'small_product_image_height' => 245*2,
+    'small_product_image_height' => 245 * 2,
 
     // image size rate.
     'product_image_size_rate' => 1.3333,
@@ -93,7 +93,7 @@ return [
     ],
 
     // cart ttl in days
-   'user_cart_ttl' => 7,
+    'user_cart_ttl' => 7,
 
     // Must recalculate user cart prices every day ?
     'recalculate_cart_prices' => true,
@@ -128,8 +128,25 @@ return [
         'current_day_delivery_max_time' => [
             'local' => 9,
             'post' => 9,
-            'vendor' =>12,
+            'vendor' => 12,
         ]
     ],
 
+    // invoices
+    'invoice' => [
+        // user orders
+        'order' => [
+            // auto define outgoing storage and create storage invoice
+            'create_outgoing_storage_invoice' => true,
+            // auto create replacement by storages invoices to collect order products on one storage
+            'create_replacement_storage_invoice' => true,
+        ],
+        // user pre orders
+        'pre_order' => [
+            // auto define outgoing storage and create storage invoice
+            'create_outgoing_storage_invoice' => true,
+            // auto create vendor invoices
+            'create_vendor_invoice' => true,
+        ],
+    ],
 ];

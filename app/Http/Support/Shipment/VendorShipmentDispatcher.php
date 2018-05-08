@@ -11,6 +11,7 @@ use App\Models\Shipment;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\DatabaseManager;
+use Illuminate\Database\Eloquent\Model;
 
 class VendorShipmentDispatcher extends ShipmentDispatcher
 {
@@ -34,53 +35,51 @@ class VendorShipmentDispatcher extends ShipmentDispatcher
     }
 
     /**
-     * Get possible arrival date.
+     * Get possible arrival date by vendors.
      *
      * @param array $invoiceVendors
      * @return Carbon|null
      */
-    public function calculateDeliveryDay(array $invoiceVendors)
+    public function calculateDeliveryDayByVendors(array $invoiceVendors)
     {
-        // get max of shipment arrivals by vendors
-        $vendorShipments = $this->buildRetrieveNextShipmentQuery()->whereHas('vendorShipment', function ($query) use ($invoiceVendors) {
-            $query->whereIn('vendors_id', $invoiceVendors);
-        })
-            ->selectRaw('MAX(shipments.planned_arrival) AS planned_arrival')
-            ->groupBy('vendor_shipments.vendors_id')
-            ->get();
-
-        if ($vendorShipments->count() === count($invoiceVendors)) {
-            // all vendors have unclosed shipment
-            return $vendorShipments->max('planned_arrival');
-        } else {
-            // define nearest departure days from vendor shipment schedule
-            $possibleDepartureDate = $this->workCalendar->getNearestVendorWeekDay(config('shop.shipment.current_day_delivery_max_time.vendor'));
-            // define vendor possible shipments
-            $vendorPossibleShipments = $this->vendorShipmentSchedule
-                ->selectRaw('MIN(planned_departure) AS planned_departure')
-                ->groupBy('vendors_id')
-                ->where('planned_departure', '>=', $possibleDepartureDate->toDateString())
-                ->whereIn('vendors_id', $invoiceVendors)
-                ->get();
-
-            if ($vendorPossibleShipments->count() === count($invoiceVendors)) {
-                // all vendors shipments are planned
-                $plannedDeparture = $vendorPossibleShipments->max('planned_departure');
-                // add 1 day for delivery
-                $plannedArrival = Carbon::createFromTimestamp($plannedDeparture)->addDays(1);
-                return $plannedArrival;
-            } else {
-                // arrival date will be defined later
-                return null;
-            }
+        // get max of all vendor shipment arrivals by vendors
+        $maxVendorShipmentsArrival = $this->getMaxArrivalDateFromVendorsShipments($invoiceVendors);
+        if ($maxVendorShipmentsArrival) {
+            return Carbon::createFromFormat('Y-m-d h:i:s', $maxVendorShipmentsArrival->planned_arrival);
         }
+
+        // get max arrival dates of all vendors by their schedules
+        $maxVendorScheduleArrival = $this->getMaxArrivalDateFromVendorsSchedule($invoiceVendors);
+        if ($maxVendorScheduleArrival) {
+            return Carbon::createFromFormat('Y-m-d h:i:s', $maxVendorScheduleArrival->planned_arrival);
+        }
+
+        // arrival date will be defined later
+        return null;
+    }
+
+
+    /**
+     * Get max planned arrival as Carbon of all vendor invoice shipments.
+     *
+     * @param array $invoicesId
+     * @return Carbon|null
+     */
+    public function calculateDeliveryDateByInvoices(array $invoicesId)
+    {
+        $maxVendorInvoicesShipmentArrival = $this->getMaxArrivalDateFromInvoices($invoicesId);
+        if ($maxVendorInvoicesShipmentArrival) {
+            return Carbon::createFromFormat('Y-m-d h:i:s', $maxVendorInvoicesShipmentArrival->planned_arrival);
+        }
+
+        return null;
     }
 
     /**
      * Get nearest not dispatched shipment or create new shipment.
      *
      * @param int $vendorId
-     * @return Shipment|\Illuminate\Database\Eloquent\Model
+     * @return Shipment|\Illuminate\Database\Eloquent\Model|null
      */
     public function getNextShipment(int $vendorId)
     {
@@ -154,5 +153,62 @@ class VendorShipmentDispatcher extends ShipmentDispatcher
         }
 
         return $arrivalDay;
+    }
+
+    /**
+     * Get max of arrival date from not dispatched vendor shipments. All shipments are required.
+     *
+     * @param array $invoiceVendors
+     *
+     * @return Model|null
+     */
+    private function getMaxArrivalDateFromVendorsShipments(array $invoiceVendors)
+    {
+        return $this->buildRetrieveNextShipmentQuery()
+//            ->join('vendor_shipments', 'vendor_shipments.shipments_id', '=', 'shipments.id')
+//            ->whereHas('vendorShipment', function ($query) use ($invoiceVendors){
+//                $query->whereIn('vendors_id', $invoiceVendors);
+//            })
+            ->whereHas('vendorShipment', function ($query) use ($invoiceVendors) {
+                $query->whereIn('vendors_id', $invoiceVendors);
+            }, '=', count($invoiceVendors))
+            ->max('planned_arrival');
+//            ->first();
+    }
+
+    /**
+     * Get max of all vendors possible shipments departure date. All shipments are required.
+     *
+     * @param array $invoiceVendors
+     * @return Model|null
+     */
+    private function getMaxArrivalDateFromVendorsSchedule(array $invoiceVendors)
+    {
+        // define nearest departure days from vendor shipment schedule
+        $possibleDepartureDate = $this->workCalendar->getNearestVendorWeekDay(config('shop.shipment.current_day_delivery_max_time.vendor'));
+
+        // define max of all vendors possible shipments departure date
+        return $this->vendorShipmentSchedule
+            ->where('planned_departure', '>=', $possibleDepartureDate->toDateString())
+//            ->whereIn('vendors_id', $invoiceVendors)
+            ->whereHas('vendor', function ($query) use ($invoiceVendors) {
+                $query->whereIn('id', $invoiceVendors);
+            }, '=', count($invoiceVendors))
+            ->max('planned_arrival');
+//            ->first();
+    }
+
+    /**
+     * Get max planned arrival of all vendor invoice shipments.
+     *
+     * @param array $invoicesId
+     * @return Model|null
+     */
+    private function getMaxArrivalDateFromInvoices(array $invoicesId)
+    {
+        return $this->shipment->whereHas('invoice', function ($query) use ($invoicesId) {
+            $query->whereIn('id', $invoicesId);
+        }, '=', count($invoicesId))
+            ->max('planned_arrival');
     }
 }

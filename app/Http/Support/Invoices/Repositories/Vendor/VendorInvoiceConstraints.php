@@ -63,10 +63,10 @@ class VendorInvoiceConstraints
     }
 
     /**
-     * @param int $invoiceType
+     * @param int|array $invoiceType
      * @return VendorInvoiceConstraints
      */
-    public function setInvoiceType(int $invoiceType): VendorInvoiceConstraints
+    public function setInvoiceType($invoiceType): VendorInvoiceConstraints
     {
         $this->invoiceType = $invoiceType;
         return $this;

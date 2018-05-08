@@ -5,7 +5,7 @@
             <span>Сообщения</span>
             @if(isset($userData['userBadges']['badges']['message']))
                 <span class="pull-right">
-                        <span class="badge badge-info pull-right">{{ $userData['userBadges']['badges']['message'] }}</span>
+                        <span id="user-menu-messages-count-pointer" class="badge badge-info pull-right">{{ $userData['userBadges']['badges']['message'] }}</span>
                     </span>
             @endif
         </a>

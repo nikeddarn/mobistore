@@ -58,17 +58,6 @@ class VendorController extends Controller
     }
 
     /**
-     * Show vendor list with count of unclosed invoices.
-     *
-     * @return View
-     */
-    public function showVendorsList():View
-    {
-        return view('content.vendor.list.index')
-            ->with('vendors', $this->getVendors());
-    }
-
-    /**
      * Get vendors with unclosed invoices.
      *
      * @return Collection

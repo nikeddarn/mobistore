@@ -38,7 +38,7 @@ class StorageOrderCreatedNotification extends Notification
      */
     public function via($notifiable)
     {
-        return [SmsChannel::class];
+        return config('notifications.' . __class__);
     }
 
     /**
@@ -83,6 +83,5 @@ class StorageOrderCreatedNotification extends Notification
                 ]
             )
         );
-
     }
 }

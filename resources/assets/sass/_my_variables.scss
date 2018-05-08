@@ -17,3 +17,10 @@ $store-navbar-highlight-color: #ffffff;
 $store-navbar-highlight-bg-color: $brand-primary;
 $store-navbar-toggle-border-color: #dddddd;
 $store-navbar-submenu-border-color: #e7e7e7;
+
+// footer
+$footer-height: 20px;
+$footer-vertical-margin: 20px;
+
+// top
+$top-margin-bottom:$footer-height + $footer-vertical-margin * 2;

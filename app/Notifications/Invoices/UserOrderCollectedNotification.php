@@ -2,7 +2,11 @@
 
 namespace App\Notifications\Invoices;
 
+use App\Contracts\Shop\Invoices\InvoiceTypes;
+use App\Messages\SmsMessage;
 use App\Models\Invoice;
+use Carbon\Carbon;
+use Exception;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -35,7 +39,7 @@ class UserOrderCollectedNotification extends Notification
      */
     public function via($notifiable)
     {
-        return ['database'];
+        return config('notifications.' . __class__);
     }
 
     /**
@@ -70,10 +74,12 @@ class UserOrderCollectedNotification extends Notification
      *
      * @param mixed $notifiable
      * @return array
+     * @throws Exception
      */
     public function toDatabase($notifiable)
     {
-        $plannedArrival = $this->invoice->vendorInvoice->userInvoice->userDelivery->planned_arrival;
+        // get invoice planned arrival
+        $plannedArrival = $this->getPlannedArrivalDate();
 
         return [
             'title' => trans('messages.invoice.' . $this->invoice->invoice_types_id . '.collected.title'),
@@ -82,5 +88,47 @@ class UserOrderCollectedNotification extends Notification
                 'delivery' => $plannedArrival ? $plannedArrival->format('d-m-Y') : trans('shop.delivery.time_undefined'),
             ]),
         ];
+    }
+
+    /**
+     * Get the sms representation of the notification.
+     *
+     * @param  mixed $notifiable
+     * @return SmsMessage
+     * @throws Exception
+     */
+    public function toSms($notifiable)
+    {
+        // get invoice planned arrival
+        $plannedArrival = $this->getPlannedArrivalDate();
+
+        return (new SmsMessage())->setText(trans('messages.invoice.' . $this->invoice->invoice_types_id . '.collected.message', [
+            'id' => $this->invoice->id,
+            'delivery' => $plannedArrival ? $plannedArrival->format('d-m-Y') : trans('shop.delivery.time_undefined'),
+        ]));
+    }
+
+    /**
+     * Get planned arrival date of invoice as Carbon.
+     *
+     * @return Carbon|null
+     * @throws Exception
+     */
+    private function getPlannedArrivalDate()
+    {
+        // retrieve user invoice
+        if ($this->invoice->invoice_types_id === InvoiceTypes::PRE_ORDER) {
+            // retrieve via related vendor invoice
+            $userInvoice = $this->invoice->vendorInvoice->userInvoice->first();
+        }elseif ($this->invoice->invoice_types_id === InvoiceTypes::ORDER){
+            // retrieve directly
+            $userInvoice = $this->invoice->userInvoice;
+        }else{
+            // wrong invoice type
+            throw new Exception('Wrong invoice type: ' . $this->invoice->invoiceType);
+        }
+
+        // get invoice planned arrival
+        return $userInvoice->userDelivery->planned_arrival;
     }
 }

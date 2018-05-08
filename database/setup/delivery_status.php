@@ -9,7 +9,7 @@ use App\Contracts\Shop\Delivery\DeliveryStatusInterface;
 return [
     DeliveryStatusInterface::PROCESSING => ['title_en' => 'Processing', 'title_ru' => 'Обрабатывается', 'title_ua' => 'Обробляється', 'badge_class' => 'warning'],
 
-    DeliveryStatusInterface::COLLECTED => ['title_en' => 'Collected', 'title_ru' => 'Собран', 'title_ua' => 'Зібран', 'badge_class' => 'primary'],
+    DeliveryStatusInterface::COLLECTED => ['title_en' => 'Collected', 'title_ru' => 'Собран', 'title_ua' => 'Зібран', 'badge_class' => 'info'],
 
     DeliveryStatusInterface::STORAGE_DELIVERING => ['title_en' => 'Delivery to storage', 'title_ru' => 'Доставка на склад', 'title_ua' => 'Доставка на склад', 'badge_class' => 'info'],
 
@@ -18,4 +18,6 @@ return [
     DeliveryStatusInterface::POST_DELIVERING => ['title_en' => 'Delivery to the post office', 'title_ru' => 'Доставка на почту', 'title_ua' => 'Доставка на пошту', 'badge_class' => 'info'],
 
     DeliveryStatusInterface::DELIVERED => ['title_en' => 'Delivered', 'title_ru' => 'Получен', 'title_ua' => 'Отриман', 'badge_class' => 'success'],
+
+    DeliveryStatusInterface::CANCELLED => ['title_en' => 'Cancelled', 'title_ru' => 'Отменен', 'title_ua' => 'Скасован', 'badge_class' => 'alert'],
 ];

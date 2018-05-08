@@ -17,7 +17,7 @@ class LocalShipmentDispatcher extends ShipmentDispatcher
      * @param array $invoiceStorages
      * @return Carbon
      */
-    public function calculateDeliveryDay(array $invoiceStorages)
+    public function calculateDeliveryDay(array $invoiceStorages): Carbon
     {
         $arrivalDay = $this->defineArrivalDate();
 
@@ -35,7 +35,7 @@ class LocalShipmentDispatcher extends ShipmentDispatcher
      * @param int $storageId
      * @return Shipment|\Illuminate\Database\Eloquent\Model
      */
-    public function getNextShipment(int $storageId)
+    public function getNextShipment(int $storageId): Shipment
     {
         return $this->buildRetrieveNextShipmentQuery()->whereHas('localShipment', function ($query) use ($storageId) {
             $query->where('storages_id', $storageId);
@@ -52,7 +52,7 @@ class LocalShipmentDispatcher extends ShipmentDispatcher
      * @return Shipment|\Illuminate\Database\Eloquent\Model
      * @throws Exception
      */
-    public function createNextShipment(int $storageId, Carbon $departure, Carbon $arrival, int $courierId)
+    public function createNextShipment(int $storageId, Carbon $departure, Carbon $arrival, int $courierId): Shipment
     {
         try {
             $this->databaseManager->beginTransaction();

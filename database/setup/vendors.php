@@ -4,7 +4,12 @@
 * Array of product vendors
 */
 
+use App\Models\City;
+
 return [
-    ['title' => 'Lankin'],
+    [
+        'title' => 'Lankin',
+        'cities_id' => City::where('title_en', 'Moscow')->first()->id,
+    ],
 ];
 

@@ -2,8 +2,7 @@
 
 namespace App\Http\Controllers\Vendor;
 
-use App\Http\Support\Invoices\Repositories\User\VendorAccountInvoiceRepository;
-use App\Http\Support\Invoices\Repositories\User\VendorProductInvoiceRepository;
+use App\Http\Support\Invoices\Repositories\Vendor\VendorAccountInvoiceRepository;
 use App\Http\Support\Invoices\Repositories\Vendor\VendorInvoiceConstraints;
 use App\Models\Vendor;
 use Exception;
@@ -24,7 +23,7 @@ class VendorAccountController extends Controller
     private $retrievedVendor;
 
     /**
-     * @var VendorProductInvoiceRepository
+     * @var VendorAccountInvoiceRepository
      */
     private $invoiceRepository;
 
@@ -58,6 +57,7 @@ class VendorAccountController extends Controller
             'vendorInvoices' => $this->getAccountData(),
             'vendorBalance' => number_format($this->retrievedVendor->balance, 2, '.', ','),
             'vendorId' => $this->retrievedVendor->id,
+            'vendorTitle' => $this->retrievedVendor->title,
         ]);
     }
 

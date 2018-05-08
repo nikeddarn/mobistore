@@ -37,7 +37,7 @@ class UserOrderCancelledNotification extends Notification
      */
     public function via($notifiable)
     {
-        return ['database', SmsChannel::class];
+        return config('notifications.' . __class__);
     }
 
     /**
@@ -92,11 +92,13 @@ class UserOrderCancelledNotification extends Notification
     public function toSms($notifiable)
     {
         return (new SmsMessage())->setText(
-            trans('messages.invoice.' . $this->invoice->invoice_types_id . '.cancelled.title') .
+            trans('messages.invoice.' . $this->invoice->invoice_types_id . '.cancelled.title') . ' ' .
             trans('messages.invoice.' . $this->invoice->invoice_types_id . '.cancelled.message', [
                 'id' => $this->invoice->id,
             ])
         );
 
     }
+
+
 }

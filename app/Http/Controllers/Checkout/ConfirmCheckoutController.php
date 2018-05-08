@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Checkout;
 
-use App\Contracts\Shop\Delivery\DeliveryTypesInterface;
 use App\Contracts\Shop\Invoices\Handlers\ProductInvoiceHandlerInterface;
 use App\Contracts\Shop\Invoices\InvoiceTypes;
 use App\Events\Invoices\UserOrderCreated;
@@ -10,30 +9,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Support\Checkout\UserDeliveryRepository;
 use App\Http\Support\Checkout\UserInvoiceProductsSorter;
 use App\Http\Support\Checkout\UserInvoicesCreator;
-use App\Http\Support\Currency\ExchangeRates;
 use App\Http\Support\Invoices\Fabrics\CartInvoiceFabric;
-use App\Http\Support\Invoices\Fabrics\UserOrderInvoiceFabric;
-use App\Http\Support\Invoices\Fabrics\UserOutgoingOrderInvoiceFabric;
-use App\Http\Support\Invoices\Fabrics\VendorIncomingOrderInvoiceFabric;
-use App\Http\Support\Invoices\Handlers\ProductInvoiceHandler;
 use App\Http\Support\Price\DeliveryPrice;
-use App\Http\Support\Price\ProductPrice;
-use App\Http\Support\ProductRepository\StorageProductRepository;
-use App\Http\Support\ProductRepository\StorageProductRouter;
-use App\Http\Support\ProductRepository\VendorProductRepository;
-use App\Http\Support\ProductRepository\VendorProductRouter;
 use App\Http\Support\Shipment\LocalShipmentDispatcher;
 use App\Http\Support\Shipment\VendorShipmentDispatcher;
-use App\Models\DeliveryType;
-use App\Models\Invoice;
-use App\Models\InvoiceProduct;
-use App\Models\PostService;
-use App\Models\PreOrderInvoice;
-use App\Models\UserInvoice;
-use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 
 class ConfirmCheckoutController extends Controller
 {
@@ -67,6 +48,16 @@ class ConfirmCheckoutController extends Controller
     private $deliveryPrice;
 
     /**
+     * @var LocalShipmentDispatcher
+     */
+    private $localShipmentDispatcher;
+
+    /**
+     * @var VendorShipmentDispatcher
+     */
+    private $vendorShipmentDispatcher;
+
+    /**
      * ConfirmCheckoutController constructor.
      * @param Request $request
      * @param CartInvoiceFabric $cartInvoiceFabric
@@ -74,8 +65,10 @@ class ConfirmCheckoutController extends Controller
      * @param UserInvoicesCreator $invoicesCreator
      * @param UserDeliveryRepository $deliveryRepository
      * @param DeliveryPrice $deliveryPrice
+     * @param LocalShipmentDispatcher $localShipmentDispatcher
+     * @param VendorShipmentDispatcher $vendorShipmentDispatcher
      */
-    public function __construct(Request $request, CartInvoiceFabric $cartInvoiceFabric, UserInvoiceProductsSorter $productsSorter, UserInvoicesCreator $invoicesCreator, UserDeliveryRepository $deliveryRepository, DeliveryPrice $deliveryPrice)
+    public function __construct(Request $request, CartInvoiceFabric $cartInvoiceFabric, UserInvoiceProductsSorter $productsSorter, UserInvoicesCreator $invoicesCreator, UserDeliveryRepository $deliveryRepository, DeliveryPrice $deliveryPrice, LocalShipmentDispatcher $localShipmentDispatcher, VendorShipmentDispatcher $vendorShipmentDispatcher)
     {
         $this->request = $request;
         $this->cartInvoiceFabric = $cartInvoiceFabric;
@@ -83,6 +76,8 @@ class ConfirmCheckoutController extends Controller
         $this->invoicesCreator = $invoicesCreator;
         $this->deliveryRepository = $deliveryRepository;
         $this->deliveryPrice = $deliveryPrice;
+        $this->localShipmentDispatcher = $localShipmentDispatcher;
+        $this->vendorShipmentDispatcher = $vendorShipmentDispatcher;
     }
 
     /**
@@ -138,7 +133,6 @@ class ConfirmCheckoutController extends Controller
         ];
     }
 
-
     /**
      * Create invoices
      *
@@ -147,138 +141,64 @@ class ConfirmCheckoutController extends Controller
      */
     private function createUserInvoices(ProductInvoiceHandlerInterface $cartHandler)
     {
+        // sort invoices by types
         $sortedInvoices = $this->productsSorter->sortProductsByOrderType($cartHandler->getInvoiceProducts());
 
+        if (isset($sortedInvoices[InvoiceTypes::ORDER]) || isset($sortedInvoices[InvoiceTypes::PRE_ORDER])) {
+            // order delivery city id
+            $orderDeliveryCity = (int)$this->request->get('courier_delivery_city');
+            // delivery type id
+            $deliveryTypeId = $this->request->get('delivery_type');
+            // user delivery model data
+            $deliveryData = $this->request->only(['name', 'phone', 'address', 'message']);
             // define delivery price
             $deliveryPrice = $this->deliveryPrice->calculateDeliveryPrice(auth('web')->user(), $cartHandler->getInvoiceSum(), (int)$this->request->get('delivery_type'));
 
-
+            // create order invoices
             if (!empty($sortedInvoices[InvoiceTypes::ORDER])) {
+
                 // sort products by storages
-                $sortedStoragesInvoices = $this->productsSorter->sortProductByStorages($sortedInvoices[InvoiceTypes::ORDER]);
+                $sortedStoragesInvoices = $this->productsSorter->sortProductByStorages($sortedInvoices[InvoiceTypes::ORDER], $orderDeliveryCity);
+
                 // create storages invoices
-                $storageUserInvoice = $this->invoicesCreator->createStorageInvoices($sortedInvoices[InvoiceTypes::ORDER], $sortedStoragesInvoices);
+                $storageUserInvoiceHandler = $this->invoicesCreator->createUserOrderInvoices($sortedInvoices[InvoiceTypes::ORDER], $sortedStoragesInvoices, $orderDeliveryCity);
+
+                // add delivery sum
+                $storageUserInvoiceHandler->setInvoiceDeliverySum($deliveryPrice);
+
+                // define planned arrival
+                $deliveryData['planned_arrival'] = $this->localShipmentDispatcher->calculateDeliveryDay(array_keys($sortedStoragesInvoices));
+
+                // append delivery data
+                $storageUserDelivery = $this->deliveryRepository->createUserDelivery($deliveryData);
+                $storageUserInvoiceHandler->appendUserDelivery($storageUserDelivery->id, $deliveryTypeId);
+
                 // fire event
-                event(new UserOrderCreated($storageUserInvoice));
+                event(new UserOrderCreated($storageUserInvoiceHandler->getInvoice()));
             }
 
+            // create pre order invoices
             if (!empty($sortedInvoices[InvoiceTypes::PRE_ORDER])) {
+
                 // sort products by vendors
-                $sortedVendorsInvoices = $this->productsSorter->sortProductByStorages($sortedInvoices[InvoiceTypes::PRE_ORDER]);
+                $sortedVendorsInvoices = $this->productsSorter->sortProductByVendors($sortedInvoices[InvoiceTypes::PRE_ORDER]);
+
                 // create vendor invoices
-                $vendorUserInvoice = $this->invoicesCreator->createStorageInvoices($sortedInvoices[InvoiceTypes::PRE_ORDER], $sortedVendorsInvoices);
+                $vendorUserInvoiceHandler = $this->invoicesCreator->createUserPreOrderInvoices($sortedInvoices[InvoiceTypes::PRE_ORDER], $sortedVendorsInvoices, $orderDeliveryCity);
+
+                // add delivery sum
+                $vendorUserInvoiceHandler->setInvoiceDeliverySum($deliveryPrice);
+
+                // define planned arrival
+                $deliveryData['planned_arrival'] = $this->vendorShipmentDispatcher->calculateDeliveryDayByVendors(array_keys($sortedVendorsInvoices));
+
+                // append delivery data
+                $vendorUserDelivery = $this->deliveryRepository->createUserDelivery($deliveryData);
+                $vendorUserInvoiceHandler->appendUserDelivery($vendorUserDelivery->id, $deliveryTypeId);
+
                 // fire event
-                event(new UserOrderCreated($vendorUserInvoice));
+                event(new UserOrderCreated($vendorUserInvoiceHandler->getInvoice()));
             }
-
-
-//        $user = auth('web')->user()->id;
-//
-//        // define delivery data
-//        $deliveryTypeId = (int)$this->request->get('delivery_type');
-//        if ($deliveryTypeId === self::COURIER) {
-//            $deliveryPrice = $this->deliveryPrice->calculateDeliveryPrice(auth('web')->user(), $this->cartHandler->getInvoiceSum());
-//        } else {
-//            $deliveryPrice = 0;
-//        }
-//
-//        // make online order invoice
-//        if ($orderProducts[self::ORDER]->count()) {
-//            $deliveryDay = $this->localShipmentDispatcher->getPossibleNearestShipmentArrival();
-//            $userOrderInvoice = $this->createUserInvoice(self::ORDER, $user, $orderProducts[self::ORDER], $deliveryTypeId, $deliveryPrice, $deliveryDay);
-//
-//            event(new UserOrderCreated($userOrderInvoice));
-//        }
-//
-//        // make pre order invoice
-//        if ($orderProducts[self::PRE_ORDER]->count()) {
-//
-//            // set free delivery for pre order if online order is present
-//            if ($orderProducts[self::ORDER]->count()) {
-//                $deliveryPrice = 0;
-//            }
-//
-//            $deliveryDay = $this->vendorShipmentDispatcher->getPossibleNearestShipmentArrival();
-//            $vendorOrderInvoice = $this->createVendorInvoice($orderProducts[self::PRE_ORDER]);
-//            $userPreOrderInvoice = $userOrderInvoice = $this->createUserInvoice(self::PRE_ORDER, $user, $orderProducts[self::PRE_ORDER], $deliveryTypeId, $deliveryPrice, $deliveryDay, $vendorOrderInvoice->vendorInvoice->id);
-//
-//            event(new UserOrderCreated($userPreOrderInvoice));
-//        }
-    }
-
-    /**
-     * Create user order invoice.
-     *
-     * @param int $invoiceType
-     * @param int $userId
-     * @param Collection $orderProducts
-     * @param int $deliveryTypeId
-     * @param float $deliveryPrice
-     * @param string $deliveryDay
-     * @param int $relatedVendorInvoiceId
-     * @return Invoice
-     * @throws Exception
-     */
-    private function createUserInvoice(int $invoiceType, int $userId, Collection $orderProducts, int $deliveryTypeId, float $deliveryPrice, string $deliveryDay, int $relatedVendorInvoiceId = null): Invoice
-    {
-        // define outgoing storage
-        $storageId = $this->storageProductRouter->defineInvoiceStorage($orderProducts);
-
-        //create and bind invoice to handler
-        $invoice = $this->userOutgoingOrderInvoiceFabric->getCreator()->createInvoice($invoiceType, $userId, $storageId, $deliveryTypeId);
-        $handleableUserInvoice = $this->userOutgoingOrderInvoiceFabric->getHandler()->bindInvoice($invoice);
-        $orderProducts->each(function (InvoiceProduct $invoiceProduct) use ($handleableUserInvoice) {
-            $handleableUserInvoice->appendProducts($invoiceProduct->products_id, $invoiceProduct->price, $invoiceProduct->quantity);
-        });
-
-        // add delivery data
-        $handleableUserInvoice->setInvoiceDeliverySum($deliveryPrice);
-        $handleableUserInvoice->addUserDelivery($this->request->only(['name', 'phone', 'address', 'message']), $deliveryDay);
-
-        // relate vendor invoice with user invoice
-        if ($relatedVendorInvoiceId) {
-            $handleableUserInvoice->bindVendorInvoice($relatedVendorInvoiceId);
-        }
-
-        return $invoice;
-    }
-
-    /**
-     * Create user order invoice.
-     *
-     * @param Collection $orderProducts
-     * @return Invoice
-     * @throws Exception
-     */
-    private function createVendorInvoice(Collection $orderProducts): Invoice
-    {
-        // define outgoing storage
-        $storageId = $this->storageProductRouter->defineInvoiceStorage($orderProducts);
-        //define vendor
-        $vendorId = $this->vendorProductRouter->defineInvoiceVendor($orderProducts);
-
-        //create and bind invoice to handler
-        $invoice = $this->vendorIncomingOrderInvoiceFabric->getCreator()->createInvoice(self::PRE_ORDER, $vendorId, $storageId);
-        $handleableVendorInvoice = $this->vendorIncomingOrderInvoiceFabric->getHandler()->bindInvoice($invoice);
-
-        // add products to invoice
-        $orderProducts->each(function (InvoiceProduct $invoiceProduct) use ($handleableVendorInvoice, $vendorId) {
-            $handleableVendorInvoice->appendProducts($invoiceProduct->products_id, $this->productPrice->getVendorPriceByProductId($invoiceProduct->products_id, $vendorId), $invoiceProduct->quantity);
-        });
-
-        return $invoice;
-    }
-
-    /**
-     * Remove unavailable products from cart.
-     *
-     * @param ProductInvoiceHandlerInterface $cartHandler
-     * @param Collection $unavailableProducts
-     */
-    private function removeUnavailableProducts(ProductInvoiceHandlerInterface $cartHandler, Collection $unavailableProducts)
-    {
-        foreach ($unavailableProducts as $product){
-            $cartHandler->decreaseProductCount($product->id, $product->quantity);
         }
     }
 }

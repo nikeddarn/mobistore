@@ -10,14 +10,19 @@
 
 <div id="app">
 
-    <!-- Header -->
-    @include('headers.common.index')
+    <!-- Top -->
+    <div id="top">
+        <!-- Header -->
+        @include('headers.common.index')
+        <!-- Page Content -->
+        @yield('content')
+    </div>
 
-    <!-- Page Content -->
-    @yield('content')
-
-    <!-- Footer -->
-    @include('footers.common')
+    <!-- Bottom -->
+    <div id="bottom" class="navbar-fixed-bottom">
+        <!-- Footer -->
+        @include('footers.common')
+    </div>
 
 </div>
 

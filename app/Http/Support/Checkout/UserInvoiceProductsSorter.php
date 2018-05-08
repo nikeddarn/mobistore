@@ -10,8 +10,8 @@ namespace App\Http\Support\Checkout;
 
 use App\Contracts\Shop\Invoices\InvoiceTypes;
 use App\Http\Support\ProductRepository\StorageProductRepository;
-use App\Http\Support\ProductRepository\StorageProductRouter;
 use App\Http\Support\ProductRepository\VendorProductRepository;
+use App\Http\Support\Routers\ProductRouter;
 use Illuminate\Support\Collection;
 
 class UserInvoiceProductsSorter
@@ -27,21 +27,21 @@ class UserInvoiceProductsSorter
     private $vendorProductRepository;
 
     /**
-     * @var StorageProductRouter
+     * @var ProductRouter
      */
-    private $storageProductRouter;
+    private $productRouter;
 
     /**
      * UserInvoiceProductsSorter constructor.
      * @param StorageProductRepository $storageProductRepository
      * @param VendorProductRepository $vendorProductRepository
-     * @param StorageProductRouter $storageProductRouter
+     * @param ProductRouter $storageProductRouter
      */
-    public function __construct(StorageProductRepository $storageProductRepository, VendorProductRepository $vendorProductRepository, StorageProductRouter $storageProductRouter)
+    public function __construct(StorageProductRepository $storageProductRepository, VendorProductRepository $vendorProductRepository, ProductRouter $storageProductRouter)
     {
         $this->storageProductRepository = $storageProductRepository;
         $this->vendorProductRepository = $vendorProductRepository;
-        $this->storageProductRouter = $storageProductRouter;
+        $this->productRouter = $storageProductRouter;
     }
 
     /**
@@ -80,7 +80,7 @@ class UserInvoiceProductsSorter
                 }
             }
             // add storages products to sorted result
-            if ($storageInvoiceProducts->count()){
+            if ($storageInvoiceProducts->count()) {
                 $sortedProducts[InvoiceTypes::ORDER] = $storageInvoiceProducts;
             }
         }
@@ -110,14 +110,14 @@ class UserInvoiceProductsSorter
                     }
                 }
                 // add vendors products to sorted result
-                if ($vendorInvoiceProducts->count()){
+                if ($vendorInvoiceProducts->count()) {
                     $sortedProducts[InvoiceTypes::PRE_ORDER] = $vendorInvoiceProducts;
                 }
             }
         }
 
         // add unavailable products to sorted result
-        if ($keyedProducts->count()){
+        if ($keyedProducts->count()) {
             $sortedProducts['unavailable'] = $keyedProducts;
         }
 
@@ -150,9 +150,10 @@ class UserInvoiceProductsSorter
      * Sort ordering product by storages.
      *
      * @param Collection $products
+     * @param int|null $deliveryCity
      * @return array
      */
-    public function sortProductByStorages(Collection $products): array
+    public function sortProductByStorages(Collection $products, int $deliveryCity = null): array
     {
         // define storages that have all needing products
         $productsQuantityById = $products->pluck('quantity', 'products_id')->toArray();
@@ -161,7 +162,7 @@ class UserInvoiceProductsSorter
         // collect products from one storage
         if (!empty($storagesHaveAllProducts)) {
             // define collecting storage
-            $collectingOrderStorageId = $this->storageProductRouter->defineCollectingOrderStorage($storagesHaveAllProducts);
+            $collectingOrderStorageId = $this->productRouter->defineCollectingOrderStorage($storagesHaveAllProducts, $deliveryCity);
             // return storage id as key and all products as value
             return [$collectingOrderStorageId => $products];
         }
@@ -171,24 +172,27 @@ class UserInvoiceProductsSorter
         $keyedProducts = $products->keyBy('products_id');
 
         // iterate each needing product
-        foreach ($keyedProducts as $invoiceProduct) {
+        foreach ($keyedProducts as $productsId => $invoiceProduct) {
             // set needing quantity
             $needingQuantity = $invoiceProduct->quantity;
-            // get storages that have product with current id
-            $storagesHaveProductQuantity = $this->storageProductRepository->getProductsCountKeyedByStorageId($invoiceProduct->id);
+            // get available product count keyed by storage id
+            $availableProductQuantityByStorageId = $this->storageProductRepository->getProductsCountKeyedByStorageId($productsId);
 
             // iterate storages that have product
-            foreach ($storagesHaveProductQuantity as $storageId => $storageProductQuantity) {
+            foreach ($availableProductQuantityByStorageId as $storageId => $storageProductQuantity) {
                 // define ordering count of product on current storage
                 $orderingCount = min($needingQuantity, $storageProductQuantity);
-                // order products
+
+                // clone invoice product
                 $storageProduct = clone $invoiceProduct;
+                // set ordering quantity
                 $storageProduct->quantity = $orderingCount;
-                if (isset($storageInvoices[$storageId])){
-                    $storageInvoices[$storageId]->push($storageProduct);
-                }else{
-                    $storageInvoices[$storageId] = collect($storageProduct);
+                // collect invoice product in current storage collection
+                if (!isset($storageInvoices[$storageId])) {
+                    $storageInvoices[$storageId] = collect();
                 }
+                $storageInvoices[$storageId]->push($storageProduct);
+
                 // decrease needing quantity
                 $needingQuantity -= $orderingCount;
 
@@ -200,7 +204,7 @@ class UserInvoiceProductsSorter
             }
         }
 
-        // return array of storages id as keys with products that will be ordered from this storage as value
+        // return array of storages id as keys with  collection of invoice product that will be ordered from this storage as value
         return $storageInvoices;
     }
 
@@ -217,24 +221,27 @@ class UserInvoiceProductsSorter
         $keyedProducts = $products->keyBy('products_id');
 
         // iterate each needing product
-        foreach ($keyedProducts as $invoiceProduct) {
+        foreach ($keyedProducts as $productsId => $invoiceProduct) {
             // set needing quantity
             $needingQuantity = $invoiceProduct->quantity;
-            // get vendors that have product with current id ordered by price ascending
-            $vendorsHaveProductQuantity = $this->vendorProductRepository->getProductsCountKeyedByVendorId($invoiceProduct->id);
+            // get available product count keyed by vendor id sorted by price ascending
+            $availableProductQuantityByVendorId = $this->vendorProductRepository->getProductsCountKeyedByVendorId($productsId);
 
             // iterate vendors that have product
-            foreach ($vendorsHaveProductQuantity as $vendorId => $vendorProductQuantity) {
+            foreach ($availableProductQuantityByVendorId as $vendorId => $vendorProductQuantity) {
                 // define ordering count of product on current vendor
                 $orderingCount = min($needingQuantity, $vendorProductQuantity);
-                // order products
+
+                // clone invoice product
                 $vendorProduct = clone $invoiceProduct;
+                // set ordering quantity
                 $vendorProduct->quantity = $orderingCount;
-                if (isset($vendorInvoices[$vendorId])){
-                    $vendorInvoices[$vendorId]->push($vendorProduct);
-                }else{
-                    $vendorInvoices[$vendorId] = collect($vendorProduct);
+                // collect invoice product in current vendor collection
+                if (!isset($vendorInvoices[$vendorId])) {
+                    $vendorInvoices[$vendorId] = collect();
                 }
+                $vendorInvoices[$vendorId]->push($vendorProduct);
+
                 // decrease needing quantity
                 $needingQuantity -= $orderingCount;
 

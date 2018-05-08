@@ -2,7 +2,17 @@
 
 @section('content')
 
+    {{-- header--}}
     <div class="row">
+
+        {{-- title --}}
+        <div class="col-sm-3">
+            @include('content.vendor.account.parts.title')
+        </div>
+
+    </div>
+
+    <div class="row m-t-3">
 
         <div class="col-sm-3">
             @include('content.vendor.order.parts.menu')
@@ -10,7 +20,7 @@
 
         <div class="col-sm-8">
 
-            <div class="m-t-3">
+            <div>
                 @if($outgoingOrders->count())
                     @include('content.vendor.order.parts.invoices')
                 @else

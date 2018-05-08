@@ -20,7 +20,7 @@ class UserInvoiceCreator extends InvoiceCreator
      * @return Invoice
      * @throws Exception
      */
-    public function createInvoice(int $invoiceType, int $userId, int $storageId, string $direction)
+    public function createInvoice(int $invoiceType, int $userId, string $direction, int $storageId = null)
     {
         try {
             $this->databaseManager->beginTransaction();
@@ -35,18 +35,20 @@ class UserInvoiceCreator extends InvoiceCreator
                 'delivery_status_id' => DeliveryStatusInterface::PROCESSING,
             ]);
 
+            $this->createdInvoice->setRelation('userInvoice', $userInvoice);
+
             // create storage invoice
-            $oppositeDirection = $direction === InvoiceDirections::OUTGOING ? InvoiceDirections::INCOMING : InvoiceDirections::OUTGOING;
+            if ($storageId) {
+                $oppositeDirection = $direction === InvoiceDirections::OUTGOING ? InvoiceDirections::INCOMING : InvoiceDirections::OUTGOING;
 
-            $storageInvoice = $this->createdInvoice->storageInvoice()->create([
-                'invoices_id' => $this->createdInvoice->id,
-                'storages_id' => $storageId,
-                'direction' => $oppositeDirection,
-            ]);
+                $storageInvoice = $this->createdInvoice->storageInvoice()->create([
+                    'invoices_id' => $this->createdInvoice->id,
+                    'storages_id' => $storageId,
+                    'direction' => $oppositeDirection,
+                ]);
 
-            $this->createdInvoice
-                ->setRelation('userInvoice', $userInvoice)
-                ->setRelation('storageInvoice', $storageInvoice);
+                $this->createdInvoice->setRelation('storageInvoice', $storageInvoice);
+            }
 
             $this->databaseManager->commit();
 

@@ -9,7 +9,6 @@ namespace App\Http\Support\ProductRepository;
 use App\Models\Product;
 use App\Models\Storage;
 use App\Models\StorageProduct;
-use Illuminate\Support\Collection;
 
 class StorageProductRepository
 {
@@ -62,9 +61,9 @@ class StorageProductRepository
      * Get array of storages id that have all needing products.
      *
      * @param array $products
-     * @return Collection
+     * @return array
      */
-    public function getStoragesHaveAllProducts(array $products): Collection
+    public function getStoragesHaveAllProducts(array $products): array
     {
         $productsId = array_keys($products);
 
@@ -89,7 +88,9 @@ class StorageProductRepository
                     }
                     // stay storage in collection
                     return true;
-                });
+                })
+                ->pluck('id')
+                ->toArray();
     }
 
     /**
@@ -98,7 +99,7 @@ class StorageProductRepository
      * @param int $productId
      * @return int
      */
-    public function getAvailableProductCount(int $productId):int
+    public function getAvailableProductCount(int $productId): int
     {
         return (int)$this->product
             ->join('storage_products', 'products.id', '=', 'storage_products.products_id')

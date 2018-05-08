@@ -32,7 +32,7 @@ interface InvoiceRepositoryInterface
      * @param int $invoiceId
      * @return Model
      */
-    public function getByInvoiceId(int $invoiceId): Model;
+    public function getByInvoiceId(int $invoiceId): Invoice;
 
     /**
      * Delete user's basket.

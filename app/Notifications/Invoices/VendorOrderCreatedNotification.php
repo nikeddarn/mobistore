@@ -38,7 +38,7 @@ class VendorOrderCreatedNotification extends Notification
      */
     public function via($notifiable)
     {
-        return [SmsChannel::class];
+        return config('notifications.' . __class__);
     }
 
     /**
@@ -79,7 +79,7 @@ class VendorOrderCreatedNotification extends Notification
         return (new SmsMessage())->setText(trans('messages.manager.' . UserRolesInterface::VENDOR_MANAGER . '.created', [
             'id' => $this->invoice->id,
             'sum' => $this->invoice->invoice_sum,
-            'vendor' => $this->invoice->userInvoice->vendorInvoice->vendor->title,
+            'vendor' => $this->invoice->userInvoice->vendorInvoice->first()->vendor->title,
         ]));
     }
 }

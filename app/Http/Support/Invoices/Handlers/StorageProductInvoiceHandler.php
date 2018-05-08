@@ -24,8 +24,6 @@ class StorageProductInvoiceHandler extends ProductInvoiceHandler implements Invo
     {
         $addedCount = parent::addProductsToInvoice($productId, $price, $quantity, $warranty);
 
-        $this->reserveProductsOnStorage($productId, $addedCount);
-
         return $addedCount;
     }
 
@@ -39,8 +37,6 @@ class StorageProductInvoiceHandler extends ProductInvoiceHandler implements Invo
     protected function deleteProductsFromInvoice(int $productId): int
     {
         $deletedCount = parent::deleteProductsFromInvoice($productId);
-
-        $this->reserveProductsOnStorage($productId, $deletedCount * -1);
 
         return $deletedCount;
     }
@@ -57,33 +53,7 @@ class StorageProductInvoiceHandler extends ProductInvoiceHandler implements Invo
     {
         $deletedCount = parent::decreaseInvoiceProductCount($productId, $decreasingQuantity);
 
-        $this->reserveProductsOnStorage($productId, $deletedCount * -1);
-
         return $deletedCount;
-    }
-
-    /**
-     * Reserve products on outgoing store. If $reservingCount is negative, products will be unreserved by this count.
-     *
-     * @param int $productId
-     * @param int $reservingCount
-     */
-    private function reserveProductsOnStorage(int $productId, int $reservingCount)
-    {
-        $outgoingStorage = $this->invoice->outgoingStorage()->first();
-
-        if ($outgoingStorage) {
-
-            $storageProduct = $outgoingStorage->storageProduct->keyBy('products_id')->get($productId);
-
-            if (!$storageProduct) {
-                $storageProduct = $this->createStorageProduct($outgoingStorage, $productId);
-                $outgoingStorage->storageProduct->push($storageProduct);
-            }
-
-            $storageProduct->reserved_quantity = max($storageProduct->reserved_quantity + $reservingCount, 0);
-            $storageProduct->save();
-        }
     }
 
     /**
@@ -91,7 +61,7 @@ class StorageProductInvoiceHandler extends ProductInvoiceHandler implements Invo
      * @param int $productId
      * @return StorageProduct|\Illuminate\Database\Eloquent\Model
      */
-    private function createStorageProduct(Storage $storage, int $productId)
+    protected function createStorageProduct(Storage $storage, int $productId)
     {
         return $storage->storageProduct()->create([
             'storages_id' => $storage->id,

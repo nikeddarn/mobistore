@@ -61,7 +61,7 @@ class Shipment extends Model
      */
     public function getPlannedArrivalAttribute($value)
     {
-        return $value ? Carbon::createFromTimestamp($value) : null;
+        return $value ? Carbon::createFromFormat('Y-m-d h:i:s', $value) : null;
     }
 
     /**
@@ -72,7 +72,7 @@ class Shipment extends Model
      */
     public function getPlannedDepartureAttribute($value)
     {
-        return $value ? Carbon::createFromTimestamp($value) : null;
+        return $value ? Carbon::createFromFormat('Y-m-d h:i:s', $value) : null;
     }
 
     /**
@@ -83,6 +83,6 @@ class Shipment extends Model
      */
     public function getDispatchedAttribute($value)
     {
-        return $value ? Carbon::createFromTimestamp($value) : null;
+        return $value ? Carbon::createFromFormat('Y-m-d h:i:s', $value) : null;
     }
 }

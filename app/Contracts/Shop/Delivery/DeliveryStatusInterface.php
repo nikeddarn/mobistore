@@ -19,4 +19,6 @@ interface DeliveryStatusInterface
     const POST_DELIVERING = 5;
 
     const DELIVERED = 6;
+
+    const CANCELLED = 7;
 }

@@ -35,7 +35,7 @@ abstract class InvoiceHandler implements InvoiceHandlerInterface
      * @param DatabaseManager $databaseManager
      * @param ProductPrice $productPrice
      */
-    public function __construct(DatabaseManager $databaseManager, ProductPrice $productPrice )
+    public function __construct(DatabaseManager $databaseManager, ProductPrice $productPrice)
     {
         $this->databaseManager = $databaseManager;
         $this->productPrice = $productPrice;
@@ -55,6 +55,16 @@ abstract class InvoiceHandler implements InvoiceHandlerInterface
     }
 
     /**
+     * Get handling invoice.
+     *
+     * @return Invoice
+     */
+    public function getInvoice(): Invoice
+    {
+        return $this->invoice;
+    }
+
+    /**
      * Get invoice id.
      *
      * @return int
@@ -62,16 +72,6 @@ abstract class InvoiceHandler implements InvoiceHandlerInterface
     public function getInvoiceId()
     {
         return $this->invoice->id;
-    }
-
-    /**
-     * Is invoice committed ?
-     *
-     * @return bool
-     */
-    public function isInvoiceCommitted(): bool
-    {
-        return (bool)$this->invoice->implemented;
     }
 
     /**
@@ -85,22 +85,11 @@ abstract class InvoiceHandler implements InvoiceHandlerInterface
     }
 
     /**
-     * Set is_committed flag of Invoice model to true.
-     *
-     * @return bool
-     */
-    public function markInvoiceAsCommitted(): bool
-    {
-        $this->invoice->implemented = true;
-        return $this->invoice->save();
-    }
-
-    /**
      * Get total invoice sum.
      *
      * @return float
      */
-    public function getInvoiceSum():float
+    public function getInvoiceSum(): float
     {
         return $this->invoice->invoice_sum;
     }
@@ -120,7 +109,7 @@ abstract class InvoiceHandler implements InvoiceHandlerInterface
      *
      * @return float
      */
-    public function getInvoiceDeliverySum():float
+    public function getInvoiceDeliverySum(): float
     {
         return $this->invoice->delivery_sum;
     }
@@ -168,6 +157,28 @@ abstract class InvoiceHandler implements InvoiceHandlerInterface
     public function updateInvoiceExchangeRate()
     {
         $this->invoice->rate = $this->productPrice->getRate();
+        $this->invoice->save();
+    }
+
+    /**
+     * Bind invoice with shipment by its id
+     *
+     * @param int $shipmentId
+     */
+    public function bindInvoiceToShipment(int $shipmentId)
+    {
+        $this->invoice->shipments_id = $shipmentId;
+        $this->invoice->save();
+    }
+
+    /**
+     * Set invoice status.
+     *
+     * @param int $invoiceStatus
+     */
+    public function setInvoiceStatus(int $invoiceStatus)
+    {
+        $this->invoice->invoice_status_id = $invoiceStatus;
         $this->invoice->save();
     }
 

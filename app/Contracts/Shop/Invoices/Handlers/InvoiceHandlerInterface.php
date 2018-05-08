@@ -20,11 +20,11 @@ interface InvoiceHandlerInterface
     public function bindInvoice(Invoice $invoice);
 
     /**
-     * Is invoice committed ?
+     * Get handling invoice.
      *
-     * @return bool
+     * @return Invoice
      */
-    public function isInvoiceCommitted(): bool;
+    public function getInvoice():Invoice;
 
     /**
      * Get invoice last update time.
@@ -32,13 +32,6 @@ interface InvoiceHandlerInterface
      * @return Carbon
      */
     public function getUpdateTime();
-
-    /**
-     * Set is_committed flag of Invoice model to true.
-     *
-     * @return bool
-     */
-    public function markInvoiceAsCommitted():bool ;
 
     /**
      * Get whole invoice sum.
@@ -60,4 +53,25 @@ interface InvoiceHandlerInterface
      * @return string
      */
     public function getInvoiceType(): string;
+
+    /**
+     * Get total invoice sum.
+     *
+     * @return float
+     */
+    public function getInvoiceDeliverySum(): float;
+
+    /**
+     * Get total invoice sum in UAH.
+     *
+     * @return float
+     */
+    public function getInvoiceDeliveryUahSum(): float;
+
+    /**
+     * Set invoice delivery sum.
+     *
+     * @param float $deliverySum
+     */
+    public function setInvoiceDeliverySum(float $deliverySum);
 }

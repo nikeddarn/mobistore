@@ -63,10 +63,10 @@ class UserInvoiceConstraints
     }
 
     /**
-     * @param int $invoiceType
+     * @param int|array $invoiceType
      * @return UserInvoiceConstraints
      */
-    public function setInvoiceType(int $invoiceType): UserInvoiceConstraints
+    public function setInvoiceType($invoiceType): UserInvoiceConstraints
     {
         $this->invoiceType = $invoiceType;
         return $this;

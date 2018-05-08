@@ -15,7 +15,7 @@
             <td class="text-center product-needing-quantity">{{ $invoiceProduct->quantity }}</td>
             <td class="text-center product-ordered-quantity">
                 <input class="cart-product-quantity" form="collect-{{ $invoice->id }}" type="text" value="{{ $invoiceProduct->quantity }}"
-                       name="quantity[{{ $invoiceProduct->id }}]">
+                       name="quantity[{{ $invoiceProduct->products_id }}]">
             </td>
         </tr>
     @endforeach
