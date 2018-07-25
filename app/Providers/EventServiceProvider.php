@@ -2,11 +2,13 @@
 
 namespace App\Providers;
 
+use App\Events\Delivery\ChangeDeliveryDate;
 use App\Events\Invoices\UserOrderCancelled;
 use App\Events\Invoices\UserOrderCollected;
 use App\Events\Invoices\UserOrderCreated;
 use App\Events\Invoices\UserOrderPartiallyCollected;
 use App\Listeners\DefineUserPriceGroup;
+use App\Listeners\Delivery\SendDeliveryDateChangedNotifications;
 use App\Listeners\Invoices\SendUserOrderCancelledNotifications;
 use App\Listeners\Invoices\SendUserOrderCollectedNotifications;
 use App\Listeners\Invoices\SendUserOrderCreatedNotifications;
@@ -41,6 +43,10 @@ class EventServiceProvider extends ServiceProvider
 
         UserOrderPartiallyCollected::class => [
             SendUserOrderPartiallyCollectedNotifications::class,
+        ],
+
+        ChangeDeliveryDate::class => [
+            SendDeliveryDateChangedNotifications::class
         ],
 
     ];

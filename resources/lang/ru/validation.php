@@ -88,6 +88,10 @@ return [
     'uploaded'             => 'The :attribute failed to upload.',
     'url'                  => 'The :attribute format is invalid.',
 
+    'arrival_more_than_departure' => 'Дата прибытия должна быть больше чем дата отправления.',
+    'shipment_unique' => 'Такая отправка уже существует',
+    'courier_tour_unique' => 'Такой тур уже существует',
+
     /*
     |--------------------------------------------------------------------------
     | Custom Validation Language Lines

@@ -52,26 +52,10 @@ class UserInvoice extends Model
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function deliveryStatus()
-    {
-        return $this->belongsTo('App\Models\DeliveryStatus', 'delivery_status_id', 'id');
-    }
-
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function deliveryType()
-    {
-        return $this->belongsTo('App\Models\DeliveryType', 'delivery_types_id', 'id');
-    }
-
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
      */
     public function vendorInvoice()
     {
-        return $this->belongsToMany('App\Models\VendorInvoice', 'user_invoices_has_vendor_invoices', 'user_invoices_id', 'vendor_invoices_id');
+        return $this->hasOne('App\Models\VendorInvoice', 'user_invoices_id', 'id');
     }
 }

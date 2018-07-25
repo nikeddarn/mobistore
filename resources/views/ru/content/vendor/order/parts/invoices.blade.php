@@ -15,9 +15,10 @@
 
         @foreach($outgoingOrders as $invoice)
 
-            <form id="collect-{{ $invoice->id }}" method="post" action="{{ route('vendor.order.collect', ['vendorId' => $vendorId]) }}">
+            <form id="collect-{{ $invoice->id }}" method="post" action="{{ route('vendor.order.collect') }}">
                 {{ csrf_field() }}
                 <input type="hidden" name="invoice_id" value="{{ $invoice->id }}">
+                <input type="hidden" name="vendors_id" value="{{ $vendorId }}">
             </form>
 
             <tr class="text-center">

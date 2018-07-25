@@ -9,7 +9,7 @@ namespace App\Http\Controllers\Cart;
 use App\Contracts\Shop\Invoices\Handlers\ProductInvoiceHandlerInterface;
 use App\Http\Support\Invoices\Fabrics\CartInvoiceFabric;
 use App\Http\Support\Price\ProductPrice;
-use App\Models\RecentProduct;
+use App\Http\Support\ProductRepository\UserRecentProductRepository;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -46,33 +46,29 @@ class CartController extends Controller
     private $productPrice;
 
     /**
-     * @var RecentProduct
-     */
-    private $recentProduct;
-
-    /**
      * @var CartInvoiceFabric
      */
     private $cartFabric;
+
+    /**
+     * @var UserRecentProductRepository
+     */
+    private $recentProductRepository;
 
     /**
      * CartController constructor.
      * @param Request $request
      * @param CartInvoiceFabric $invoiceFabric
      * @param ProductPrice $productPrice
-     * @param RecentProduct $recentProduct
+     * @param UserRecentProductRepository $recentProductRepository
      */
-    public function __construct(
-        Request $request,
-        CartInvoiceFabric $invoiceFabric,
-        ProductPrice $productPrice,
-        RecentProduct $recentProduct
+    public function __construct(Request $request, CartInvoiceFabric $invoiceFabric, ProductPrice $productPrice, UserRecentProductRepository $recentProductRepository
     )
     {
         $this->request = $request;
         $this->productPrice = $productPrice;
-        $this->recentProduct = $recentProduct;
         $this->cartFabric = $invoiceFabric;
+        $this->recentProductRepository = $recentProductRepository;
     }
 
     /**
@@ -109,12 +105,13 @@ class CartController extends Controller
         $calculatedProductPrice = $this->productPrice->getUserPriceByProductId($productId);
 
         if (!$handleableCart->productExists($productId) && $calculatedProductPrice) {
-            $handleableCart->appendProducts($productId, $calculatedProductPrice);
+            $handleableCart->addProduct($productId, $calculatedProductPrice);
         }
 
         $this->storeReferrer();
 
-        $this->updateRecentProducts($productId);
+        // add to recent products
+        $this->recentProductRepository->updateOrCreateUserRecentProduct($this->request->user('web'), $productId);
 
         return $this->createRedirect();
     }
@@ -131,12 +128,13 @@ class CartController extends Controller
         $handleableCart = $this->getHandleableCart();
 
         if ($handleableCart) {
-            $handleableCart->deleteProducts($productId);
+            $handleableCart->deleteProduct($productId);
         }
 
         $this->storeReferrer();
 
-        $this->updateRecentProducts($productId);
+        // update recent products
+        $this->recentProductRepository->updateOrCreateUserRecentProduct($this->request->user('web'), $productId);
 
         return $this->createRedirect();
     }
@@ -162,12 +160,13 @@ class CartController extends Controller
         $calculatedProductPrice = $this->productPrice->getUserPriceByProductId($productId);
 
         if ($handleableCart && $calculatedProductPrice) {
-            $handleableCart->appendProducts($productId, $calculatedProductPrice, $productQuantity);
+            $handleableCart->addProduct($productId, $calculatedProductPrice, $productQuantity);
         }
 
         $this->storeReferrer();
 
-        $this->updateRecentProducts($productId);
+        // update recent products
+        $this->recentProductRepository->updateOrCreateUserRecentProduct($this->request->user('web'), $productId);
 
         return $this->createRedirect();
     }
@@ -309,20 +308,5 @@ class CartController extends Controller
         $this->request->session()->keep(self::CART_REFERRER_SESSION_NAME);
 
         return $this->request->session()->get(self::CART_REFERRER_SESSION_NAME);
-    }
-
-    /**
-     * Add to recent products
-     *
-     * @param int $productId
-     */
-    private function updateRecentProducts(int $productId)
-    {
-        if (auth('web')->check()) {
-            $this->recentProduct->updateOrCreate([
-                'products_id' => $productId,
-                'users_id' => auth('web')->user()->id,
-            ])->touch();
-        }
     }
 }

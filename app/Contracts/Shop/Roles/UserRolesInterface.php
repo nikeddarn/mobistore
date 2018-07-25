@@ -19,4 +19,6 @@ interface UserRolesInterface
     const STOREKEEPER = 5;
 
     const SERVICEMAN = 6;
+
+    const OWNER = 6;
 }

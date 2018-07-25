@@ -1,4 +1,4 @@
-<div class="container-fluid">
+<div class="container-fluid product-path-content">
     <div class="row row-flex">
         @if(!empty($actionList))
 

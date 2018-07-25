@@ -6,7 +6,7 @@ namespace App\Http\Controllers;
 class MainController extends Controller
 {
     /**
-     * Return main view or home user view if authenticated.
+     * Return main view.
      *
      * @return \Illuminate\View\View
      */

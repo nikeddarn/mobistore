@@ -24,7 +24,21 @@ interface InvoiceHandlerInterface
      *
      * @return Invoice
      */
-    public function getInvoice():Invoice;
+    public function getInvoice(): Invoice;
+
+    /**
+     * Get invoice id.
+     *
+     * @return int
+     */
+    public function getInvoiceId();
+
+    /**
+     * Get invoice creation time.
+     *
+     * @return Carbon
+     */
+    public function getCreateTime();
 
     /**
      * Get invoice last update time.
@@ -38,21 +52,14 @@ interface InvoiceHandlerInterface
      *
      * @return float
      */
-    public function getInvoiceSum():float ;
+    public function getInvoiceSum(): float;
 
     /**
-     * Get total invoice sum in UAH.
+     * Get total invoice sum in local cash.
      *
      * @return float
      */
-    public function getInvoiceUahSum(): float;
-
-    /**
-     * Get invoice title.
-     *
-     * @return string
-     */
-    public function getInvoiceType(): string;
+    public function getInvoiceLocalSum(): float;
 
     /**
      * Get total invoice sum.
@@ -69,9 +76,16 @@ interface InvoiceHandlerInterface
     public function getInvoiceDeliveryUahSum(): float;
 
     /**
-     * Set invoice delivery sum.
+     * Get invoice title.
      *
-     * @param float $deliverySum
+     * @return string
      */
-    public function setInvoiceDeliverySum(float $deliverySum);
+    public function getInvoiceType(): string;
+
+    /**
+     * Get invoice status.
+     *
+     * @return string
+     */
+    public function getInvoiceStatus(): string;
 }

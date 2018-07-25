@@ -3,8 +3,8 @@
 namespace App\Http;
 
 use App\Http\Middleware\Auth\AdminMiddleware;
+use App\Http\Middleware\Auth\StorageManagerMiddleware;
 use App\Http\Middleware\Auth\VendorManagerMiddleware;
-use App\Http\Middleware\Auth\VendorUserMiddleware;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
@@ -66,6 +66,7 @@ class Kernel extends HttpKernel
 
         //custom middleware
         'admin' => AdminMiddleware::class,
-        'vendor.user' => VendorUserMiddleware::class,
+        'admin.vendor' => VendorManagerMiddleware::class,
+        'admin.storage' => StorageManagerMiddleware::class,
     ];
 }

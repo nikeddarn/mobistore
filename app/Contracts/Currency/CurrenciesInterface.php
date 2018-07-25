@@ -8,7 +8,7 @@ namespace App\Contracts\Currency;
 
 interface CurrenciesInterface
 {
-    const USD = 'USD';
+    const USD = 1;
 
-    const UAH = 'UAH';
+    const UAH = 2;
 }

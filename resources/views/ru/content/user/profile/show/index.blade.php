@@ -15,7 +15,7 @@
 @endsection
 
 @section('user_menu')
-    @include('content.user.profile.show.parts.user_menu')
+    @include('menu.user_sidebar_menu', ['activeMenuItem' => 'user_profile'])
 @endsection
 
 @section('meta_data')

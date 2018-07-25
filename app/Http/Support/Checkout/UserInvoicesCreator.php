@@ -88,10 +88,10 @@ class UserInvoicesCreator
 
         if (config('shop.invoice.order.create_outgoing_storage_invoice')) {
             // create user invoice with outgoing storage invoice
-            $userInvoiceHandler = $this->createUserInvoice(InvoiceTypes::ORDER, $products, $invoiceStorageId);
+            $userInvoiceHandler = $this->createUserInvoice(InvoiceTypes::USER_ORDER, $products, $invoiceStorageId);
         }else{
             // create user invoice w/o outgoing storage invoice
-            $userInvoiceHandler = $this->createUserInvoice(InvoiceTypes::ORDER, $products);
+            $userInvoiceHandler = $this->createUserInvoice(InvoiceTypes::USER_ORDER, $products);
         }
 
         // allow auto create replacement between storages invoices
@@ -123,10 +123,10 @@ class UserInvoicesCreator
 
         if (config('shop.invoice.pre_order.create_outgoing_storage_invoice')) {
             // create user invoice with outgoing storage invoice
-            $userInvoiceHandler = $this->createUserInvoice(InvoiceTypes::PRE_ORDER, $products, $invoiceStorageId);
+            $userInvoiceHandler = $this->createUserInvoice(InvoiceTypes::USER_PRE_ORDER, $products, $invoiceStorageId);
         }else{
             // create user invoice w/o outgoing storage invoice
-            $userInvoiceHandler = $this->createUserInvoice(InvoiceTypes::PRE_ORDER, $products);
+            $userInvoiceHandler = $this->createUserInvoice(InvoiceTypes::USER_PRE_ORDER, $products);
         }
 
         // create vendor invoices and link them with user invoice
@@ -161,7 +161,7 @@ class UserInvoicesCreator
         $userInvoice = $invoiceCreator->createInvoice($invoiceType, $user->id, InvoiceDirections::INCOMING, $outgoingStorageId);
 
         // bind invoice to handler
-        $invoiceHandler = $invoiceHandler->bindInvoice($userInvoice);
+        $invoiceHandler->bindInvoice($userInvoice);
 
         // append products to invoice
         $this->appendProducts($invoiceHandler, $products);
@@ -216,7 +216,7 @@ class UserInvoicesCreator
         // create vendor invoices
         foreach ($vendorInvoices as $vendorId => $products) {
             // create invoice
-            $vendorInvoice = $invoiceCreator->createInvoice(InvoiceTypes::PRE_ORDER, $vendorId, InvoiceDirections::OUTGOING, $incomingStorageId);
+            $vendorInvoice = $invoiceCreator->createInvoice(InvoiceTypes::USER_PRE_ORDER, $vendorId, InvoiceDirections::OUTGOING, $incomingStorageId);
             // bind invoice to handler
             $invoiceHandler->bindInvoice($vendorInvoice);
             // append products to invoice
@@ -237,7 +237,7 @@ class UserInvoicesCreator
     private function appendProducts(StorageProductInvoiceHandler $invoiceHandler, Collection $products)
     {
         foreach ($products as $product) {
-            $invoiceHandler->appendProducts($product->products_id, $product->price, $product->quantity);
+            $invoiceHandler->addProduct($product->products_id, $product->price, $product->quantity);
         }
     }
 

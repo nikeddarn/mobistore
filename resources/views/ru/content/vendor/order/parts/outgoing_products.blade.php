@@ -19,5 +19,25 @@
         </tr>
     @endforeach
 
+    <tr>
+        <td colspan="3">
+            <div class="m-t-2 text-right">
+                <form method="post" action="{{ route('vendor.order.collect.all') }}">
+
+                    {{ csrf_field() }}
+                    <input type="hidden" name="vendors_id" value="{{ $vendorId }}">
+
+                    @foreach($outgoingOrders as $outgoingOrder)
+                        <input type="hidden" name="invoices_id[]" value="{{ $outgoingOrder->id }}">
+                    @endforeach
+
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-long-arrow-right"></i>Все заказано
+                    </button>
+
+                </form>
+            </div>
+        </td>
+    </tr>
+
     </tbody>
 </table>

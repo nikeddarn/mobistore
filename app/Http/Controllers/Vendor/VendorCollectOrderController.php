@@ -8,19 +8,16 @@ namespace App\Http\Controllers\Vendor;
 
 use App\Contracts\Shop\Delivery\DeliveryStatusInterface;
 use App\Contracts\Shop\Invoices\Handlers\InvoiceHandlerInterface;
-use App\Contracts\Shop\Invoices\InvoiceStatusInterface;
 use App\Events\Invoices\UserOrderCancelled;
 use App\Events\Invoices\UserOrderCollected;
 use App\Events\Invoices\UserOrderPartiallyCollected;
 use App\Http\Support\Invoices\Fabrics\UserOrderInvoiceFabric;
 use App\Http\Support\Invoices\Fabrics\VendorOrderInvoiceFabric;
-use App\Http\Support\Invoices\Handlers\UserStorageProductInvoiceHandler;
-use App\Http\Support\Invoices\Handlers\VendorStorageProductInvoiceHandler;
+use App\Http\Support\Invoices\Handlers\Product\VendorStorageProductInvoiceHandler;
+use App\Http\Support\Invoices\RelatedInvoices\RelatedInvoicesHandler;
 use App\Http\Support\Shipment\VendorShipmentDispatcher;
-use App\Models\Shipment;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 
 class VendorCollectOrderController
 {
@@ -45,18 +42,25 @@ class VendorCollectOrderController
     private $userOrderInvoiceFabric;
 
     /**
+     * @var RelatedInvoicesHandler
+     */
+    private $relatedInvoicesHandler;
+
+    /**
      * AccountController constructor.
      * @param Request $request
      * @param VendorOrderInvoiceFabric $vendorOrderInvoiceFabric
      * @param UserOrderInvoiceFabric $userOrderInvoiceFabric
      * @param VendorShipmentDispatcher $shipmentDispatcher
+     * @param RelatedInvoicesHandler $relatedInvoicesHandler
      */
-    public function __construct(Request $request, VendorOrderInvoiceFabric $vendorOrderInvoiceFabric, UserOrderInvoiceFabric $userOrderInvoiceFabric, VendorShipmentDispatcher $shipmentDispatcher)
+    public function __construct(Request $request, VendorOrderInvoiceFabric $vendorOrderInvoiceFabric, UserOrderInvoiceFabric $userOrderInvoiceFabric, VendorShipmentDispatcher $shipmentDispatcher, RelatedInvoicesHandler $relatedInvoicesHandler)
     {
         $this->request = $request;
         $this->vendorOrderInvoiceFabric = $vendorOrderInvoiceFabric;
         $this->shipmentDispatcher = $shipmentDispatcher;
         $this->userOrderInvoiceFabric = $userOrderInvoiceFabric;
+        $this->relatedInvoicesHandler = $relatedInvoicesHandler;
     }
 
 
@@ -68,8 +72,12 @@ class VendorCollectOrderController
      */
     public function collect()
     {
-        // handling invoice
-        $vendorInvoiceHandler = $this->getVendorInvoiceHandler();
+        // get handler with invoice
+        if ($this->request->has('invoice_id')) {
+            $vendorInvoiceHandler = $this->getVendorInvoiceHandler($this->request->get('invoice_id'));
+        } else {
+            throw new Exception('Collecting invoice is not defined');
+        }
 
         // array of collected products count by InvoiceProduct id
         $collectedProductsCountByInvoiceProductId = $this->request->get('quantity');
@@ -92,26 +100,46 @@ class VendorCollectOrderController
     }
 
     /**
+     * Collect all products in all invoices, add it to shipment, notify users.
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     * @throws Exception
+     */
+    public function collectAll()
+    {
+        if ($this->request->has('invoices_id')) {
+            // iterate each collecting invoice
+            foreach ($this->request->get('invoices_id') as $invoiceId) {
+                // get handler with invoice
+                $vendorInvoiceHandler = $this->getVendorInvoiceHandler((int)$invoiceId);
+                // invoice was collected
+                $this->invoiceCollected($vendorInvoiceHandler);
+            }
+        } else {
+            throw new Exception('Collecting invoices is not defined');
+        }
+
+        return back();
+    }
+
+    /**
      * Retrieve invoice. Bind it to handler.
      *
+     * @param int $invoiceId
      * @return VendorStorageProductInvoiceHandler
      * @throws Exception
      */
-    private function getVendorInvoiceHandler(): VendorStorageProductInvoiceHandler
+    private function getVendorInvoiceHandler(int $invoiceId): VendorStorageProductInvoiceHandler
     {
-        if ($this->request->has('invoice_id')) {
-            $invoiceRepository = $this->vendorOrderInvoiceFabric->getRepository();
-            $invoiceHandler = $this->vendorOrderInvoiceFabric->getHandler();
+        $invoiceRepository = $this->vendorOrderInvoiceFabric->getRepository();
+        $invoiceHandler = $this->vendorOrderInvoiceFabric->getHandler();
 
-            // retrieve collecting invoice
-            $collectingInvoice = $invoiceRepository->getByInvoiceId($this->request->get('invoice_id'));
+        // retrieve collecting invoice
+        $collectingInvoice = $invoiceRepository->getByInvoiceId($invoiceId);
 
-            if ($collectingInvoice) {
-                // return invoice handler with bound invoice
-                return $invoiceHandler->bindInvoice($collectingInvoice);
-            } else {
-                throw new Exception('Collecting invoice is not defined');
-            }
+        if ($collectingInvoice) {
+            // return invoice handler with bound invoice
+            return $invoiceHandler->bindInvoice($collectingInvoice);
         } else {
             throw new Exception('Collecting invoice is not defined');
         }
@@ -125,33 +153,35 @@ class VendorCollectOrderController
     private function invoiceCollected(VendorStorageProductInvoiceHandler $vendorInvoiceHandler)
     {
         // mark vendor invoice as implemented
-        $vendorInvoiceHandler->setVendorInvoiceImplemented();
+        $vendorInvoiceHandler->implementVendorInvoice();
 
-        // add to shipment
-        $shipment = $this->addInvoiceToShipment($vendorInvoiceHandler);
+        // add invoice to shipment
+        $this->addInvoiceToShipment($vendorInvoiceHandler);
 
         // define related user invoice.
-        $relatedUserInvoice = $vendorInvoiceHandler->getRelatedUserInvoice();
+        $relatedUserInvoice = $this->relatedInvoicesHandler->getRelatedUserInvoice($vendorInvoiceHandler->getInvoice());
 
         if ($relatedUserInvoice) {
+
             // get user invoice handler
             $userInvoiceHandler = $this->userOrderInvoiceFabric->getHandler()->bindInvoice($relatedUserInvoice);
 
             // get related vendor invoices
-            $relatedVendorInvoices = $userInvoiceHandler->getRelatedVendorInvoices();
+            $relatedVendorInvoices = $this->relatedInvoicesHandler->getRelatedVendorInvoicesByUserInvoice($relatedUserInvoice);
 
-            // all vendor invoices of user invoice are collected
-            if ($this->areAllRelatedVendorInvoicesCollected($relatedVendorInvoices)) {
-                // change related user invoice delivery status
-                $userInvoiceHandler->setDeliveryStatus(DeliveryStatusInterface::COLLECTED);
+            if ($this->relatedInvoicesHandler->areRelatedVendorInvoicesImplemented($relatedVendorInvoices)) {
 
-                // update user invoice delivery date
-                if ($shipment) {
-                    $this->updateUserInvoiceDeliveryDate($userInvoiceHandler, $relatedVendorInvoices);
-                }
+                // define new delivery date
+                $userInvoiceDeliveryDate = $this->shipmentDispatcher->calculateDeliveryDateByInvoices($relatedVendorInvoices->pluck('id')->toArray());
+
+                // change delivery date
+                $userInvoiceHandler->updateDeliveryDate($userInvoiceDeliveryDate);
+
+                // change delivery status
+                $userInvoiceHandler->updateDeliveryStatus(DeliveryStatusInterface::COLLECTED);
 
                 // fire event
-                event(new UserOrderCollected($vendorInvoiceHandler->getInvoice()));
+                event(new UserOrderCollected($relatedUserInvoice));
             }
         }
     }
@@ -168,36 +198,41 @@ class VendorCollectOrderController
         $this->updateInvoiceProductQuantity($vendorInvoiceHandler, $collectedProducts);
 
         // mark vendor invoice as implemented
-        $vendorInvoiceHandler->setVendorInvoiceImplemented();
+        $vendorInvoiceHandler->implementVendorInvoice();
 
-        // add to shipment
-        $shipment = $this->addInvoiceToShipment($vendorInvoiceHandler);
+        // add invoice to shipment
+        $this->addInvoiceToShipment($vendorInvoiceHandler);
 
-        // define related user invoice.
-        $relatedUserInvoice = $vendorInvoiceHandler->getRelatedUserInvoice();
+        // correct user invoice quantity, set delivery data, send notification
+        if (config('shop.invoice.pre_order.auto_correct_user_invoice')) {
 
-        if ($relatedUserInvoice) {
-            // get user invoice handler
-            $userInvoiceHandler = $this->userOrderInvoiceFabric->getHandler()->bindInvoice($relatedUserInvoice);
+            // define related user invoice.
+            $relatedUserInvoice = $this->relatedInvoicesHandler->getRelatedUserInvoice($vendorInvoiceHandler->getInvoice());
 
-            // update user invoice products quantity
-            $this->updateInvoiceProductQuantity($userInvoiceHandler, $collectedProducts);
+            if ($relatedUserInvoice) {
+                // get user invoice handler
+                $userInvoiceHandler = $this->userOrderInvoiceFabric->getHandler()->bindInvoice($relatedUserInvoice);
 
-            // get related vendor invoices
-            $relatedVendorInvoices = $userInvoiceHandler->getRelatedVendorInvoices();
+                // update user invoice products quantity
+                $this->updateInvoiceProductQuantity($userInvoiceHandler, $collectedProducts);
 
-            // all vendor invoices of user invoice are collected
-            if ($this->areAllRelatedVendorInvoicesCollected($relatedVendorInvoices)) {
-                // change related user invoice delivery status
-                $userInvoiceHandler->setDeliveryStatus(DeliveryStatusInterface::COLLECTED);
+                // get related vendor invoices
+                $relatedVendorInvoices = $this->relatedInvoicesHandler->getRelatedVendorInvoicesByUserInvoice($relatedUserInvoice);
 
-                // update user invoice delivery date
-                if ($shipment) {
-                    $this->updateUserInvoiceDeliveryDate($userInvoiceHandler, $relatedVendorInvoices);
+                if ($this->relatedInvoicesHandler->areRelatedVendorInvoicesImplemented($relatedVendorInvoices)) {
+
+                    // define new delivery date
+                    $userInvoiceDeliveryDate = $this->shipmentDispatcher->calculateDeliveryDateByInvoices($relatedVendorInvoices->pluck('id')->toArray());
+
+                    // change delivery date
+                    $userInvoiceHandler->updateDeliveryDate($userInvoiceDeliveryDate);
+
+                    // change delivery status
+                    $userInvoiceHandler->updateDeliveryStatus(DeliveryStatusInterface::COLLECTED);
+
+                    // fire event
+                    event(new UserOrderPartiallyCollected($relatedUserInvoice));
                 }
-
-                // fire event
-                event(new UserOrderPartiallyCollected($vendorInvoiceHandler->getInvoice()));
             }
         }
     }
@@ -210,26 +245,23 @@ class VendorCollectOrderController
     private function invoiceCancelled(VendorStorageProductInvoiceHandler $vendorInvoiceHandler)
     {
         // set vendor invoice status as 'cancelled'
-        $vendorInvoiceHandler->setInvoiceStatus(InvoiceStatusInterface::CANCELLED);
+        $vendorInvoiceHandler->cancelInvoice();
 
-        // define related user invoice.
-        $relatedUserInvoice = $vendorInvoiceHandler->getRelatedUserInvoice();
+        // cancel user invoice, send notification
+        if (config('shop.invoice.pre_order.auto_correct_user_invoice')) {
+            // define related user invoice.
+            $relatedUserInvoice = $this->relatedInvoicesHandler->getRelatedUserInvoice($vendorInvoiceHandler->getInvoice());
 
-        if ($relatedUserInvoice) {
-            // get user invoice handler
-            $userInvoiceHandler = $this->userOrderInvoiceFabric->getHandler()->bindInvoice($relatedUserInvoice);
+            if ($relatedUserInvoice) {
+                // get user invoice handler
+                $userInvoiceHandler = $this->userOrderInvoiceFabric->getHandler()->bindInvoice($relatedUserInvoice);
 
-            // set user invoice status as 'cancelled'
-            $userInvoiceHandler->setInvoiceStatus(InvoiceStatusInterface::CANCELLED);
+                // cancel invoice
+                $userInvoiceHandler->cancelInvoice();
 
-            // change user invoice delivery status
-            $userInvoiceHandler->setDeliveryStatus(DeliveryStatusInterface::CANCELLED);
-
-            // remove reserve of invoice products from storage
-            $userInvoiceHandler->removeReserveFromStorage();
-
-            // fire event
-            event(new UserOrderCancelled($vendorInvoiceHandler->getInvoice()));
+                // fire event
+                event(new UserOrderCancelled($relatedUserInvoice));
+            }
         }
     }
 
@@ -237,50 +269,17 @@ class VendorCollectOrderController
      * Get nearest shipment. Add invoice to it.
      *
      * @param VendorStorageProductInvoiceHandler $invoiceHandler
-     * @return Shipment|null
+     * @return bool
      */
     private function addInvoiceToShipment(VendorStorageProductInvoiceHandler $invoiceHandler)
     {
+        if (!config('shop.invoice.pre_order.auto_add_to_nearest_shipment')) {
+            return false;
+        }
         // get nearest shipment
         $nearestShipment = $this->shipmentDispatcher->getNextShipment($invoiceHandler->getVendorId());
 
-        // bind invoice to shipment
-        if ($nearestShipment) {
-            $invoiceHandler->bindInvoiceToShipment($nearestShipment->id);
-        }
-
-        return $nearestShipment;
-    }
-
-    /**
-     * Are all the vendor invoices, of which the user invoice is composed, collected?
-     *
-     * @param Collection $relatedVendorInvoices
-     * @return bool
-     */
-    private function areAllRelatedVendorInvoicesCollected(Collection $relatedVendorInvoices): bool
-    {
-        // all vendor invoices that related with user invoice are implemented
-        return !$relatedVendorInvoices->where('implemented', 0)->count();
-    }
-
-    /**
-     * Update user invoice delivery date.
-     *
-     * @param UserStorageProductInvoiceHandler $userInvoiceHandler
-     * @param Collection $relatedVendorInvoices
-     */
-    private function updateUserInvoiceDeliveryDate(UserStorageProductInvoiceHandler $userInvoiceHandler, Collection $relatedVendorInvoices)
-    {
-        // related vendor invoices id
-        $vendorInvoicesId = $relatedVendorInvoices->pluck('invoices_id')->toArray();
-        // redefine planned arrival
-        $plannedArrival = $this->shipmentDispatcher->calculateDeliveryDateByInvoices($vendorInvoicesId);
-
-        // change delivery date
-        if ($plannedArrival) {
-            $userInvoiceHandler->updateDeliveryDate($plannedArrival);
-        }
+        return $nearestShipment ? $invoiceHandler->bindInvoiceToShipment($nearestShipment->id) : false;
     }
 
     /**
@@ -297,7 +296,7 @@ class VendorCollectOrderController
 
             // decrease product quantity
             if ($decreasingQuantity > 0) {
-                $invoiceHandler->decreaseProductCount($invoiceProduct->products_id, $decreasingQuantity);
+                $invoiceHandler->removeProduct($invoiceProduct->products_id, $decreasingQuantity);
             }
         }
     }

@@ -2,7 +2,7 @@
 
     <h4>
         <span class="text-gray">Предварительный заказ</span>&nbsp;&nbsp;
-        <span class="small">Доставка {{ $productsData['pre_order']['delivery_time'] }}</span>
+        <span class="small">Ориентировочная дата доставки: {{ $productsData['pre_order']['delivery_time'] }}</span>
     </h4>
     <table class="table table-bordered cart-product-list">
         <thead>

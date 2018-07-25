@@ -65,16 +65,21 @@ Route::post('/reset', 'Auth\ResetPasswordController@reset');
 // auth middleware with parameter : 'web' (guard name)
 Route::middleware(['auth:web'])->group(function () {
 
-    Route::get('/user/messages', 'User\MessageController@showAllMessages')->name('message.show');
-    Route::get('/user/messages/mark/{id}', 'User\MessageController@markAsRead');
+    Route::get('/user/balance', 'User\BalanceController@show')->name('user_balance.show');
 
-    Route::get('/user/account', 'User\AccountController@show')->name('account.show');
+    Route::get('/user/notifications', 'User\ActualNotificationController@show')->name('user_notifications.show.unread');
+    Route::get('/user/notifications/mark/{id}', 'User\ActualNotificationController@markAsRead');
+    Route::get('/user/notifications/all', 'User\NotificationController@show')->name('user_notifications.show.all');
 
-    Route::get('/user/delivery', 'User\DeliveryController@show')->name('delivery.show');
+    Route::get('/user/shipments', 'User\ShipmentController@show')->name('user_shipments.show');
 
-    Route::get('/user/warranty', 'User\WarrantyController@show')->name('warranty.show');
+    Route::get('/user/orders', 'User\OrderController@show')->name('user_orders.show');
 
-    Route::get('/user/profile', 'User\ProfileController@show')->name('profile.show');
+    Route::get('/user/reclamations', 'User\ReclamationController@show')->name('user_reclamations.show');
+
+    Route::get('/user/payments', 'User\WarrantyController@show')->name('user_payments.show');
+
+    Route::get('/user/profile', 'User\ProfileController@show')->name('user_profile.show');
 //
     Route::get('/user/profile/edit', 'User\ProfileController@showProfileForm')->name('profile.edit');
 
@@ -82,7 +87,7 @@ Route::middleware(['auth:web'])->group(function () {
 //
     Route::get('/user/password', 'User\PasswordController@showChangePasswordForm')->name('password.show');
 
-    Route::post('/user/password/reset', 'User\PasswordController@changePassword')->name('password.reset');
+    Route::post('/user/password/reset', 'User\PasswordController@changePassword')->name('user_password.reset');
 
 });
 
@@ -119,20 +124,82 @@ Route::middleware(['admin'])->group(function () {
 
 /******************* Vendor Pages *************************************************/
 
-Route::middleware('vendor.user')->group(function () {
+Route::middleware('admin.vendor')->group(function () {
 
     Route::get('/partner', 'Vendor\VendorController@index');
 
     Route::get('/partner/{vendorId}/account', 'Vendor\VendorAccountController@index')->name('vendor.account');
 
     Route::get('/partner/{vendorId}/order', 'Vendor\VendorOrderController@index')->name('vendor.order');
-    Route::post('/partner/{vendorId}/order/collect', 'Vendor\VendorCollectOrderController@collect')->name('vendor.order.collect');
+    Route::post('/partner/order/collect', 'Vendor\VendorCollectOrderController@collect')->name('vendor.order.collect');
+    Route::post('/partner/order/collect/all', 'Vendor\VendorCollectOrderController@collectAll')->name('vendor.order.collect.all');
 
     Route::get('/partner/{vendorId}/delivery', 'Vendor\VendorDeliveryController@index')->name('vendor.delivery');
+    Route::post('/partner/delivery/invoices/add_to_shipment', 'Vendor\VendorDeliveryController@addInvoicesToShipment')->name('vendor.delivery.invoices.add_to_shipment');
 
     Route::get('/partner/{vendorId}/warranty', 'Vendor\VendorWarrantyController@index')->name('vendor.warranty');
 
     Route::get('/partner/{vendorId}/payment', 'Vendor\VendorPaymentController@index')->name('vendor.payment');
+
+    Route::get('/partner/{vendorId}/shipment', 'Vendor\VendorShipmentController@index')->name('vendor.shipment');
+    Route::post('/partner/shipment/create/schedule', 'Vendor\VendorShipmentController@createFromSchedule')->name('vendor.shipment.create.schedule');
+    Route::post('/partner/shipment/create/date', 'Vendor\VendorShipmentController@createByDate')->name('vendor.shipment.create.date');
+    Route::post('/partner/shipment/dispatch', 'Vendor\VendorShipmentController@dispatchShipment')->name('vendor.shipment.dispatch');
+    Route::post('/partner/shipment/remove', 'Vendor\VendorShipmentController@removeShipment')->name('vendor.shipment.remove');
+
+    Route::get('/partner/{vendorId}/courier', 'Vendor\VendorCourierController@index')->name('vendor.courier');
+    Route::post('/partner/courier/create', 'Vendor\VendorCourierController@createCourier')->name('vendor.courier.create');
+    Route::post('/partner/courier/create_tour', 'Vendor\VendorCourierController@createCourierTour')->name('vendor.courier.create_tour');
+
+
+});
+
+/******************* Storage Pages *************************************************/
+
+Route::middleware('admin.storage')->group(function () {
+
+    // list of storages
+    Route::get('/store', 'Storage\StorageController@index');
+
+    // products on storage
+    Route::get('/store/{storageId}/product', 'Storage\StorageProductController@index')->name('storage.product');
+
+    // incoming invoices handling
+    Route::get('/store/{storageId}/incoming', 'Storage\StorageIncomingController@index')->name('storage.incoming');
+    Route::post('/store/incoming/receive/invoice', 'Storage\StorageIncomingController@receiveProductInvoice')->name('storage.incoming.receive.invoice');
+    Route::post('/store/incoming/receive/shipment', 'Storage\StorageIncomingController@receiveShipment')->name('storage.incoming.receive.shipment');
+
+    // outgoing invoices handling
+    Route::get('/store/{storageId}/outgoing', 'Storage\StorageOutgoingСontroller@index')->name('storage.outgoing');
+
+    Route::get('/store/{storageId}/delivery', 'Storage\StorageDeliveryСontroller@index')->name('storage.delivery');
+
+    Route::get('/store/{storageId}/shipment', 'Storage\StorageShipmentСontroller@index')->name('storage.shipment');
+
+    Route::get('/store/{storageId}/warranty', 'Storage\StorageWarrantyСontroller@index')->name('storage.warranty');
+
+    Route::get('/store/{storageId}/payment', 'Storage\StoragePaymentСontroller@index')->name('storage.payment');
+//
+//    Route::post('/partner/order/collect', 'Vendor\VendorCollectOrderController@collect')->name('vendor.order.collect');
+//    Route::post('/partner/order/collect/all', 'Vendor\VendorCollectOrderController@collectAll')->name('vendor.order.collect.all');
+//
+//    Route::get('/partner/{vendorId}/delivery', 'Vendor\VendorDeliveryController@index')->name('vendor.delivery');
+//    Route::post('/partner/delivery/invoices/add_to_shipment', 'Vendor\VendorDeliveryController@addInvoicesToShipment')->name('vendor.delivery.invoices.add_to_shipment');
+//
+//    Route::get('/partner/{vendorId}/warranty', 'Vendor\VendorWarrantyController@index')->name('vendor.warranty');
+//
+//    Route::get('/partner/{vendorId}/payment', 'Vendor\VendorPaymentController@index')->name('vendor.payment');
+//
+//    Route::get('/partner/{vendorId}/shipment', 'Vendor\VendorShipmentController@index')->name('vendor.shipment');
+//    Route::post('/partner/shipment/create/schedule', 'Vendor\VendorShipmentController@createFromSchedule')->name('vendor.shipment.create.schedule');
+//    Route::post('/partner/shipment/create/date', 'Vendor\VendorShipmentController@createByDate')->name('vendor.shipment.create.date');
+//    Route::post('/partner/shipment/dispatch', 'Vendor\VendorShipmentController@dispatchShipment')->name('vendor.shipment.dispatch');
+//    Route::post('/partner/shipment/remove', 'Vendor\VendorShipmentController@removeShipment')->name('vendor.shipment.remove');
+//
+//    Route::get('/partner/{vendorId}/courier', 'Vendor\VendorCourierController@index')->name('vendor.courier');
+//    Route::post('/partner/courier/create', 'Vendor\VendorCourierController@createCourier')->name('vendor.courier.create');
+//    Route::post('/partner/courier/create_tour', 'Vendor\VendorCourierController@createCourierTour')->name('vendor.courier.create_tour');
+
 
 });
 
@@ -157,7 +224,7 @@ Route::get('/comment/product/{id}', 'Comment\ProductCommentsController@index');
 
 //******************************************** Favourite Products **********************************
 
-Route::get('/favourite', 'Product\ProductFavouriteController@show')->middleware(['auth:web'])->name('product.favourite');
+Route::get('/favourite', 'Product\ProductFavouriteController@show')->name('product.favourite');
 
 Route::get('/favourite/add/{id}', 'Product\ProductFavouriteController@addToFavourite')->middleware(['auth:web']);
 
@@ -165,11 +232,11 @@ Route::get('/favourite/remove/{id}', 'Product\ProductFavouriteController@removeF
 
 //******************************************** Recent Products **********************************
 
-Route::get('/recent', 'Product\ProductRecentController@show')->middleware(['auth:web'])->name('product.recent');
+Route::get('/recent', 'Product\ProductRecentController@show')->name('product.recent');
 
 //******************************************** Action Products **********************************
 
-Route::get('/actions', 'Product\ProductActionController@show')->middleware(['auth:web'])->name('product.action');
+Route::get('/actions', 'Product\ProductActionController@show')->name('product.action');
 
 //************************************************ User Cart ****************************************
 

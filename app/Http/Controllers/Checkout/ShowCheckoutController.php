@@ -131,7 +131,7 @@ class ShowCheckoutController extends Controller
                 $sortedProducts = $this->productsSorter->sortProductsByOrderType($cartHandler->getInvoiceProducts());
 
                 // some products is available to order
-                if(isset($sortedProducts[InvoiceTypes::ORDER]) || isset($sortedProducts[InvoiceTypes::PRE_ORDER])) {
+                if(isset($sortedProducts[InvoiceTypes::USER_ORDER]) || isset($sortedProducts[InvoiceTypes::USER_PRE_ORDER])) {
                     // add user invoices data
                     $response->with([
                         'productsData' => $this->invoicesData($cartHandler, $sortedProducts),
@@ -163,16 +163,16 @@ class ShowCheckoutController extends Controller
         $productImagePathPrefix = $this->filesystemManager->disk('public')->url('images/products/small/');
         $courierDeliveryPrice = $this->deliveryPrice->calculateDeliveryPrice(auth('web')->user(), $cartHandler->getInvoiceSum(), DeliveryTypesInterface::COURIER);
 
-        if (isset($sortedProducts[InvoiceTypes::ORDER])){
-            $invoiceStorages = $this->productsSorter->getInvoiceStorages($sortedProducts[InvoiceTypes::ORDER]);
+        if (isset($sortedProducts[InvoiceTypes::USER_ORDER])){
+            $invoiceStorages = $this->productsSorter->getInvoiceStorages($sortedProducts[InvoiceTypes::USER_ORDER]);
 
-            $invoicesData['order'] = $this->getOrderInvoiceData($cartHandler, $sortedProducts[InvoiceTypes::ORDER], $productImagePathPrefix, $exchangeRate, $courierDeliveryPrice, $this->localShipmentDispatcher->calculateDeliveryDay($invoiceStorages));
+            $invoicesData['order'] = $this->getOrderInvoiceData($cartHandler, $sortedProducts[InvoiceTypes::USER_ORDER], $productImagePathPrefix, $exchangeRate, $courierDeliveryPrice, $this->localShipmentDispatcher->calculateDeliveryDay($invoiceStorages));
         }
 
-        if (isset($sortedProducts[InvoiceTypes::PRE_ORDER])){
-            $invoiceVendors = $this->productsSorter->getInvoiceVendors($sortedProducts[InvoiceTypes::PRE_ORDER]);
+        if (isset($sortedProducts[InvoiceTypes::USER_PRE_ORDER])){
+            $invoiceVendors = $this->productsSorter->getInvoiceVendors($sortedProducts[InvoiceTypes::USER_PRE_ORDER]);
 
-            $invoicesData['pre_order'] = $this->getOrderInvoiceData($cartHandler, $sortedProducts[InvoiceTypes::PRE_ORDER], $productImagePathPrefix, $exchangeRate, isset($sortedProducts[InvoiceTypes::ORDER]) ? 0 : $courierDeliveryPrice, $this->vendorShipmentDispatcher->calculateDeliveryDayByVendors($invoiceVendors));
+            $invoicesData['pre_order'] = $this->getOrderInvoiceData($cartHandler, $sortedProducts[InvoiceTypes::USER_PRE_ORDER], $productImagePathPrefix, $exchangeRate, isset($sortedProducts[InvoiceTypes::USER_ORDER]) ? 0 : $courierDeliveryPrice, $this->vendorShipmentDispatcher->calculateDeliveryDayByVendorShipmentsOrSchedules($invoiceVendors));
         }
 
         return $invoicesData;
@@ -263,7 +263,7 @@ class ShowCheckoutController extends Controller
     private function removeUnavailableProducts(ProductInvoiceHandlerInterface $cartHandler, Collection $unavailableProducts)
     {
         foreach ($unavailableProducts as $product){
-            $cartHandler->decreaseProductCount($product->id, $product->quantity);
+            $cartHandler->removeProduct($product->id, $product->quantity);
         }
     }
 }

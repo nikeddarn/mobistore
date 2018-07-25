@@ -81,7 +81,7 @@ class UserInvoiceProductsSorter
             }
             // add storages products to sorted result
             if ($storageInvoiceProducts->count()) {
-                $sortedProducts[InvoiceTypes::ORDER] = $storageInvoiceProducts;
+                $sortedProducts[InvoiceTypes::USER_ORDER] = $storageInvoiceProducts;
             }
         }
 
@@ -111,7 +111,7 @@ class UserInvoiceProductsSorter
                 }
                 // add vendors products to sorted result
                 if ($vendorInvoiceProducts->count()) {
-                    $sortedProducts[InvoiceTypes::PRE_ORDER] = $vendorInvoiceProducts;
+                    $sortedProducts[InvoiceTypes::USER_PRE_ORDER] = $vendorInvoiceProducts;
                 }
             }
         }

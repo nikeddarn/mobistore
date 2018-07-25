@@ -8,13 +8,15 @@ namespace App\Http\Controllers\Admin\Support;
 
 
 use App\Contracts\Currency\CurrenciesInterface;
-use App\Contracts\Shop\Badges\BadgeTypes;
+use App\Contracts\Shop\Badges\ProductBadgesInterface;
 use App\Contracts\Shop\Delivery\DeliveryStatusInterface;
 use App\Contracts\Shop\Delivery\DeliveryTypesInterface;
 use App\Contracts\Shop\Delivery\PostServicesInterface;
 use App\Contracts\Shop\Invoices\InvoiceStatusInterface;
 use App\Contracts\Shop\Invoices\InvoiceTypes;
+use App\Contracts\Shop\Reclamations\ReclamationStatusInterface;
 use App\Contracts\Shop\Reclamations\RejectReclamationReasons;
+use App\Contracts\Shop\Roles\DepartmentTypesInterface;
 use App\Contracts\Shop\Roles\UserRolesInterface;
 use App\Models\Badge;
 use App\Models\Color;
@@ -25,10 +27,12 @@ use App\Models\InvoiceStatus;
 use App\Models\InvoiceType;
 use App\Models\PostService;
 use App\Models\Quality;
+use App\Models\ReclamationStatus;
 use App\Models\RejectReclamationReason;
 use App\Models\Role;
+use App\Models\StorageDepartmentType;
 use App\Models\User;
-use App\Models\UserRole;
+use Illuminate\Database\Eloquent\Model;
 use ReflectionClass;
 
 class InitializeApplication implements UserRolesInterface
@@ -37,34 +41,26 @@ class InitializeApplication implements UserRolesInterface
      * @var Role
      */
     private $role;
-
     /**
      * @var Color
      */
     private $color;
-
     /**
      * @var Quality
      */
     private $quality;
-
     /**
      * @var User
      */
     private $user;
-
-
     /**
      * @var InvoiceType
      */
     private $invoiceType;
-
-
     /**
      * @var Badge
      */
     private $badge;
-
     /**
      * @var Currency
      */
@@ -86,13 +82,17 @@ class InitializeApplication implements UserRolesInterface
      */
     private $postService;
     /**
-     * @var UserRole
-     */
-    private $userRole;
-    /**
      * @var InvoiceStatus
      */
     private $invoiceStatus;
+    /**
+     * @var ReclamationStatusInterface
+     */
+    private $reclamationStatus;
+    /**
+     * @var StorageDepartmentType
+     */
+    private $storageDepartmentType;
 
     /**
      * InitializeApplication constructor.
@@ -107,10 +107,11 @@ class InitializeApplication implements UserRolesInterface
      * @param RejectReclamationReason $rejectReclamationReason
      * @param DeliveryType $deliveryType
      * @param PostService $postService
-     * @param UserRole $userRole
      * @param InvoiceStatus $invoiceStatus
+     * @param ReclamationStatus $reclamationStatus
+     * @param StorageDepartmentType $storageDepartmentType
      */
-    public function __construct(Role $role, Color $color, Quality $quality, User $user, InvoiceType $invoiceType, Badge $badge, Currency $currency, DeliveryStatus $deliveryStatus, RejectReclamationReason $rejectReclamationReason, DeliveryType $deliveryType, PostService $postService, UserRole $userRole, InvoiceStatus $invoiceStatus)
+    public function __construct(Role $role, Color $color, Quality $quality, User $user, InvoiceType $invoiceType, Badge $badge, Currency $currency, DeliveryStatus $deliveryStatus, RejectReclamationReason $rejectReclamationReason, DeliveryType $deliveryType, PostService $postService, InvoiceStatus $invoiceStatus, ReclamationStatus $reclamationStatus, StorageDepartmentType $storageDepartmentType)
     {
 
         $this->role = $role;
@@ -124,8 +125,9 @@ class InitializeApplication implements UserRolesInterface
         $this->rejectReclamationReason = $rejectReclamationReason;
         $this->deliveryType = $deliveryType;
         $this->postService = $postService;
-        $this->userRole = $userRole;
         $this->invoiceStatus = $invoiceStatus;
+        $this->reclamationStatus = $reclamationStatus;
+        $this->storageDepartmentType = $storageDepartmentType;
     }
 
     /**
@@ -135,28 +137,31 @@ class InitializeApplication implements UserRolesInterface
      */
     public function fillLibraries()
     {
-        $this->color->insert(require database_path('setup/colors.php'));
+        $this->fillTranslatableLibrary($this->color, database_path('setup/colors.php'));
 
-        $this->quality->insert(require database_path('setup/quality.php'));
-
-        $this->insertInvoiceTypes();
-
-        $this->insertInvoiceStatus();
-
-        $this->insertBadges();
+        $this->fillTranslatableLibrary($this->quality, database_path('setup/quality.php'));
 
         $this->insertCurrencies();
 
-        $this->insertDeliveryStatus();
+        $this->fillTranslatableConstantsLibrary(InvoiceTypes::class, $this->invoiceType, database_path('setup/invoice_types.php'));
 
-        $this->insertDeliveryTypes();
+        $this->fillTranslatableConstantsLibrary(InvoiceStatusInterface::class, $this->invoiceStatus, database_path('setup/invoice_status.php'));
 
-        $this->insertPostServices();
+        $this->fillTranslatableConstantsLibrary(ProductBadgesInterface::class, $this->badge, database_path('setup/badges.php'));
 
-        $this->insertRejectReclamationReasons();
+        $this->fillTranslatableConstantsLibrary(DeliveryStatusInterface::class, $this->deliveryStatus, database_path('setup/delivery_status.php'));
 
-        $this->insertUserRoles();
+        $this->fillTranslatableConstantsLibrary(DeliveryTypesInterface::class, $this->deliveryType, database_path('setup/delivery_types.php'));
 
+        $this->fillTranslatableConstantsLibrary(PostServicesInterface::class, $this->postService, database_path('setup/post_services.php'));
+
+        $this->fillTranslatableConstantsLibrary(RejectReclamationReasons::class, $this->rejectReclamationReason, database_path('setup/reject_reclamation_reasons.php'));
+
+        $this->fillTranslatableConstantsLibrary(ReclamationStatusInterface::class, $this->reclamationStatus, database_path('setup/reclamation_status.php'));
+
+        $this->fillNotTranslatableConstantsLibrary($this->role, UserRolesInterface::class);
+
+        $this->fillNotTranslatableConstantsLibrary($this->storageDepartmentType, DepartmentTypesInterface::class);
     }
 
     /**
@@ -166,77 +171,70 @@ class InitializeApplication implements UserRolesInterface
      */
     public function insertRootUser()
     {
+        // create root user
         $user = $this->user->create([
             'name' => 'Nikeddarn',
             'email' => 'nikeddarn@gmail.com',
             'password' => bcrypt('assodance'),
         ]);
 
-        $this->userRole->create([
-            'users_id' => $user->id,
-            'roles_id' => self::ROOT,
+        // add general attribute to root user parameters
+        $userRoleParameters = [
             'general' => 1,
-        ]);
+        ];
 
-        $this->userRole->create([
-            'users_id' => $user->id,
-            'roles_id' => self::USER_MANAGER,
-            'general' => 1,
-        ]);
-
-        $this->userRole->create([
-            'users_id' => $user->id,
-            'roles_id' => self::VENDOR_MANAGER,
-            'general' => 1,
-        ]);
-
-        $this->userRole->create([
-            'users_id' => $user->id,
-            'roles_id' => self::SERVICEMAN,
-            'general' => 1,
-        ]);
-
-        $this->userRole->create([
-            'users_id' => $user->id,
-            'roles_id' => self::STOREKEEPER,
-            'general' => 1,
+        // attach roles to root user
+        $user->role()->attach([
+            UserRolesInterface::ROOT => $userRoleParameters,
+            UserRolesInterface::USER_MANAGER => $userRoleParameters,
+            UserRolesInterface::VENDOR_MANAGER => $userRoleParameters,
+            UserRolesInterface::SERVICEMAN => $userRoleParameters,
+            UserRolesInterface::STOREKEEPER => $userRoleParameters,
+            UserRolesInterface::OWNER => $userRoleParameters,
         ]);
     }
 
     /**
-     * Insert invoice types from interface.
+     * Fill translatable libraries.
+     *
+     * @param string $interfaceConstantsClass
+     * @param Model $libraryModel
+     * @param string $libraryValuePath
      */
-    private function insertInvoiceTypes()
+    private function fillTranslatableConstantsLibrary(string $interfaceConstantsClass, Model $libraryModel, string $libraryValuePath)
     {
-        $types = require database_path('setup/invoice_types.php');
+        $types = require $libraryValuePath;
 
-        foreach ((new ReflectionClass(InvoiceTypes::class))->getConstants() as $constantValue) {
-            $this->invoiceType->create(array_merge(['id' => $constantValue], $types[$constantValue]));
+        foreach ((new ReflectionClass($interfaceConstantsClass))->getConstants() as $constantValue) {
+            $libraryModel->create(array_merge(['id' => $constantValue], $types[$constantValue]));
         }
     }
 
     /**
-     * Insert invoice status from interface.
+     * Fill not translatable libraries.
+     *
+     * @param Model $libraryModel
+     * @param string $interfaceConstantsClass
      */
-    private function insertInvoiceStatus()
+    private function fillNotTranslatableConstantsLibrary(Model $libraryModel, string $interfaceConstantsClass)
     {
-        $types = require database_path('setup/invoice_status.php');
-
-        foreach ((new ReflectionClass(InvoiceStatusInterface::class))->getConstants() as $constantValue) {
-            $this->invoiceStatus->create(array_merge(['id' => $constantValue], $types[$constantValue]));
+        foreach ((new ReflectionClass($interfaceConstantsClass))->getConstants() as $constantName => $constantValue) {
+            $libraryModel->create([
+                'title' => ucfirst(strtolower(str_replace('_', ' ', $constantName))),
+                'id' => $constantValue,
+            ]);
         }
     }
 
     /**
-     * Insert badges.
+     * Fill translatable library.
+     *
+     * @param Model $libraryModel
+     * @param string $libraryValuePath
      */
-    public function insertBadges()
+    private function fillTranslatableLibrary(Model $libraryModel, string $libraryValuePath)
     {
-        $badges = require database_path('setup/badges.php');
-
-        foreach ((new ReflectionClass(BadgeTypes::class))->getConstants() as $constantValue) {
-            $this->badge->create(array_merge(['id' => $constantValue], $badges[$constantValue]));
-        }
+        $libraryModel->create(require $libraryValuePath);
     }
 
     /**
@@ -244,76 +242,11 @@ class InitializeApplication implements UserRolesInterface
      */
     private function insertCurrencies()
     {
-        $types = [];
-
-        foreach ((new ReflectionClass(CurrenciesInterface::class))->getConstants() as $value) {
-            $types[] = [
-                'code' => $value,
-            ];
-        }
-
-        $this->currency->insert($types);
-    }
-
-    /**
-     * Insert delivery statuses.
-     */
-    private function insertDeliveryStatus()
-    {
-        $statuses = require database_path('setup/delivery_status.php');
-
-        foreach ((new ReflectionClass(DeliveryStatusInterface::class))->getConstants() as $constantValue) {
-            $this->deliveryStatus->create(array_merge(['id' => $constantValue], $statuses[$constantValue]));
-        }
-    }
-
-    /**
-     * Insert delivery types.
-     */
-    private function insertDeliveryTypes()
-    {
-        $statuses = require database_path('setup/delivery_types.php');
-
-        foreach ((new ReflectionClass(DeliveryTypesInterface::class))->getConstants() as $constantValue) {
-            $this->deliveryType->create(array_merge(['id' => $constantValue], $statuses[$constantValue]));
-        }
-    }
-
-    /**
-     * Insert post services.
-     */
-    private function insertPostServices()
-    {
-        $statuses = require database_path('setup/post_services.php');
-
-        foreach ((new ReflectionClass(PostServicesInterface::class))->getConstants() as $constantValue) {
-            $this->postService->create(array_merge(['id' => $constantValue], $statuses[$constantValue]));
-        }
-    }
-
-    /**
-     * Insert reclamation reasons.
-     */
-    private function insertRejectReclamationReasons()
-    {
-        $reasons = require database_path('setup/reject_reclamation_reasons.php');
-
-        foreach ((new ReflectionClass(RejectReclamationReasons::class))->getConstants() as $constantValue) {
-            $this->rejectReclamationReason->create(array_merge(['id' => $constantValue], $reasons[$constantValue]));
-        }
-    }
-
-    /**
-     * Insert user roles.
-     */
-    private function insertUserRoles()
-    {
-        foreach ((new ReflectionClass(UserRolesInterface::class))->getConstants() as  $constantName => $constantValue) {
-            $this->role->create([
-                'title' => ucfirst(strtolower(str_replace('_', ' ', $constantName))),
+        foreach ((new ReflectionClass(CurrenciesInterface::class))->getConstants() as $constantName => $constantValue) {
+            $this->currency->create([
+                'code' => $constantName,
                 'id' => $constantValue,
             ]);
         }
     }
-
 }

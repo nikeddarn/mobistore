@@ -37,18 +37,10 @@ class VendorInvoice extends Model
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function userInvoice()
     {
-        return $this->belongsToMany('App\Models\UserInvoice', 'user_invoices_has_vendor_invoices', 'vendor_invoices_id', 'user_invoices_id');
-    }
-
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function userInvoiceHasVendorInvoice()
-    {
-        return $this->hasMany('App\Models\UserInvoiceHasVendorInvoice', 'vendor_invoices_id', 'id');
+        return $this->belongsTo('App\Models\UserInvoice', 'user_invoices_id', 'id');
     }
 }

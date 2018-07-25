@@ -45,4 +45,20 @@ class Vendor extends Model
     {
         return $this->hasMany('App\Models\VendorInvoice', 'vendors_id', 'id');
     }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function vendorActiveReclamation()
+    {
+        return $this->hasMany('App\Models\VendorActiveReclamation', 'vendors_id', 'id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function reclamation()
+    {
+        return $this->belongsToMany('App\Models\Reclamation', 'vendor_active_reclamations', 'vendors_id', 'reclamations_id');
+    }
 }

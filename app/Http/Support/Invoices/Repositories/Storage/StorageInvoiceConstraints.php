@@ -63,10 +63,10 @@ class StorageInvoiceConstraints
     }
 
     /**
-     * @param int $invoiceType
+     * @param int|array $invoiceType
      * @return StorageInvoiceConstraints
      */
-    public function setInvoiceType(int $invoiceType): StorageInvoiceConstraints
+    public function setInvoiceType($invoiceType): StorageInvoiceConstraints
     {
         $this->invoiceType = $invoiceType;
         return $this;

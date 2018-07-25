@@ -16,9 +16,10 @@ return [
         'recent_products' => 'Недавние продукты пользователя',
         'action_products' => 'Запчасти к мобильным телефонам и планшетам со скидками',
 
-        // user pages
+        // user's control pages
         'user' => [
-            'messages' => 'Магазин ' . config('app.name') . ' - сообщения пользователя',
+            'balance' => 'Магазин ' . config('app.name') . ' - баланс пользователя',
+            'notifications' => 'Магазин ' . config('app.name') . ' - сообщения пользователя',
             'deliveries' => 'Магазин ' . config('app.name') . ' - доставки пользователя',
             'accounts' => 'Магазин ' . config('app.name') . ' - аккаунт пользователя',
             'warranty' => 'Магазин ' . config('app.name') . ' - гарантийное обслуживание пользователя',

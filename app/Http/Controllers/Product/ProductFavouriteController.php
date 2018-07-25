@@ -69,11 +69,17 @@ class ProductFavouriteController extends Controller
      */
     public function show()
     {
-        return view('content.shop.favourite.index')
-            ->with('favouritesList', $this->getFavourites())
-            ->with('commonMetaData', [
+        if ($this->request->ajax()) {
+            // get part of mega menu
+            $view = view('headers.common.bottom.parts.mega_menu.parts.favourites');
+        }else{
+            // get full view
+            $view = view('content.shop.favourite.index')->with('commonMetaData', [
                 'title' => trans('meta.title.favourite_products'),
             ]);
+        }
+
+        return $view->with('favouritesList', $this->getFavourites());
     }
 
 

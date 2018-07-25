@@ -7,10 +7,12 @@
 namespace App\Http\Support\Currency;
 
 
+use App\Contracts\Currency\CurrenciesInterface;
 use App\Contracts\Currency\ExchangeRatesInterface;
 use App\Models\Currency;
 use App\Models\CurrencyRate;
 use Carbon\Carbon;
+use Exception;
 
 class ExchangeRates implements ExchangeRatesInterface
 {
@@ -36,83 +38,79 @@ class ExchangeRates implements ExchangeRatesInterface
         $this->currency = $currency;
         $this->currencyRate = $currencyRate;
     }
+
     /**
      * Get average rate of given sources.
      *
-     * @param string $currency
-     * @return float
+     * @param int $currencyId
+     * @return float|null
      */
-    public function getRate(string $currency = self::USD):float
+    public function getRate(int $currencyId = CurrenciesInterface::USD)
     {
-        $currencyRateModel = $this->getCurrencyRateModel($currency);
-        return $currencyRateModel ? $currencyRateModel->rate : null;
-    }
+        $currencyRateModel = $this->retrieveActualCurrencyRateModel($currencyId);
 
-    /**
-     * Retrieve actual \App\Models\CurrencyRate if exists or define rate, and return stored CurrencyRate.
-     *
-     * @param string $currency
-     * @return CurrencyRate
-     */
-    private function getCurrencyRateModel(string $currency):CurrencyRate
-    {
-        $currencyRate = $this->retrieveCurrencyRate($currency);
-
-        if (!$currencyRate){
-            $rate = $this->getRateFromDefinedSources($currency);
-            if ($rate) {
-                $currencyRate = $this->storeReceivedRate($currency, $rate);
-            }else{
-                $currencyRate = $this->retrieveLastStoredCurrencyRate($currency);
-            }
+        if ($currencyRateModel){
+            return $currencyRateModel->rate;
         }
 
-        return $currencyRate;
+        $rateFromSource = $this->getRateFromDefinedSources($currencyId);
+
+        if ($rateFromSource){
+            $this->createCurrencyRateModel($currencyId, $rateFromSource);
+
+            return $rateFromSource;
+        }
+
+        $currencyRateModel = $this->retrieveLastStoredCurrencyRate($currencyId);
+
+        if ($currencyRateModel){
+            return $currencyRateModel->rate;
+        }
+
+        return null;
     }
 
     /**
      * Retrieve actual model from DB.
      *
-     * @param string $currency
-     * @return CurrencyRate|\Illuminate\Database\Eloquent\Builder
+     * @param int $currencyId
+     * @return CurrencyRate|null
      */
-    private function retrieveCurrencyRate(string $currency)
+    private function retrieveActualCurrencyRateModel(int $currencyId)
     {
-       return $this->currencyRate->whereHas('currency', function($query) use($currency){
-            $query->where('code', $currency);
-        })
-           ->where('created_at', '>=', Carbon::today())
-           ->where('created_at', '>=', Carbon::now()->subHour(config('shop.exchange_rate_ttl')))
-           ->orderByDesc('created_at')
-           ->first();
+        return $this->currencyRate
+            ->where('currencies_id', $currencyId)
+            ->where('created_at', '>=', Carbon::today())
+            ->where('created_at', '>=', Carbon::now()->subHour(config('shop.exchange_rate.update_rate_hours')))
+            ->orderByDesc('created_at')
+            ->first();
     }
 
     /**
-     * Retrieve last stored model from DB.
+     * Retrieve last stored model from DB that is valid.
      *
-     * @param string $currency
-     * @return CurrencyRate|\Illuminate\Database\Eloquent\Builder
+     * @param int $currencyId
+     * @return CurrencyRate|null
      */
-    private function retrieveLastStoredCurrencyRate(string $currency)
+    private function retrieveLastStoredCurrencyRate(int $currencyId)
     {
-       return $this->currencyRate->whereHas('currency', function($query) use($currency){
-            $query->where('code', $currency);
-        })
-           ->orderByDesc('created_at')
-           ->first();
+        return $this->currencyRate
+            ->where('currencies_id', $currencyId)
+            ->where('created_at', '>=', Carbon::now()->subDays(config('shop.exchange_rate.valid_stored_rate_days')))
+            ->orderByDesc('created_at')
+            ->first();
     }
 
     /**
-     * Create and return new CurrencyRate model.
+     * Create CurrencyRate model.
      *
-     * @param string $currency
+     * @param int $currencyId
      * @param float $rate
-     * @return CurrencyRate
      */
-    private function storeReceivedRate(string $currency, float $rate):CurrencyRate
+    private function createCurrencyRateModel(int $currencyId, float $rate)
     {
-        return $this->currencyRate->create([
-            'currencies_id' => $this->currency->where('code', $currency)->first()->id,
+        $this->currencyRate->create([
+            'currencies_id' => $currencyId,
             'rate' => $rate,
         ]);
     }
@@ -120,17 +118,20 @@ class ExchangeRates implements ExchangeRatesInterface
     /**
      * Define rate from external sources.
      *
-     * @param string $currency
+     * @param int $currency
      * @return float
      */
-    private function getRateFromDefinedSources(string $currency):float
+    private function getRateFromDefinedSources(int $currency): float
     {
-        foreach (config('shop.exchange_rate_sources') as $source) {
-            $sourceClassName = __NAMESPACE__ . '\\' . $source . 'ExchangeRates';
-            if (class_exists($sourceClassName)) {
-                $rate = (new $sourceClassName)->getRate($currency);
-                if ($rate) {
-                    return $rate;
+        foreach (config('shop.exchange_rate.sources') as $source) {
+            if (class_exists($source)) {
+                try {
+                    $rate = (new $source)->getRate($currency);
+                    if ($rate) {
+                        return $rate;
+                    }
+                } catch (Exception $exception) {
+                    break;
                 }
             }
         }

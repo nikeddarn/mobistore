@@ -10,7 +10,7 @@ use App\Contracts\Shop\Roles\UserRolesInterface;
 return [
     'invoice' => [
 
-        InvoiceTypes::ORDER => [
+        InvoiceTypes::USER_ORDER => [
 
             'created' => [
                 'title' => 'Ваш заказ принят',
@@ -33,7 +33,7 @@ return [
             ],
         ],
 
-        InvoiceTypes::PRE_ORDER => [
+        InvoiceTypes::USER_PRE_ORDER => [
 
             'created' => [
                 'title' => 'Ваш предварительный заказ принят',
@@ -52,7 +52,16 @@ return [
 
             'cancelled' => [
                 'title' => 'Ваш предварительный заказ отменен',
-                'message' => 'Заказ номер :id отменен. Заказываемый товар отсутствует на складе',
+                'message' => 'Заказ номер :id отменен. Заказываемый товар отсутствует на складе.',
+            ],
+        ],
+    ],
+
+    'delivery' => [
+        'date' => [
+            'change' => [
+                'title' => 'Дата доставки изменена',
+                'message' => 'Дата доставки заказа номер :id : :delivery.',
             ],
         ],
     ],

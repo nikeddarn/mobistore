@@ -85,6 +85,11 @@ h1, h2, h3, h4, h5, h6 {
   display: inline-block;
 }
 
+.border-none {
+  border: none !important;
+  box-shadow: none;
+}
+
 .border-top-none {
   border-top: none !important;
 }
@@ -115,11 +120,11 @@ h1, h2, h3, h4, h5, h6 {
 
 // ********************************************** layout ****************************************************************
 
-#top{
+#top {
   margin-bottom: $top-margin-bottom;
 }
 
-#bottom{
+#bottom {
   background-color: #F9F9F9;
 }
 
@@ -166,24 +171,29 @@ h1, h2, h3, h4, h5, h6 {
     float: left;
   }
 }
+
 // -------------------------------------------------Panel Horizontal --------------------------------------------------
 
 .panel.panel-horizontal {
-  display:table;
-  width:100%;
+  display: table;
+  width: 100%;
 }
+
 .panel.panel-horizontal > .panel-heading, .panel.panel-horizontal > .panel-body, .panel.panel-horizontal > .panel-footer {
-  display:table-cell;
+  display: table-cell;
 }
+
 .panel.panel-horizontal > .panel-heading, .panel.panel-horizontal > .panel-footer {
-  border:0;
+  border: 0;
   vertical-align: middle;
 }
+
 .panel.panel-horizontal > .panel-heading {
   border-right: 1px solid #ddd;
   border-top-right-radius: 0;
   border-bottom-left-radius: 4px;
 }
+
 .panel.panel-horizontal > .panel-footer {
   border-left: 1px solid #ddd;
   border-top-left-radius: 0;
@@ -1479,6 +1489,11 @@ h1 .banner-left:before {
       }
     }
 
+    .wait-image-wrapper {
+      text-align: center;
+      padding: 3em 0;
+    }
+
   }
 
 }
@@ -1563,41 +1578,92 @@ header.carousel .fill {
 
 // **************************************************** User Content **********************************************
 
-.user-menu .divider{
+.user-layout-table {
+
+  // separate table head from body
+  .table-row-separator {
+    display: block;
+    height: 1em;
+    color: transparent;
+    border: none;
+  }
+
+  // increase table header size
+  .user-layout-table-header {
+    font-size: 1.3em;
+  }
+
+  // styles for chevron icons
+  .glyphicon {
+    opacity: .8;
+  }
+
+  // styles for search icon
+  .glyphicon-search {
+    font-size: 0.8em;
+  }
+
+  // styles for show item details toggle
+  .item-details-toggle {
+    :hover {
+      cursor: pointer;
+    }
+  }
+
+}
+
+.user-menu .divider {
   height: 1px;
   margin: 9px 0;
   overflow: hidden;
   background-color: #e5e5e5;
 }
 
-.user-invoice-content {
+.user-invoice-details {
 
   > td {
     padding: 0 !important;
     border-top: none !important;
   }
-  table {
-    margin-top: 30px;
-    margin-bottom: 30px;
 
-    td {
-      background-color: whitesmoke;
+  table td, p {
+    background-color: whitesmoke;
+  }
+
+  .user-invoice-details-content {
+    padding: 1em 2em;
+  }
+
+  .user-notification-details-content {
+    padding: 1em 4em;
+
+    p {
+      padding: .6em 1em;
     }
   }
 }
 
-#userMessages {
+#userNotifications {
 
-  .show-user-invoice-content-toggle {
-    width: 10%;
-  }
+  //tbody:before {
+  //  content: "-";
+  //  display: block;
+  //  line-height: 1em;
+  //  color: transparent;
+  //}
+
+  //thead tr td{
+  //  span{
+  //    font-size: 1.2em;
+  //  }
+  //}
 
   .user-invoice-date {
-    width: 20%;
+    width: 25%;
   }
 }
 
-#userDeliveries{
+#userDeliveries {
   .show-user-invoice-content-toggle {
     width: 10%;
   }
@@ -1610,14 +1676,14 @@ header.carousel .fill {
   }
 }
 
-#user-account-balance{
-  .panel{
+#user-account-balance {
+  .panel {
     border-radius: 0;
   }
-  .panel-heading{
+  .panel-heading {
     padding: 6px 10px;
   }
-  .panel-body{
+  .panel-body {
     padding: 10px 10px;
   }
 }
@@ -1646,8 +1712,6 @@ header.carousel .fill {
   display: block;
   font-style: italic;
 }
-
-
 
 /* Responsive Styles */
 

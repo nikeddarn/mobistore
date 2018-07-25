@@ -86,6 +86,12 @@ h6 {
   display: inline-block;
 }
 
+.border-none {
+  border: none !important;
+  -webkit-box-shadow: none;
+          box-shadow: none;
+}
+
 .border-top-none {
   border-top: none !important;
 }
@@ -1436,6 +1442,11 @@ h1 .banner-left:before {
   height: 40px;
 }
 
+.yamm-content #product-path-content .wait-image-wrapper {
+  text-align: center;
+  padding: 3em 0;
+}
+
 .cart-product-list .cart-product-image img {
   display: block;
   margin-left: auto;
@@ -1506,6 +1517,29 @@ header.carousel .fill {
   background-size: cover;
 }
 
+.user-layout-table .table-row-separator {
+  display: block;
+  height: 1em;
+  color: transparent;
+  border: none;
+}
+
+.user-layout-table .user-layout-table-header {
+  font-size: 1.3em;
+}
+
+.user-layout-table .glyphicon {
+  opacity: .8;
+}
+
+.user-layout-table .glyphicon-search {
+  font-size: 0.8em;
+}
+
+.user-layout-table .item-details-toggle :hover {
+  cursor: pointer;
+}
+
 .user-menu .divider {
   height: 1px;
   margin: 9px 0;
@@ -1513,26 +1547,30 @@ header.carousel .fill {
   background-color: #e5e5e5;
 }
 
-.user-invoice-content > td {
+.user-invoice-details > td {
   padding: 0 !important;
   border-top: none !important;
 }
 
-.user-invoice-content table {
-  margin-top: 30px;
-  margin-bottom: 30px;
-}
-
-.user-invoice-content table td {
+.user-invoice-details table td,
+.user-invoice-details p {
   background-color: whitesmoke;
 }
 
-#userMessages .show-user-invoice-content-toggle {
-  width: 10%;
+.user-invoice-details .user-invoice-details-content {
+  padding: 1em 2em;
 }
 
-#userMessages .user-invoice-date {
-  width: 20%;
+.user-invoice-details .user-notification-details-content {
+  padding: 1em 4em;
+}
+
+.user-invoice-details .user-notification-details-content p {
+  padding: .6em 1em;
+}
+
+#userNotifications .user-invoice-date {
+  width: 25%;
 }
 
 #userDeliveries .show-user-invoice-content-toggle {

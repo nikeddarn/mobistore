@@ -7,39 +7,15 @@ namespace App\Http\Support\Invoices\Handlers;
 
 
 use App\Contracts\Shop\Invoices\Handlers\InvoiceHandlerInterface;
-use App\Http\Support\Price\ProductPrice;
 use App\Models\Invoice;
 use Carbon\Carbon;
-use Illuminate\Database\DatabaseManager;
 
-abstract class InvoiceHandler implements InvoiceHandlerInterface
+class InvoiceHandler implements InvoiceHandlerInterface
 {
     /**
      * @var Invoice
      */
     protected $invoice;
-
-    /**
-     * @var DatabaseManager
-     */
-    protected $databaseManager;
-
-    /**
-     * @var ProductPrice
-     */
-    protected $productPrice;
-
-    /**
-     * InvoiceHandler constructor.
-     *
-     * @param DatabaseManager $databaseManager
-     * @param ProductPrice $productPrice
-     */
-    public function __construct(DatabaseManager $databaseManager, ProductPrice $productPrice)
-    {
-        $this->databaseManager = $databaseManager;
-        $this->productPrice = $productPrice;
-    }
 
     /**
      * Bind given invoice to this handler.
@@ -75,6 +51,16 @@ abstract class InvoiceHandler implements InvoiceHandlerInterface
     }
 
     /**
+     * Get invoice creation time.
+     *
+     * @return Carbon
+     */
+    public function getCreateTime()
+    {
+        return $this->invoice->created_at;
+    }
+
+    /**
      * Get invoice last update time.
      *
      * @return Carbon
@@ -95,11 +81,11 @@ abstract class InvoiceHandler implements InvoiceHandlerInterface
     }
 
     /**
-     * Get total invoice sum in UAH.
+     * Get total invoice sum in local cash.
      *
      * @return float
      */
-    public function getInvoiceUahSum(): float
+    public function getInvoiceLocalSum(): float
     {
         return $this->invoice->invoice_sum * $this->invoice->rate;
     }
@@ -125,83 +111,32 @@ abstract class InvoiceHandler implements InvoiceHandlerInterface
     }
 
     /**
-     * Set invoice delivery sum.
-     *
-     * @param float $deliverySum
-     */
-    public function setInvoiceDeliverySum(float $deliverySum)
-    {
-        $this->invoice->delivery_sum = $deliverySum;
-        $this->invoice->save();
-    }
-
-    /**
      * Get invoice title.
      *
      * @return string
      */
     public function getInvoiceType(): string
     {
-        if (!$this->invoice->invoiceType) {
-            $this->invoice->load('invoiceType');
-        }
-
         return $this->invoice->invoiceType;
     }
 
     /**
-     * Update currency rate of invoice.
+     * Get invoice status.
      *
-     * @return void
+     * @return string
      */
-    public function updateInvoiceExchangeRate()
+    public function getInvoiceStatus(): string
     {
-        $this->invoice->rate = $this->productPrice->getRate();
-        $this->invoice->save();
+        return $this->invoice->invoiceStatus;
     }
 
     /**
-     * Bind invoice with shipment by its id
+     * Get exchange rate.
      *
-     * @param int $shipmentId
+     * @return float
      */
-    public function bindInvoiceToShipment(int $shipmentId)
+    public function getExchangeRate():float
     {
-        $this->invoice->shipments_id = $shipmentId;
-        $this->invoice->save();
-    }
-
-    /**
-     * Set invoice status.
-     *
-     * @param int $invoiceStatus
-     */
-    public function setInvoiceStatus(int $invoiceStatus)
-    {
-        $this->invoice->invoice_status_id = $invoiceStatus;
-        $this->invoice->save();
-    }
-
-    /**
-     * Increase invoice sum.
-     *
-     * @param float $sum
-     */
-    protected function increaseInvoiceSum(float $sum)
-    {
-        // increase total invoice sum
-        $this->invoice->invoice_sum += $sum;
-        $this->invoice->save();
-    }
-
-    /**
-     * Decrease invoice sum.
-     *
-     * @param float $sum
-     */
-    protected function decreaseInvoiceSum(float $sum)
-    {
-        $this->invoice->invoice_sum -= $sum;
-        $this->invoice->save();
+        return $this->invoice->rate;
     }
 }

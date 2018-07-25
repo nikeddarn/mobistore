@@ -6,10 +6,8 @@
 namespace App\Http\Support\Invoices\Repositories\Vendor;
 
 use App\Http\Support\Invoices\Repositories\InvoiceRepository;
-use App\Models\Invoice;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
 class VendorInvoiceRepository extends InvoiceRepository
@@ -65,6 +63,10 @@ class VendorInvoiceRepository extends InvoiceRepository
         parent::makeRetrieveInvoiceQuery();
 
         $this->setVendorIdConstraint($constraints->vendorId);
+
+        if ($constraints->invoicesId) {
+            $this->setInvoicesIdConstraint($constraints->invoicesId);
+        }
 
         if ($constraints->invoiceStatus) {
             $this->setInvoiceStatusConstraint($constraints->invoiceStatus);
@@ -122,6 +124,16 @@ class VendorInvoiceRepository extends InvoiceRepository
     }
 
     /**
+     * Set invoices id constraint.
+     *
+     * @param array $invoicesId
+     */
+    private function setInvoicesIdConstraint(array $invoicesId)
+    {
+        $this->retrieveQuery->whereIn('id', $invoicesId);
+    }
+
+    /**
      * Set invoice status constraint.
      *
      * @param $invoiceStatus
@@ -134,7 +146,7 @@ class VendorInvoiceRepository extends InvoiceRepository
     /**
      * Set invoice type constraint.
      *
-     * @param int $invoiceType
+     * @param int|array $invoiceType
      * @return void
      */
     private function setInvoiceTypeConstraint($invoiceType)
@@ -184,17 +196,5 @@ class VendorInvoiceRepository extends InvoiceRepository
     protected function addRelations()
     {
         $this->retrieveQuery->with('vendorInvoice', 'invoiceType', 'invoiceStatus');
-    }
-
-    /**
-     * Destroy invoice.
-     *
-     * @param Invoice|Model $invoice
-     * @return bool
-     * @throws \Exception
-     */
-    protected function removeInvoiceData(Invoice $invoice)
-    {
-        return parent::removeInvoiceData($invoice);
     }
 }

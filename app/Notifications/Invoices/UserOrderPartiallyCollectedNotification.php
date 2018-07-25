@@ -16,6 +16,8 @@ class UserOrderPartiallyCollectedNotification extends Notification
 {
     use Queueable;
 
+    use InvoiceNotification;
+
     /**
      * @var Invoice
      */
@@ -39,7 +41,7 @@ class UserOrderPartiallyCollectedNotification extends Notification
      */
     public function via($notifiable)
     {
-        return config('notifications.' . __class__);
+        return config('notifications.channels.' . __class__);
     }
 
     /**
@@ -119,16 +121,13 @@ class UserOrderPartiallyCollectedNotification extends Notification
      */
     private function getPlannedArrivalDate()
     {
-        // retrieve user invoice
-        if ($this->invoice->invoice_types_id === InvoiceTypes::PRE_ORDER) {
-            // retrieve via related vendor invoice
-            $userInvoice = $this->invoice->vendorInvoice->userInvoice->first();
-        }elseif ($this->invoice->invoice_types_id === InvoiceTypes::ORDER){
-            // retrieve directly
+        // retrieve user invoice model
+        if ($this->invoice->userInvoice){
+            // retrieve via user invoice
             $userInvoice = $this->invoice->userInvoice;
         }else{
             // wrong invoice type
-            throw new Exception('Wrong invoice type: ' . $this->invoice->invoiceType);
+            throw new Exception('Wrong invoice type: no UserInvoice model');
         }
 
         // get invoice planned arrival

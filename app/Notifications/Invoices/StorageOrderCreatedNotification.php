@@ -2,7 +2,6 @@
 
 namespace App\Notifications\Invoices;
 
-use App\Channels\SmsChannel;
 use App\Contracts\Shop\Roles\UserRolesInterface;
 use App\Messages\SmsMessage;
 use App\Models\Invoice;
@@ -14,6 +13,8 @@ use Illuminate\Notifications\Messages\MailMessage;
 class StorageOrderCreatedNotification extends Notification
 {
     use Queueable;
+
+    use InvoiceNotification;
 
     /**
      * @var Invoice
@@ -38,7 +39,7 @@ class StorageOrderCreatedNotification extends Notification
      */
     public function via($notifiable)
     {
-        return config('notifications.' . __class__);
+        return config('notifications.channels.' . __class__);
     }
 
     /**

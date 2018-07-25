@@ -15,7 +15,7 @@
 @endsection
 
 @section('user_menu')
-    @include('content.user.password.parts.user_menu')
+    @include('menu.user_sidebar_menu', ['activeMenuItem' => 'user_password'])
 @endsection
 
 @section('meta_data')

@@ -14,6 +14,8 @@ class UserOrderCancelledNotification extends Notification
 {
     use Queueable;
 
+    use InvoiceNotification;
+
     /**
      * @var Invoice
      */
@@ -37,7 +39,7 @@ class UserOrderCancelledNotification extends Notification
      */
     public function via($notifiable)
     {
-        return config('notifications.' . __class__);
+        return config('notifications.channels.' . __class__);
     }
 
     /**

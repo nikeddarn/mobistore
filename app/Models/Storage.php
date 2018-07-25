@@ -37,9 +37,9 @@ class Storage extends Model
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function storageProduct()
+    public function storageDepartment()
     {
-        return $this->hasMany('App\Models\StorageProduct', 'storages_id', 'id');
+        return $this->hasMany('App\Models\StorageDepartment', 'storages_id', 'id');
     }
 
     /**

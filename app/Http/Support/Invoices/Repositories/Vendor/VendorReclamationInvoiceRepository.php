@@ -20,7 +20,7 @@ class VendorReclamationInvoiceRepository extends VendorInvoiceRepository
 
             ->with('storageInvoice')
 
-            ->with(['invoiceReclamation.product.vendorProduct' => function ($query) {
+            ->with(['invoiceDefectProduct.product.vendorProduct' => function ($query) {
                 $query->where('vendors_id', $this->vendorId);
             }]);
     }

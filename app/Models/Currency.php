@@ -14,13 +14,18 @@ class Currency extends Model
     protected $table = 'currencies';
 
     /**
-     * The attributes that are mass assignable.
+     * Non auto incrementing primary key.
+     *
+     * @var bool
+     */
+    public $incrementing = false;
+
+    /**
+     * The attributes that aren't mass assignable.
      *
      * @var array
      */
-    protected $fillable = [
-        'title', 'code',
-    ];
+    protected $guarded = [];
 
     /**
      * Indicates if the model should be timestamped.

@@ -7,14 +7,14 @@
 namespace App\Contracts\Currency;
 
 
-interface ExchangeRatesInterface extends ExchangeRateSourcesInterface, CurrenciesInterface
+interface ExchangeRatesInterface
 {
 
     /**
      * Get average rate of given sources.
      *
-     * @param string $currency
-     * @return float
+     * @param int $currencyId
+     * @return float|null
      */
-    public function getRate(string $currency): float;
+    public function getRate(int $currencyId);
 }

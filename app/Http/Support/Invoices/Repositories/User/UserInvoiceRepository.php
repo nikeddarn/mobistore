@@ -1,179 +1,77 @@
 <?php
 /**
- * User invoices retriever.
+ * User invoices repository.
  */
 
 namespace App\Http\Support\Invoices\Repositories\User;
 
+
 use App\Http\Support\Invoices\Repositories\InvoiceRepository;
-use App\Models\Invoice;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
 class UserInvoiceRepository extends InvoiceRepository
 {
     /**
+     * @var int
+     */
+    protected $userId;
+
+    /**
      * Get user invoices.
      *
-     * @param UserInvoiceConstraints $constraints
-     * @return LengthAwarePaginator|Collection
+     * @param int $userId
+     * @return Collection
      */
-    public function getInvoices(UserInvoiceConstraints $constraints)
+    public function getInvoices(int $userId): Collection
     {
-        $this->prepareRetrieveInvoicesQuery($constraints);
+        $this->userId = $userId;
 
-        if ($constraints->withRelations !== false) {
-            static::addRelations();
-        }
+        $query = static::makeQuery();
 
-        return $constraints->paginate ? $this->retrieveQuery->paginate($constraints->paginate) : $this->retrieveQuery->get();
+        $query = static::addRelations($query);
+
+        return $query->get();
     }
 
     /**
-     * Get query for retrieve user invoices.
+     * Get invoice query.
      *
-     * @param UserInvoiceConstraints $constraints
+     * @param int $userId
      * @return Builder
      */
-    public function getRetrieveInvoicesQuery(UserInvoiceConstraints $constraints): Builder
+    public function getQuery(int $userId): Builder
     {
-        $this->prepareRetrieveInvoicesQuery($constraints);
+        $this->userId = $userId;
 
-        if ($constraints->withRelations) {
-            static::addRelations();
-        }
+        $query = static::makeQuery();
 
-        return $this->retrieveQuery;
+        $query = static::addRelations($query);
+
+        return $query;
     }
 
     /**
-     * Prepare retrieve invoice query.
+     * Make invoice query.
      *
-     * @param UserInvoiceConstraints $constraints
+     * @return Builder
      */
-    private function prepareRetrieveInvoicesQuery(UserInvoiceConstraints $constraints)
+    protected function makeQuery(): Builder
     {
-        parent::makeRetrieveInvoiceQuery();
-
-        $this->setUserIdConstraint($constraints->userId);
-
-        if ($constraints->invoiceStatus) {
-            $this->setInvoiceStatusConstraint($constraints->invoiceStatus);
-        }
-
-        if ($constraints->invoiceType) {
-            $this->setInvoiceTypeConstraint($constraints->invoiceType);
-        }
-
-        if ($constraints->invoiceDirection) {
-            $this->setDirectionConstraint($constraints->invoiceDirection);
-        }
-
-        if ($constraints->implementedStatus !== null) {
-            $this->setImplementedConstraint($constraints->implementedStatus);
-        }
+        return parent::makeQuery()
+            ->whereHas('userInvoices', function ($query) {
+                $query->where('users_id', $this->userId);
+            });
     }
 
     /**
-     * Prepare query to retrieve invoice by its id.
+     * Add default user relations to query.
      *
-     * @param int $invoiceId
-     * @return void
+     * @param Builder $query
+     * @return Builder
      */
-    protected function buildRetrieveQueryByInvoiceId(int $invoiceId)
+    protected function addRelations(Builder $query): Builder
     {
-        parent::buildRetrieveQueryByInvoiceId($invoiceId);
-
-        $this->setInvoiceHasUserConstraint();
-
-        static::addRelations();
-    }
-
-    /**
-     * Set has user with id.
-     *
-     * @param int|null $userId
-     * @return void
-     */
-    private function setUserIdConstraint(int $userId)
-    {
-        $this->retrieveQuery->whereHas('userInvoice', function ($query) use ($userId) {
-            $query->where('users_id', $userId);
-        });
-    }
-
-    /**
-     * Set invoice has user constraint.
-     *
-     * @return void
-     */
-    private function setInvoiceHasUserConstraint()
-    {
-        $this->retrieveQuery->has('userInvoice');
-    }
-
-    /**
-     * Set invoice type constraint.
-     *
-     * @param int $invoiceType
-     * @return void
-     */
-    private function setInvoiceTypeConstraint(int $invoiceType)
-    {
-        if (is_array($invoiceType)) {
-            $this->retrieveQuery->whereIn('invoice_types_id', $invoiceType);
-        } elseif (is_int($invoiceType)) {
-            $this->retrieveQuery->where('invoice_types_id', $invoiceType);
-        }
-    }
-
-    /**
-     * Set invoice direction constraint.
-     *
-     * @param string $direction
-     * @return void
-     */
-    private function setDirectionConstraint(string $direction)
-    {
-        $this->retrieveQuery->whereHas('userInvoice', function ($query) use ($direction) {
-            $query->where('direction', $direction);
-        });
-    }
-
-    /**
-     * Set invoice implemented constraint.
-     *
-     * @param int $implemented
-     * @return void
-     */
-    private function setImplementedConstraint(int $implemented)
-    {
-        $this->retrieveQuery->whereHas('userInvoice', function ($query) use ($implemented) {
-            $query->where('implemented', (int)$implemented);
-        });
-    }
-
-    /**
-     * Eager loading relations.
-     *
-     * @return void
-     */
-    protected function addRelations()
-    {
-        $this->retrieveQuery->with('userInvoice', 'invoiceType', 'invoiceStatus');
-    }
-
-    /**
-     * Destroy invoice.
-     *
-     * @param Invoice|Model $invoice
-     * @return bool
-     * @throws \Exception
-     */
-    protected function removeInvoiceData(Invoice $invoice)
-    {
-        return parent::removeInvoiceData($invoice);
+        return $query->with('userInvoice');
     }
 }

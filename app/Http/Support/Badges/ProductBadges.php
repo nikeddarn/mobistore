@@ -6,11 +6,11 @@
 
 namespace App\Http\Controllers\Admin\Support\Badges;
 
-use App\Contracts\Shop\Badges\BadgeTypes;
+use App\Contracts\Shop\Badges\ProductBadgesInterface;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
-class ProductBadges implements BadgeTypes
+class ProductBadges implements ProductBadgesInterface
 {
     public function createBadges(Collection $productBadges): array
     {

@@ -6,17 +6,16 @@
 namespace App\Http\Support\Currency;
 
 
-use App\Contracts\Currency\ExchangeRateSourceInterface;
+use App\Contracts\Currency\CurrenciesInterface;
+use App\Contracts\Currency\ExchangeRatesInterface;
+use ReflectionClass;
 use SimpleXMLElement;
 
-class PrivatBankExchangeRates implements ExchangeRateSourceInterface
+class PrivatBankExchangeRates implements ExchangeRatesInterface
 {
-    /**
-     * Url of XML with courses.
-     *
-     * @var string
-     */
-    private $url = 'https://api.privatbank.ua/p24api/pubinfo?exchange&coursid=5';
+    const RATE_SOURCE_URL = 'https://api.privatbank.ua/p24api/pubinfo?exchange&coursid=5';
+
+    const CURL_TIMEOUT = 500;
 
     /**
      * SimpleXMLElement with courses.
@@ -31,10 +30,10 @@ class PrivatBankExchangeRates implements ExchangeRateSourceInterface
      */
     public function __construct()
     {
-        $curl = curl_init($this->url);
+        $curl = curl_init(self::RATE_SOURCE_URL);
 
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_TIMEOUT_MS, config('shop.exchange_rate_source_timeout'));
+        curl_setopt($curl, CURLOPT_TIMEOUT_MS, self::CURL_TIMEOUT);
 
         $response = curl_exec($curl);
 
@@ -46,17 +45,31 @@ class PrivatBankExchangeRates implements ExchangeRateSourceInterface
     /**
      * Get rate of given sources.
      *
-     * @param string $currency
-     * @return float
+     * @param int $currencyId
+     * @return float|null
      */
-    public function getRate(string $currency)
+    public function getRate(int $currencyId)
     {
-        if (!$this->rates instanceof SimpleXMLElement){
+        if (!$this->rates instanceof SimpleXMLElement) {
             return null;
         }
 
-        $rateElements = $this->rates->xpath('/exchangerates/row/exchangerate[@ccy="' . $currency . '"]');
+        $rateElements = $this->rates->xpath('/exchangerates/row/exchangerate[@ccy="' . $this->getCurrencyCode($currencyId) . '"]');
 
         return isset($rateElements[0]['sale']) ? (float)$rateElements[0]['sale'] : null;
+    }
+
+    /**
+     * Get currency code by id.
+     *
+     * @param int $currencyId
+     * @return mixed
+     */
+    private function getCurrencyCode(int $currencyId)
+    {
+        $class = new ReflectionClass(CurrenciesInterface::class);
+        $constants = array_flip($class->getConstants());
+
+        return $constants[$currencyId];
     }
 }

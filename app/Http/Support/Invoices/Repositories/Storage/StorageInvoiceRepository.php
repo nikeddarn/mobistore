@@ -6,10 +6,8 @@
 namespace App\Http\Support\Invoices\Repositories\Storage;
 
 use App\Http\Support\Invoices\Repositories\InvoiceRepository;
-use App\Models\Invoice;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
 class StorageInvoiceRepository extends InvoiceRepository
@@ -122,12 +120,22 @@ class StorageInvoiceRepository extends InvoiceRepository
     }
 
     /**
+     * Set invoice status constraint.
+     *
+     * @param $invoiceStatus
+     */
+    private function setInvoiceStatusConstraint($invoiceStatus)
+    {
+        $this->retrieveQuery->where('invoice_status_id', $invoiceStatus);
+    }
+
+    /**
      * Set invoice type constraint.
      *
-     * @param int $invoiceType
+     * @param int|array $invoiceType
      * @return void
      */
-    private function setInvoiceTypeConstraint(int $invoiceType)
+    private function setInvoiceTypeConstraint($invoiceType)
     {
         if (is_array($invoiceType)) {
             $this->retrieveQuery->whereIn('invoice_types_id', $invoiceType);
@@ -170,17 +178,5 @@ class StorageInvoiceRepository extends InvoiceRepository
     protected function addRelations()
     {
         $this->retrieveQuery->with('storageInvoice', 'invoiceType', 'invoiceStatus');
-    }
-
-    /**
-     * Destroy invoice.
-     *
-     * @param Invoice|Model $invoice
-     * @return bool
-     * @throws \Exception
-     */
-    protected function removeInvoiceData(Invoice $invoice)
-    {
-        return parent::removeInvoiceData($invoice);
     }
 }

@@ -1,9 +1,6 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: nick
- * Date: 11.03.18
- * Time: 14:53
+ * Sms channel.
  */
 
 namespace App\Channels;

@@ -56,9 +56,17 @@ class User extends Authenticatable
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function userReclamation()
+    public function userActiveReclamation()
     {
-        return $this->hasMany('App\Models\UserReclamation', 'users_id', 'id');
+        return $this->hasMany('App\Models\UserActiveReclamation', 'users_id', 'id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function reclamation()
+    {
+        return $this->belongsToMany('App\Models\Reclamation', 'user_active_reclamations', 'users_id', 'reclamations_id');
     }
 
     /**

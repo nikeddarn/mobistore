@@ -18,6 +18,11 @@ class VendorInvoiceConstraints
     public $vendorId;
 
     /**
+     * @var array|null
+     */
+    public $invoicesId = null;
+
+    /**
      * @var null|int|array
      */
     public $invoiceType = null;
@@ -28,7 +33,7 @@ class VendorInvoiceConstraints
     public $invoiceDirection = null;
 
     /**
-     * @var null|bool
+     * @var null|int
      */
     public $implementedStatus = null;
 
@@ -63,6 +68,16 @@ class VendorInvoiceConstraints
     }
 
     /**
+     * @param array $invoicesId
+     * @return VendorInvoiceConstraints
+     */
+    public function setInvoicesId(array $invoicesId): VendorInvoiceConstraints
+    {
+        $this->invoicesId = $invoicesId;
+        return $this;
+    }
+
+    /**
      * @param int|array $invoiceType
      * @return VendorInvoiceConstraints
      */
@@ -83,10 +98,10 @@ class VendorInvoiceConstraints
     }
 
     /**
-     * @param null $implementedStatus
+     * @param int $implementedStatus
      * @return VendorInvoiceConstraints
      */
-    public function setImplementedStatus($implementedStatus): VendorInvoiceConstraints
+    public function setImplementedStatus(int $implementedStatus): VendorInvoiceConstraints
     {
         $this->implementedStatus = $implementedStatus;
         return $this;

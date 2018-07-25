@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware\Localization;
 
+use Carbon\Carbon;
 use Closure;
 use App\Contracts\Localization\LocaleDefinerInterface as LocaleDefiner;
 use Illuminate\Support\Facades\App;
@@ -36,15 +37,17 @@ class SetLocale
     {
         $locale = $this->definer->getLocale($request);
 
-            App::setLocale($locale);
+        App::setLocale($locale);
 
-            $this->setFileFinder($locale);
+        $this->setFileFinder($locale);
 
-            $request->session()->put('locale', $locale);
+        Carbon::setLocale($locale);
 
-            $response = $next($request);
+        $request->session()->put('locale', $locale);
 
-            return $response->withCookie(cookie()->forever('locale', $locale));
+        $response = $next($request);
+
+        return $response->withCookie(cookie()->forever('locale', $locale));
     }
 
     /**
@@ -53,15 +56,17 @@ class SetLocale
      *
      * @param string $locale
      */
-    private function setFileFinder(string $locale){
+    private function setFileFinder(string $locale)
+    {
 
         $viewPath = resource_path() . '/views/';
 
         $localViewPath = $viewPath . $locale;
 
-        if (!is_dir($localViewPath)){
+        if (!is_dir($localViewPath)) {
             $localViewPath = $viewPath . config('app.fallback_locale');
         }
+
         View::addLocation($localViewPath);
     }
 }

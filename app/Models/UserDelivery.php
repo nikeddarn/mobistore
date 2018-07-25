@@ -37,6 +37,30 @@ class UserDelivery extends Model
     }
 
     /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function deliveryStatus()
+    {
+        return $this->belongsTo('App\Models\DeliveryStatus', 'delivery_status_id', 'id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function deliveryType()
+    {
+        return $this->belongsTo('App\Models\DeliveryType', 'delivery_types_id', 'id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function deliveryRecipient()
+    {
+        return $this->belongsTo('App\Models\DeliveryRecipient', 'delivery_recipient_id', 'id');
+    }
+
+    /**
      * Get the planned arrival.
      *
      * @param  string  $value
@@ -44,6 +68,6 @@ class UserDelivery extends Model
      */
     public function getPlannedArrivalAttribute($value)
     {
-        return $value ? Carbon::createFromFormat('Y-m-d h:i:s', $value) : null;
+        return $value ? Carbon::createFromFormat('Y-m-d H:i:s', $value) : null;
     }
 }

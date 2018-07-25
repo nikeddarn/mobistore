@@ -17,15 +17,20 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        $user = $request->user();
-
-        if(!$user){
+        if (!auth('web')->check()) {
             return redirect()->guest(route('admin.login'));
         }
-        if(!count(array_intersect($user->role->pluck('id')->toArray(), [UserRolesInterface::ROOT, UserRolesInterface::ADMIN]))){
-            abort(403, 'Forbidden');
+
+        $adminRoles = [
+            UserRolesInterface::ROOT,
+            UserRolesInterface::ADMIN,
+        ];
+
+        // user has one of admin's role
+        if (auth('web')->user()->role()->whereIn('id', $adminRoles)->count()) {
+            return $next($request);
         }
 
-        return $next($request);
+        return abort(403, 'Forbidden');
     }
 }

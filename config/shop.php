@@ -4,10 +4,16 @@
  * Shop settings.
  */
 
-use App\Contracts\Currency\ExchangeRateSourcesInterface;
-use App\Contracts\Shop\Badges\BadgeTypes;
+use App\Contracts\Shop\Badges\ProductBadgesInterface;
+use App\Http\Support\Currency\FinanceExchangeRates;
+use App\Http\Support\Currency\PrivatBankExchangeRates;
 
 return [
+    // count of items per page for show to user
+    'user_items_per_page_count' => [
+        'active_items' => 24,
+        'all_items' => 12,
+    ],
 
     // count of products in product list pages.
     'products_per_page' => 12,
@@ -36,9 +42,6 @@ return [
     // max user messages per page
     'user_messages_count' => 12,
 
-    // actual period for unread message
-    'show_unread_message_days' => 7,
-
     // phones of shop.
     'phones' => '&#9742;&nbsp;067-409-16-65, 063-765-74-08',
 
@@ -57,43 +60,48 @@ return [
     // use vendor product price if product is out of own stock.
     'can_use_vendor_price' => true,
 
-    // sources of currency exchange rates in priority order.
-    'exchange_rate_sources' => [
-        ExchangeRateSourcesInterface::PB,
-        ExchangeRateSourcesInterface::FINANCE,
+    'exchange_rate' => [
+        // sources of currency exchange rates in priority order.
+        'sources' => [
+            PrivatBankExchangeRates::class,
+            FinanceExchangeRates::class,
+        ],
+
+        // exchange rate for product price time to live in hours.
+        'update_rate_hours' => 4,
+
+        // max days for using
+        'valid_stored_rate_days' => 2,
     ],
 
-    // exchange rate for product price time to live in hours.
-    'exchange_rate_ttl' => 4,
-
-    // invoice exchange rate ttl in hours
-    'invoice_exchange_rate_ttl' => 72,
-
-    // exchange rate source timeout
-    'exchange_rate_source_timeout' => 500,
 
     // badges settings. ttl in days. 0 for unlimited.
     'badges' => [
-        BadgeTypes::NEW => [
+        ProductBadgesInterface::NEW => [
             'ttl' => 5,
             'class' => 'info'
         ],
-        BadgeTypes::PRICE_DOWN => [
+        ProductBadgesInterface::PRICE_DOWN => [
             'ttl' => 3,
             'class' => 'warning'
         ],
-        BadgeTypes::ENDING => [
+        ProductBadgesInterface::ENDING => [
             'ttl' => 0,
             'class' => 'danger'
         ],
-        BadgeTypes::ACTION => [
+        ProductBadgesInterface::ACTION => [
             'ttl' => 3,
             'class' => 'success'
         ],
     ],
 
-    // cart ttl in days
-    'user_cart_ttl' => 7,
+    'cart' => [
+        // cart ttl in days
+        'cart_expire_days' => 7,
+
+        // products cart prices ttl in days
+        'cart_product_price_expire_days' => 1,
+    ],
 
     // Must recalculate user cart prices every day ?
     'recalculate_cart_prices' => true,
@@ -116,7 +124,7 @@ return [
         // free delivery from user price group
         'free_delivery_price_group' => 3,
 
-        //min invoice sum for free delivery
+        //min invoice sum for free delivery in USD
         'free_delivery_invoice_sum' => 20,
 
         // local delivery price in usd
@@ -147,6 +155,10 @@ return [
             'create_outgoing_storage_invoice' => true,
             // auto create vendor invoices
             'create_vendor_invoice' => true,
+            // auto add to nearest shipment
+            'auto_add_to_nearest_shipment' => true,
+            // correct user invoice(change quantity or cancel invoice) and send user notification if related vendor invoice is not completely collected
+            'auto_correct_user_invoice' => true,
         ],
     ],
 ];

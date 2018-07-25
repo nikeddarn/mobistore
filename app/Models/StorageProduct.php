@@ -41,8 +41,16 @@ class StorageProduct extends Model
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function storage()
+    public function storageDepartment()
     {
-        return $this->belongsTo('App\Models\Storage', 'storages_id', 'id');
+        return $this->belongsTo('App\Models\StorageDepartment', 'storage_departments_id', 'id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function product()
+    {
+        return $this->belongsTo('App\Models\Product', 'storages_id', 'id');
     }
 }

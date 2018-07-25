@@ -30,8 +30,8 @@ class VendorShipment extends Model
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function courier()
+    public function vendorCourier()
     {
-        return $this->belongsTo('App\Models\Courier', 'couriers_id', 'id');
+        return $this->belongsTo('App\Models\VendorCourier', 'vendor_couriers_id', 'id');
     }
 }

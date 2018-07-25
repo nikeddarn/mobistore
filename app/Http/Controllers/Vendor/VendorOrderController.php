@@ -64,9 +64,9 @@ class VendorOrderController extends Controller
             ->setVendorId($this->retrievedVendor->id)
             ->setInvoiceStatus(InvoiceStatusInterface::PROCESSING)
             ->setInvoiceType([
-                InvoiceTypes::ORDER,
-                InvoiceTypes::PRE_ORDER,
-                InvoiceTypes::RETURN_ORDER
+                InvoiceTypes::USER_ORDER,
+                InvoiceTypes::USER_PRE_ORDER,
+                InvoiceTypes::USER_RETURN_ORDER
             ])
             ->setInvoiceDirection(InvoiceDirections::OUTGOING)
             ->setImplementedStatus(0)
@@ -103,7 +103,7 @@ class VendorOrderController extends Controller
             ->leftJoin('invoice_products', 'invoices.id', '=', 'invoice_products.invoices_id')
             ->join('products', 'products.id', '=', 'invoice_products.products_id')
             ->join('vendor_products', 'vendor_products.products_id', '=', 'products.id')
-            ->select(['products.page_title_' . app()->getLocale() . ' as page_title', 'vendor_products.vendor_product_id as vendor_product_id', DB::raw('sum(invoice_products.quantity) as total_quantity')])
+            ->select(['products.page_title_' . app()->getLocale() . ' as page_title', 'vendor_products.vendor_product_id as vendor_product_id', DB::raw('SUM(invoice_products.quantity) as total_quantity')])
             ->groupBy('vendor_products.vendor_product_id')
             ->get();
     }

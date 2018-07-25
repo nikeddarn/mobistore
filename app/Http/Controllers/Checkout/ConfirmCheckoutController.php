@@ -113,7 +113,7 @@ class ConfirmCheckoutController extends Controller
         $this->createUserInvoices($cartHandler);
 
         // destroy cart
-        $cartRepository->deleteRetrievedInvoice();
+        $cartHandler->deleteInvoice();
 
         return redirect(route('message.show'));
     }
@@ -144,7 +144,7 @@ class ConfirmCheckoutController extends Controller
         // sort invoices by types
         $sortedInvoices = $this->productsSorter->sortProductsByOrderType($cartHandler->getInvoiceProducts());
 
-        if (isset($sortedInvoices[InvoiceTypes::ORDER]) || isset($sortedInvoices[InvoiceTypes::PRE_ORDER])) {
+        if (isset($sortedInvoices[InvoiceTypes::USER_ORDER]) || isset($sortedInvoices[InvoiceTypes::USER_PRE_ORDER])) {
             // order delivery city id
             $orderDeliveryCity = (int)$this->request->get('courier_delivery_city');
             // delivery type id
@@ -155,13 +155,13 @@ class ConfirmCheckoutController extends Controller
             $deliveryPrice = $this->deliveryPrice->calculateDeliveryPrice(auth('web')->user(), $cartHandler->getInvoiceSum(), (int)$this->request->get('delivery_type'));
 
             // create order invoices
-            if (!empty($sortedInvoices[InvoiceTypes::ORDER])) {
+            if (!empty($sortedInvoices[InvoiceTypes::USER_ORDER])) {
 
                 // sort products by storages
-                $sortedStoragesInvoices = $this->productsSorter->sortProductByStorages($sortedInvoices[InvoiceTypes::ORDER], $orderDeliveryCity);
+                $sortedStoragesInvoices = $this->productsSorter->sortProductByStorages($sortedInvoices[InvoiceTypes::USER_ORDER], $orderDeliveryCity);
 
                 // create storages invoices
-                $storageUserInvoiceHandler = $this->invoicesCreator->createUserOrderInvoices($sortedInvoices[InvoiceTypes::ORDER], $sortedStoragesInvoices, $orderDeliveryCity);
+                $storageUserInvoiceHandler = $this->invoicesCreator->createUserOrderInvoices($sortedInvoices[InvoiceTypes::USER_ORDER], $sortedStoragesInvoices, $orderDeliveryCity);
 
                 // add delivery sum
                 $storageUserInvoiceHandler->setInvoiceDeliverySum($deliveryPrice);
@@ -178,19 +178,19 @@ class ConfirmCheckoutController extends Controller
             }
 
             // create pre order invoices
-            if (!empty($sortedInvoices[InvoiceTypes::PRE_ORDER])) {
+            if (!empty($sortedInvoices[InvoiceTypes::USER_PRE_ORDER])) {
 
                 // sort products by vendors
-                $sortedVendorsInvoices = $this->productsSorter->sortProductByVendors($sortedInvoices[InvoiceTypes::PRE_ORDER]);
+                $sortedVendorsInvoices = $this->productsSorter->sortProductByVendors($sortedInvoices[InvoiceTypes::USER_PRE_ORDER]);
 
                 // create vendor invoices
-                $vendorUserInvoiceHandler = $this->invoicesCreator->createUserPreOrderInvoices($sortedInvoices[InvoiceTypes::PRE_ORDER], $sortedVendorsInvoices, $orderDeliveryCity);
+                $vendorUserInvoiceHandler = $this->invoicesCreator->createUserPreOrderInvoices($sortedInvoices[InvoiceTypes::USER_PRE_ORDER], $sortedVendorsInvoices, $orderDeliveryCity);
 
                 // add delivery sum
                 $vendorUserInvoiceHandler->setInvoiceDeliverySum($deliveryPrice);
 
                 // define planned arrival
-                $deliveryData['planned_arrival'] = $this->vendorShipmentDispatcher->calculateDeliveryDayByVendors(array_keys($sortedVendorsInvoices));
+                $deliveryData['planned_arrival'] = $this->vendorShipmentDispatcher->calculateDeliveryDayByVendorShipments(array_keys($sortedVendorsInvoices));
 
                 // append delivery data
                 $vendorUserDelivery = $this->deliveryRepository->createUserDelivery($deliveryData);

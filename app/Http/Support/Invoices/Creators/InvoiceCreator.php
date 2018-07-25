@@ -5,20 +5,13 @@
 
 namespace App\Http\Support\Invoices\Creators;
 
-use App\Contracts\Shop\Invoices\InvoiceDirections;
 use App\Contracts\Shop\Invoices\InvoiceStatusInterface;
-use App\Contracts\Shop\Invoices\InvoiceTypes;
 use App\Http\Support\Currency\ExchangeRates;
 use App\Models\Invoice;
 use Illuminate\Database\DatabaseManager;
 
-class InvoiceCreator implements InvoiceTypes, InvoiceDirections
+abstract class InvoiceCreator
 {
-    /**
-     * @var Invoice
-     */
-    protected $createdInvoice;
-
     /**
      * @var Invoice
      */
@@ -49,17 +42,25 @@ class InvoiceCreator implements InvoiceTypes, InvoiceDirections
     }
 
     /**
-     * Make base invoice.
+     * Make invoice.
      *
-     * @param int $invoiceType
-     * @return void
+     * @return Invoice
      */
-    protected function makeInvoice(int $invoiceType)
+    protected function makeInvoice():Invoice
     {
-        $this->createdInvoice = $this->invoice->create([
-            'invoice_types_id' => $invoiceType,
+        return $this->invoice->create(static::getInvoiceData());
+    }
+
+    /**
+     * Get array of data for create Invoice model.
+     *
+     * @return array
+     */
+    protected function getInvoiceData():array
+    {
+        return [
             'rate' => $this->exchangeRates->getRate(),
             'invoice_status_id' => InvoiceStatusInterface::PROCESSING,
-        ]);
+        ];
     }
 }

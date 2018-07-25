@@ -5,12 +5,32 @@
 
 namespace App\Http\Support\Shipment;
 
+use App\Http\Support\Shipment\Calendar\LocalShipmentCalendar;
 use App\Models\Shipment;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Database\DatabaseManager;
 
 class LocalShipmentDispatcher extends ShipmentDispatcher
 {
+    /**
+     * @var LocalShipmentCalendar
+     */
+    private $shipmentCalendar;
+
+    /**
+     * LocalShipmentDispatcher constructor.
+     *
+     * @param Shipment $shipment
+     * @param DatabaseManager $databaseManager
+     * @param LocalShipmentCalendar $shipmentCalendar
+     */
+    public function __construct(Shipment $shipment, DatabaseManager $databaseManager, LocalShipmentCalendar $shipmentCalendar)
+    {
+        parent::__construct($shipment, $databaseManager);
+        $this->shipmentCalendar = $shipmentCalendar;
+    }
+
     /**
      * Get possible arrival date.
      *
@@ -19,14 +39,19 @@ class LocalShipmentDispatcher extends ShipmentDispatcher
      */
     public function calculateDeliveryDay(array $invoiceStorages): Carbon
     {
-        $arrivalDay = $this->defineArrivalDate();
+        $nearestShipmentDay = $this->shipmentCalendar->getNearestShipmentDay(config('shop.shipment.current_day_delivery_max_time.local'));
 
         // add day for collect order on one storage if products are getting from several storages
         if (count($invoiceStorages) > 1) {
-            $arrivalDay->addDay();
+            $nearestShipmentDay->addDay();
         }
 
-        return $arrivalDay;
+        // add days till shipment day is weekday
+        while ($nearestShipmentDay->isWeekend()) {
+            $nearestShipmentDay->addDay();
+        }
+
+        return $nearestShipmentDay;
     }
 
     /**
@@ -48,16 +73,15 @@ class LocalShipmentDispatcher extends ShipmentDispatcher
      * @param int $storageId
      * @param Carbon $departure
      * @param Carbon $arrival
-     * @param int $courierId
-     * @return Shipment|\Illuminate\Database\Eloquent\Model
+     * @return Shipment
      * @throws Exception
      */
-    public function createNextShipment(int $storageId, Carbon $departure, Carbon $arrival, int $courierId): Shipment
+    public function createLocalShipment(Carbon $departure, Carbon $arrival, int $storageId): Shipment
     {
         try {
             $this->databaseManager->beginTransaction();
 
-            $shipment = $this->createShipment($departure, $arrival, $courierId);
+            $shipment = $this->createShipment($departure, $arrival);
 
             $localShipment = $shipment->localShipment()->create([
                 'storages_id' => $storageId,
@@ -72,32 +96,5 @@ class LocalShipmentDispatcher extends ShipmentDispatcher
 
             throw new Exception($exception->getMessage());
         }
-    }
-
-    /**
-     * Define next possibly shipment departure.
-     *
-     * @return Carbon
-     */
-    public function defineDepartureDate(): Carbon
-    {
-        return $this->workCalendar->getNearestLocalWeekDay(config('shop.shipment.current_day_delivery_max_time.local'));
-    }
-
-
-    /**
-     * Define next possibly shipment arrival.
-     *
-     * @param Carbon $departureDay
-     * @return Carbon
-     */
-    public function defineArrivalDate(Carbon $departureDay = null): Carbon
-    {
-        if (!$departureDay) {
-            $departureDay = $this->defineDepartureDate();
-        }
-
-        // arrival in same day
-        return clone $departureDay;
     }
 }

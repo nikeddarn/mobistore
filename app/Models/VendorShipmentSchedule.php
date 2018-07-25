@@ -15,26 +15,27 @@ class VendorShipmentSchedule extends Model
     protected $table = 'vendor_shipment_schedules';
 
     /**
-     * The attributes that aren't mass assignable.
+     * The attributes that are mass assignable.
      *
      * @var array
      */
-    protected $guarded = [];
+    protected $fillable = [
+        'vendor_couriers_id', 'planned_departure', 'planned_arrival',
+    ];
+
+    /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = false;
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function courier()
+    public function vendorCourier()
     {
-        return $this->belongsTo('App\Models\Courier', 'couriers_id', 'id');
-    }
-
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function vendor()
-    {
-        return $this->belongsTo('App\Models\Vendor', 'vendors_id', 'id');
+        return $this->belongsTo('App\Models\VendorCourier', 'vendor_couriers_id', 'id');
     }
 
     /**
@@ -45,6 +46,17 @@ class VendorShipmentSchedule extends Model
      */
     public function getPlannedDepartureAttribute($value)
     {
-        return $value ? Carbon::createFromFormat('Y-m-d h:i:s', $value) : null;
+        return $value ? Carbon::createFromFormat('Y-m-d H:i:s', $value) : null;
+    }
+
+    /**
+     * Get the planned arrival.
+     *
+     * @param  string  $value
+     * @return string
+     */
+    public function getPlannedArrivalAttribute($value)
+    {
+        return $value ? Carbon::createFromFormat('Y-m-d H:i:s', $value) : null;
     }
 }

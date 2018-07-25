@@ -3,14 +3,13 @@
 namespace App\Listeners\Invoices;
 
 use App\Contracts\Shop\Invoices\InvoiceTypes;
-use App\Contracts\Shop\Roles\UserRolesInterface;
 use App\Events\Invoices\UserOrderCreated;
 use App\Notifications\Invoices\UserOrderCollectedNotification;
 use Exception;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-class SendUserOrderCollectedNotifications implements UserRolesInterface, InvoiceTypes
+class SendUserOrderCollectedNotifications implements InvoiceTypes
 {
     /**
      * Handle the event.
@@ -22,15 +21,12 @@ class SendUserOrderCollectedNotifications implements UserRolesInterface, Invoice
     public function handle($event)
     {
         // retrieve user
-        if ($event->invoice->invoice_types_id === self::PRE_ORDER) {
-            // retrieve via related vendor invoice
-            $user = $event->invoice->vendorInvoice->userInvoice->first()->user;
-        }elseif ($event->invoice->invoice_types_id === self::ORDER){
+        if ($event->invoice->userInvoice){
             // retrieve via user invoice
             $user = $event->invoice->userInvoice->user;
         }else{
             // wrong invoice type
-            throw new Exception('Wrong invoice type: ' . $event->invoice->invoiceType);
+            throw new Exception('Wrong invoice type: no UserInvoice model');
         }
 
         // notify user

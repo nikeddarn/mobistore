@@ -10,15 +10,13 @@ interface DeliveryStatusInterface
 {
     const PROCESSING = 1;
 
-    const COLLECTED = 2;
+    const ORDERED = 2;
 
-    const STORAGE_DELIVERING = 3;
+    const COLLECTED = 3;
 
-    const USER_DELIVERING = 4;
+    const DELIVERING = 4;
 
-    const POST_DELIVERING = 5;
+    const DELIVERED = 5;
 
-    const DELIVERED = 6;
-
-    const CANCELLED = 7;
+    const CANCELLED = 6;
 }

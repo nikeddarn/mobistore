@@ -1918,10 +1918,30 @@ $(document).ready(function () {
             $(selectingPathLinks).removeClass('product-path-selected');
             $(this).addClass('product-path-selected');
 
+            // get content block
+            var productsContentBlock = $('#product-path-content');
+            // get all content blocks
+            var allContentBlocks = $(productsContentBlock).children('div');
+            // get target content block
+            var targetContentBlock = $(allContentBlocks).filter('#' + $(this).data('target'));
+
             // show selected content
-            var productPathContent = $('#product-path-content');
-            $(productPathContent).children('div').addClass('hidden');
-            $(productPathContent).find('#' + $(this).data('target')).removeClass('hidden');
+            $(allContentBlocks).addClass('hidden');
+            $(targetContentBlock).removeClass('hidden');
+
+            // target block content is loaded
+            if ($(targetContentBlock).find('.product-path-content').length) {
+                return;
+            }
+
+            // load target block content
+            $.ajax({
+                url: event.target,
+                success: function success(data) {
+                    // add html to block
+                    $(targetContentBlock).html(data);
+                }
+            });
         });
     });
 });

@@ -7,17 +7,14 @@
 namespace App\Http\Support\Price;
 
 use App\Contracts\Currency\CurrenciesInterface;
-use App\Http\Support\Currency\ExchangeRates;
+use App\Contracts\Shop\Prices\UserPriceGroups;
 use App\Models\Product;
+use App\Models\User;
+use Illuminate\Auth\Authenticatable;
 use Illuminate\Support\Collection;
 
 class ProductPrice implements CurrenciesInterface
 {
-    /**
-     * @var ExchangeRates
-     */
-    private $exchangeRates;
-
     /**
      * @var Product
      */
@@ -26,74 +23,45 @@ class ProductPrice implements CurrenciesInterface
 
     /**
      * ProductPrice constructor.
-     * Retrieve user if exist.
-     * @param ExchangeRates $exchangeRates
      * @param Product $product
      */
-    public function __construct(ExchangeRates $exchangeRates, Product $product)
+    public function __construct(Product $product)
     {
-        $this->exchangeRates = $exchangeRates;
         $this->product = $product;
     }
 
     /**
      * Get user product price by product model.
      *
+     * @param User|Authenticatable $user
      * @param Product $product
      * @return float|null
      */
-    public function getUserPriceByProductModel(Product $product)
+    public function getUserPriceByProductModel(Product $product, $user = null)
     {
-        return $this->defineProductPrice($product);
+        $userPriceGroup = $user ? $user->price_group : UserPriceGroups::RETAIL;
+
+        return $this->defineProductPriceForUser($product, $userPriceGroup);
     }
 
     /**
      * Get user product price by product id.
      *
+     * @param User|Authenticatable $user
      * @param int $productId
      * @return float|null
      */
-    public function getUserPriceByProductId(int $productId)
-    {
-        $product = $this->retrieveProductById($productId);
-        return $this->defineProductPrice($product);
-    }
-
-    /**
-     * Get vendor product price by product model.
-     *
-     * @param Product $product
-     * @param int $vendorId
-     * @return float|null
-     */
-    public function getVendorPriceByProductModel(Product $product, int $vendorId)
-    {
-        return $this->getVendorPurchasePrice($product, $vendorId);
-    }
-
-    /**
-     * Get vendor product price by product id.
-     *
-     * @param int $productId
-     * @param int $vendorId
-     * @return float|null
-     */
-    public function getVendorPriceByProductId(int $productId, int $vendorId)
+    public function getUserPriceByProductId(int $productId, $user = null)
     {
         $product = $this->retrieveProductById($productId);
 
-        return $this->getVendorPurchasePrice($product, $vendorId);
-    }
+        if (!$product){
+            return null;
+        }
 
-    /**
-     * Get currency rate.
-     *
-     * @param string $currency
-     * @return float
-     */
-    public function getRate($currency = self::USD)
-    {
-        return $this->exchangeRates->getRate($currency);
+        $userPriceGroup = $user ? $user->price_group : UserPriceGroups::RETAIL;
+
+        return $this->defineProductPriceForUser($product, $userPriceGroup);
     }
 
     /**
@@ -118,9 +86,10 @@ class ProductPrice implements CurrenciesInterface
      * Define price of product by its model.
      *
      * @param Product $product
+     * @param int $userPriceGroup
      * @return float|null
      */
-    private function defineProductPrice(Product $product)
+    private function defineProductPriceForUser(Product $product, int $userPriceGroup)
     {
         if ($this->hasStorageProduct($product) || !(config('shop.can_use_vendor_price') && $this->hasVendorProduct($product))) {
             return $product->{'price' . $this->getUserPriceColumn()};

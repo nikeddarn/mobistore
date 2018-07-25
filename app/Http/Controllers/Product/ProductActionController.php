@@ -6,7 +6,7 @@
 
 namespace App\Http\Controllers\Product;
 
-use App\Contracts\Shop\Badges\BadgeTypes;
+use App\Contracts\Shop\Badges\ProductBadgesInterface;
 use App\Http\Controllers\Admin\Support\Badges\ProductBadges;
 use App\Http\Support\Price\ProductPrice;
 use App\Http\Controllers\Controller;
@@ -18,7 +18,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
-class ProductActionController extends Controller implements BadgeTypes
+class ProductActionController extends Controller implements ProductBadgesInterface
 {
     /**
      * @var Request
@@ -63,13 +63,19 @@ class ProductActionController extends Controller implements BadgeTypes
      */
     public function show()
     {
-        return view('content.shop.action.index')
-            ->with('actionList', $this->getActionProducts())
-            ->with('commonMetaData', [
+        if ($this->request->ajax()) {
+            // get part of mega menu
+            $view = view('headers.common.bottom.parts.mega_menu.parts.action');
+        }else{
+            // get full view
+            $view = view('content.shop.action.index')->with('commonMetaData', [
                 'title' => trans('meta.title.action_products'),
                 'description' => trans('meta.description.action_products'),
                 'keywords' => trans('meta.keywords.action_products'),
             ]);
+        }
+
+        return $view->with('actionList', $this->getActionProducts());
     }
 
     /**

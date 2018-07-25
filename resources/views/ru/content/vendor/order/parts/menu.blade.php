@@ -18,6 +18,18 @@
     </li>
 
     <li>
+        <a href="{{ route('vendor.shipment', ['vendorId' => $vendorId]) }}">
+            <span>Отправки</span>
+        </a>
+    </li>
+
+    <li>
+        <a href="{{ route('vendor.courier', ['vendorId' => $vendorId]) }}">
+            <span>Курьеры</span>
+        </a>
+    </li>
+
+    <li>
         <a href="{{ route('vendor.warranty', ['vendorId' => $vendorId]) }}">
             <span>Гарантия</span>
         </a>
@@ -29,7 +41,9 @@
         </a>
     </li>
 
-    <li class="divider"></li>
+    <li class="divider">
+        <hr/>
+    </li>
 
     <li>
         <a href="{{ route('logout') }}">Выйти</a>

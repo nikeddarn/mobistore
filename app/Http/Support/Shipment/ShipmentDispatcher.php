@@ -8,8 +8,10 @@ namespace App\Http\Support\Shipment;
 
 use App\Models\Shipment;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 
 abstract class ShipmentDispatcher
 {
@@ -24,22 +26,15 @@ abstract class ShipmentDispatcher
     protected $databaseManager;
 
     /**
-     * @var ShipmentCalendar
-     */
-    protected $workCalendar;
-
-    /**
      * ShipmentDispatcher constructor.
      *
      * @param Shipment $shipment
      * @param DatabaseManager $databaseManager
-     * @param ShipmentCalendar $workCalendar
      */
-    public function __construct(Shipment $shipment, DatabaseManager $databaseManager, ShipmentCalendar $workCalendar)
+    public function __construct(Shipment $shipment, DatabaseManager $databaseManager)
     {
         $this->shipment = $shipment;
         $this->databaseManager = $databaseManager;
-        $this->workCalendar = $workCalendar;
     }
 
     /**
@@ -57,15 +52,61 @@ abstract class ShipmentDispatcher
      *
      * @param Carbon $departure
      * @param Carbon $arrival
-     * @param int $courierId
-     * @return \Illuminate\Database\Eloquent\Model
+     * @return Shipment
      */
-    protected function createShipment(Carbon $departure, Carbon $arrival, int $courierId)
+    protected function createShipment(Carbon $departure, Carbon $arrival): Shipment
     {
         return $this->shipment->create([
             'planned_departure' => $departure,
             'planned_arrival' => $arrival,
-            'couriers_id' => $courierId,
         ]);
+    }
+
+    /**
+     * Dispatch shipment by its id. Return dispatched invoices.
+     *
+     * @param int $shipmentId
+     * @return Collection
+     * @throws Exception
+     */
+    public function dispatchShipment(int $shipmentId): Collection
+    {
+        $shipment = $this->shipment->where('id', $shipmentId)->first();
+
+        if (!$shipment) {
+            throw new Exception('Deleting shipments id not found.');
+        }
+
+        $shipment->dispatched = Carbon::now()->toDateTimeString();
+        $shipment->save();
+
+        return $shipment->invoice()->with('vendorInvoice')->get();
+    }
+
+    /**
+     * Delete shipment by its id. Return invoices that was unloaded.
+     *
+     * @param int $shipmentId
+     * @return Collection
+     * @throws Exception
+     */
+    public function deleteShipment(int $shipmentId): Collection
+    {
+        $shipment = $this->shipment->where('id', $shipmentId)->first();
+
+        if (!$shipment) {
+            throw new Exception('Deleting shipments id not found.');
+        }
+
+        $unloadedVendorInvoices = $shipment->invoice()->with('vendorInvoice')->get();
+
+        $shipment->invoice()->update([
+            'shipments_id' => null,
+        ]);
+
+
+        $shipment->delete();
+
+        return $unloadedVendorInvoices;
     }
 }

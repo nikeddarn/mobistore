@@ -12,7 +12,7 @@
             <!-- User Sidebar -->
             <div class="col-sm-4 col-md-3 m-t-3">
 
-                <div id="user-logotype" class="m-b-2">
+                <div id="user-logotype" class="m-b-4">
 
                     @if(isset($userImage))
                         <img src="{{ $userImage }}" alt="Аватар пользователя" class="hidden-xs img-responsive img-circle">

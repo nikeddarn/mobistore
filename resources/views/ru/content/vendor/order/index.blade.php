@@ -7,7 +7,7 @@
 
         {{-- title --}}
         <div class="col-sm-3">
-            @include('content.vendor.account.parts.title')
+            @include('content.vendor.order.parts.title')
         </div>
 
     </div>

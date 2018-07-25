@@ -18,6 +18,12 @@
     </li>
 
     <li>
+        <a href="{{ route('vendor.shipment', ['vendorId' => $vendorId]) }}">
+            <span>Отправки</span>
+        </a>
+    </li>
+
+    <li>
         <a href="{{ route('vendor.warranty', ['vendorId' => $vendorId]) }}">
             <span>Гарантия</span>
         </a>

@@ -31,13 +31,11 @@ class InvoiceType extends Model
     public $timestamps = false;
 
     /**
-     * The attributes that are mass assignable.
+     * The attributes that aren't mass assignable.
      *
      * @var array
      */
-    protected $fillable = [
-        'id', 'title_en', 'title_ru', 'title_ua',
-    ];
+    protected $guarded = [];
 
     /**
      * The attributes that should be selected depends on locale from JSON type field.

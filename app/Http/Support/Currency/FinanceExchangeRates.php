@@ -6,17 +6,16 @@
 namespace App\Http\Support\Currency;
 
 
-use App\Contracts\Currency\ExchangeRateSourceInterface;
+use App\Contracts\Currency\CurrenciesInterface;
+use App\Contracts\Currency\ExchangeRatesInterface;
+use ReflectionClass;
 use SimpleXMLElement;
 
-class FinanceExchangeRates implements ExchangeRateSourceInterface
+class FinanceExchangeRates implements ExchangeRatesInterface
 {
-    /**
-     * Url of XML with courses.
-     *
-     * @var string
-     */
-    private $url = 'http://resources.finance.ua/ru/public/currency-cash.xml';
+    const RATE_SOURCE_URL = 'http://resources.finance.ua/ru/public/currency-cash.xml';
+
+    const CURL_TIMEOUT = 500;
 
     /**
      * SimpleXMLElement with courses.
@@ -31,10 +30,10 @@ class FinanceExchangeRates implements ExchangeRateSourceInterface
      */
     public function __construct()
     {
-        $curl = curl_init($this->url);
+        $curl = curl_init(self::RATE_SOURCE_URL);
 
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_TIMEOUT_MS, config('shop.exchange_rate_source_timeout'));
+        curl_setopt($curl, CURLOPT_TIMEOUT_MS, self::CURL_TIMEOUT);
 
         $response = curl_exec($curl);
 
@@ -46,16 +45,16 @@ class FinanceExchangeRates implements ExchangeRateSourceInterface
     /**
      * Get average rate of given sources.
      *
-     * @param string $currency
-     * @return float
+     * @param int $currencyId
+     * @return float|null
      */
-    public function getRate(string $currency)
+    public function getRate(int $currencyId)
     {
-        if (!$this->rates instanceof SimpleXMLElement){
+        if (!$this->rates instanceof SimpleXMLElement) {
             return null;
         }
 
-        $rateElements = $this->rates->xpath('/source/organizations/organization/currencies/c[@id="' . $currency . '"]');
+        $rateElements = $this->rates->xpath('/source/organizations/organization/currencies/c[@id="' . $this->getCurrencyCode($currencyId) . '"]');
 
         $rateSourcesCount = count($rateElements);
 
@@ -70,5 +69,19 @@ class FinanceExchangeRates implements ExchangeRateSourceInterface
         }
 
         return $sumRate / $rateSourcesCount;
+    }
+
+    /**
+     * Get currency code by id.
+     *
+     * @param int $currencyId
+     * @return mixed
+     */
+    private function getCurrencyCode(int $currencyId)
+    {
+        $class = new ReflectionClass(CurrenciesInterface::class);
+        $constants = array_flip($class->getConstants());
+
+        return $constants[$currencyId];
     }
 }
